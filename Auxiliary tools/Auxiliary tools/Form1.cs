@@ -109,11 +109,13 @@ namespace Auxiliary_tools
             {
                 start_button.Text = "Stop Random";
                 random_timer.Start();
+                color_timer.Start();
             }
             else
             {
                 start_button.Text = "Start Random";
                 random_timer.Stop();
+                color_timer.Stop();
             }
 
             //ReadData();
@@ -131,8 +133,86 @@ namespace Auxiliary_tools
             int temp = random.Next(dataArray.Length);
             content_1.Text=dataArray[temp];//将结果文本设置给 content_1 Text 组件；
 
-            Test_out.BackColor = ThemeColor.RandomColor();
-            Test_out.Text = Test_out.BackColor.ToString();
+            //Test_out.BackColor = ThemeColor.RandomColor();
+            //Test_out.Text = Test_out.BackColor.ToString();
+          
+        }
+       
+        Color falColor_1;
+        Color falColor_2;
+        Color falColor_3;
+        bool isChangeColor = true;
+        int isChangetimer = 0;
+        private void color_timer_Tick(object sender, EventArgs e)
+        {
+            if (isChangeColor) 
+            {
+                falColor_1 = ThemeColor.RandomColor();
+                falColor_2 = ThemeColor.RandomColor();
+                falColor_3 = ThemeColor.RandomColor();
+                isChangeColor = false;
+            }
+            isChangetimer++;
+            Test_out.Text = isChangetimer.ToString();
+            if (isChangetimer >= 500)
+            {
+                isChangetimer = 0;
+                isChangeColor = true;
+            }
+            Color resoult_1, resoult_2, resoult_3;
+            SmoothChangeColor(drawer.BackColor, falColor_1, out resoult_1);
+            drawer.BackColor = resoult_1;
+
+            SmoothChangeColor(panel1.BackColor, falColor_2, out resoult_2);
+            panel1.BackColor = resoult_2;
+
+            SmoothChangeColor(panel2.BackColor, falColor_3, out resoult_3);
+            panel2.BackColor = resoult_3;
+        }
+
+        private void SmoothChangeColor(Color oriColor, Color targetColor,out Color resoultColor)
+        {
+            Color tempColor = targetColor;
+
+            if (targetColor.R > oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp++;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.R < oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp--;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.G > oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R,temp, oriColor.B);
+            }
+            if (targetColor.G < oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, temp, oriColor.B);
+            }
+            if (targetColor.B > oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G,temp);
+            }
+            if (targetColor.B < oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G, temp);
+            }
+
+            resoultColor = tempColor;
+
         }
 
         List<string> data = new List<string>();
@@ -230,5 +310,12 @@ namespace Auxiliary_tools
             else
                 this.WindowState = FormWindowState.Normal;
         }
+
+        private void minimize_button_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        
     }
 }

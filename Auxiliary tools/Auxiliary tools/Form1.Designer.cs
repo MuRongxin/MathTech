@@ -50,12 +50,14 @@
             this.content_1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.minimize_button = new System.Windows.Forms.Button();
             this.maximize_button = new System.Windows.Forms.Button();
             this.title = new System.Windows.Forms.Label();
             this.exit_button = new System.Windows.Forms.Button();
             this.menu_button = new System.Windows.Forms.Button();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.random_timer = new System.Windows.Forms.Timer(this.components);
+            this.color_timer = new System.Windows.Forms.Timer(this.components);
             this.drawer.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.menuButton)).BeginInit();
@@ -243,10 +245,11 @@
             // 
             // resoulrTextBox
             // 
+            this.resoulrTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.resoulrTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.resoulrTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.resoulrTextBox.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.resoulrTextBox.Location = new System.Drawing.Point(514, 125);
+            this.resoulrTextBox.Location = new System.Drawing.Point(523, 125);
             this.resoulrTextBox.Multiline = true;
             this.resoulrTextBox.Name = "resoulrTextBox";
             this.resoulrTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -298,6 +301,7 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.panel2.Controls.Add(this.minimize_button);
             this.panel2.Controls.Add(this.maximize_button);
             this.panel2.Controls.Add(this.title);
             this.panel2.Controls.Add(this.exit_button);
@@ -310,11 +314,28 @@
             this.panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
             this.panel2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel2_MouseDown);
             // 
+            // minimize_button
+            // 
+            this.minimize_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.minimize_button.BackColor = System.Drawing.Color.Transparent;
+            this.minimize_button.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.minimize_button.FlatAppearance.BorderSize = 0;
+            this.minimize_button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.minimize_button.Font = new System.Drawing.Font("Segoe UI Variable Display Semil", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.minimize_button.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.minimize_button.Location = new System.Drawing.Point(672, 0);
+            this.minimize_button.Name = "minimize_button";
+            this.minimize_button.Size = new System.Drawing.Size(39, 37);
+            this.minimize_button.TabIndex = 4;
+            this.minimize_button.Text = "O";
+            this.minimize_button.UseVisualStyleBackColor = false;
+            this.minimize_button.Click += new System.EventHandler(this.minimize_button_Click);
+            // 
             // maximize_button
             // 
+            this.maximize_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.maximize_button.BackColor = System.Drawing.Color.Transparent;
             this.maximize_button.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.maximize_button.Dock = System.Windows.Forms.DockStyle.Right;
             this.maximize_button.FlatAppearance.BorderSize = 0;
             this.maximize_button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.maximize_button.Font = new System.Drawing.Font("Segoe UI Variable Display Semil", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
@@ -342,9 +363,9 @@
             // 
             // exit_button
             // 
+            this.exit_button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.exit_button.BackColor = System.Drawing.Color.Transparent;
             this.exit_button.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.exit_button.Dock = System.Windows.Forms.DockStyle.Right;
             this.exit_button.FlatAppearance.BorderSize = 0;
             this.exit_button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.exit_button.Font = new System.Drawing.Font("Palatino Linotype", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
@@ -377,6 +398,11 @@
             // random_timer
             // 
             this.random_timer.Tick += new System.EventHandler(this.random_timer_Tick);
+            // 
+            // color_timer
+            // 
+            this.color_timer.Interval = 5;
+            this.color_timer.Tick += new System.EventHandler(this.color_timer_Tick);
             // 
             // Form1
             // 
@@ -436,5 +462,7 @@
         private RadioButton radioButton1;
         private Label Test_out;
         private Button maximize_button;
+        private Button minimize_button;
+        private System.Windows.Forms.Timer color_timer;
     }
 }
