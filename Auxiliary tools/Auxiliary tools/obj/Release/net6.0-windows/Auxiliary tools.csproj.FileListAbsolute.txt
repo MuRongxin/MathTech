@@ -1,0 +1,18 @@
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\bin\Release\net6.0-windows\Auxiliary tools.exe
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\bin\Release\net6.0-windows\Auxiliary tools.deps.json
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\bin\Release\net6.0-windows\Auxiliary tools.runtimeconfig.json
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\bin\Release\net6.0-windows\Auxiliary tools.dll
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\bin\Release\net6.0-windows\Auxiliary tools.pdb
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.csproj.AssemblyReference.cache
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary_tools.Form1.resources
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary_tools.Properties.Resources.resources
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.csproj.GenerateResource.cache
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.AssemblyInfoInputs.cache
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.AssemblyInfo.cs
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.csproj.CoreCompileInputs.cache
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.dll
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\refint\Auxiliary tools.dll
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.pdb
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\Auxiliary tools.genruntimeconfig.cache
+C:\Users\PC\source\repos\Auxiliary tools\Auxiliary tools\obj\Release\net6.0-windows\ref\Auxiliary tools.dll
