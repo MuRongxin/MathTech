@@ -50,6 +50,7 @@
             this.content_1 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.maximize_button = new System.Windows.Forms.Button();
             this.title = new System.Windows.Forms.Label();
             this.exit_button = new System.Windows.Forms.Button();
             this.menu_button = new System.Windows.Forms.Button();
@@ -187,6 +188,7 @@
             // 
             // content
             // 
+            this.content.CausesValidation = false;
             this.content.Controls.Add(this.Test_out);
             this.content.Controls.Add(this.radioButton2);
             this.content.Controls.Add(this.radioButton1);
@@ -197,6 +199,7 @@
             this.content.Controls.Add(this.panel1);
             this.content.Dock = System.Windows.Forms.DockStyle.Fill;
             this.content.Location = new System.Drawing.Point(157, 0);
+            this.content.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.content.Name = "content";
             this.content.Size = new System.Drawing.Size(789, 543);
             this.content.TabIndex = 1;
@@ -295,6 +298,7 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.panel2.Controls.Add(this.maximize_button);
             this.panel2.Controls.Add(this.title);
             this.panel2.Controls.Add(this.exit_button);
             this.panel2.Controls.Add(this.menu_button);
@@ -303,9 +307,29 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(789, 37);
             this.panel2.TabIndex = 1;
+            this.panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.panel2_Paint);
+            this.panel2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panel2_MouseDown);
+            // 
+            // maximize_button
+            // 
+            this.maximize_button.BackColor = System.Drawing.Color.Transparent;
+            this.maximize_button.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.maximize_button.Dock = System.Windows.Forms.DockStyle.Right;
+            this.maximize_button.FlatAppearance.BorderSize = 0;
+            this.maximize_button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.maximize_button.Font = new System.Drawing.Font("Segoe UI Variable Display Semil", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.maximize_button.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.maximize_button.Location = new System.Drawing.Point(711, 0);
+            this.maximize_button.Name = "maximize_button";
+            this.maximize_button.Size = new System.Drawing.Size(39, 37);
+            this.maximize_button.TabIndex = 3;
+            this.maximize_button.Text = "口";
+            this.maximize_button.UseVisualStyleBackColor = false;
+            this.maximize_button.Click += new System.EventHandler(this.maximize_button_Click);
             // 
             // title
             // 
+            this.title.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.title.AutoSize = true;
             this.title.Font = new System.Drawing.Font("Microsoft YaHei UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.title.ForeColor = System.Drawing.SystemColors.ButtonFace;
@@ -323,7 +347,8 @@
             this.exit_button.Dock = System.Windows.Forms.DockStyle.Right;
             this.exit_button.FlatAppearance.BorderSize = 0;
             this.exit_button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.exit_button.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.exit_button.Font = new System.Drawing.Font("Palatino Linotype", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.exit_button.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.exit_button.Location = new System.Drawing.Point(750, 0);
             this.exit_button.Name = "exit_button";
             this.exit_button.Size = new System.Drawing.Size(39, 37);
@@ -410,5 +435,6 @@
         private RadioButton radioButton2;
         private RadioButton radioButton1;
         private Label Test_out;
+        private Button maximize_button;
     }
 }

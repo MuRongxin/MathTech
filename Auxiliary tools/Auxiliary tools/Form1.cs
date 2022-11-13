@@ -1,4 +1,5 @@
 using System.Xml;
+using System.Runtime.InteropServices;
 
 namespace Auxiliary_tools
 {
@@ -8,11 +9,17 @@ namespace Auxiliary_tools
         {
             InitializeComponent();
             //ReadData();
-            ReadData("./data43.txt");
+            ReadData("./data43.txt"); 
+            this.Text=String.Empty;
+            this.ControlBox = false;
            
-           
+            this.MaximizedBounds = Screen.FromHandle(this.Handle).WorkingArea;
         }
 
+        [DllImport("user32.dll", EntryPoint = "ReleaseCapture")]
+        private extern static  void ReleaseCapture();
+        [DllImport("user32.dll", EntryPoint = "SendMessage")]
+        private extern static  void SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         private void button2_Click(object sender, EventArgs e)
         {
             Environment.Exit(0);
@@ -203,6 +210,25 @@ namespace Auxiliary_tools
             resoulrTextBox.Clear();
             ReadData("./data43.txt");
 
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+            
+        }
+
+        private void panel2_MouseDown(object sender, MouseEventArgs e)
+        {
+            ReleaseCapture();
+            SendMessage(this.Handle, 0x112, (IntPtr)0xf012, (IntPtr)0);
+        }
+
+        private void maximize_button_Click(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Normal)
+                this.WindowState = FormWindowState.Maximized;
+            else
+                this.WindowState = FormWindowState.Normal;
         }
     }
 }
