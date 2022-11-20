@@ -1,4 +1,7 @@
-﻿using System;
+﻿using LiveCharts;
+using LiveCharts.Defaults;
+using LiveCharts.Wpf;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -51,13 +54,13 @@ namespace Auxiliary_tool
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            average_CartesianChart = new LiveCharts.WinForms.CartesianChart();
+            InitChart();
             _obj = this;
 
             RandomPanle randomPanle = new RandomPanle();
             randomPanle.Dock = DockStyle.Fill; 
             PanelContainer.Controls.Add(randomPanle);
-
+            rushTimer.Start();
             InitData();
         }
         private void InitData()
@@ -88,9 +91,49 @@ namespace Auxiliary_tool
 
         private void guna2Button1_Click_1(object sender, EventArgs e)
         {
-            Dataview_panel.Visible = true;
+            Dataview_panel.Visible = true; 
             ChartView_Panel.Visible = true;
             PanelContainer.Controls["RandomPanle"].Visible=false;   
+        }
+
+        private void InitChart()
+        {
+            average_CartesianChart.Series = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Values =new ChartValues<ObservablePoint>
+                    {
+                        new ObservablePoint(1,10),
+                        new ObservablePoint(3,2),
+                         new ObservablePoint(5,5),
+                        new ObservablePoint(10,8),
+                    },
+                    PointGeometrySize=11
+                },
+                 new LineSeries
+                {
+                    Values =new ChartValues<ObservablePoint>
+                    {
+                        new ObservablePoint(1,5),
+                        new ObservablePoint(3,6),
+                         new ObservablePoint(5,4),
+                        new ObservablePoint(10,6),
+                    },
+                    PointGeometrySize=11              
+                 
+                },
+            };
+        }
+
+        private void rushTimer_Tick(object sender, EventArgs e)
+        {
+            TimeLabel.Text = DateTime.Now.ToString();
+        }
+
+        private void minimizeButton_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
         }
     }
 }

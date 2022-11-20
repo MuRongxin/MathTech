@@ -28,13 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.Titlt_Panel = new System.Windows.Forms.Panel();
             this.guna2TextBox1 = new Guna.UI2.WinForms.Guna2TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.guna2Button7 = new Guna.UI2.WinForms.Guna2Button();
+            this.minimizeButton = new Guna.UI2.WinForms.Guna2Button();
             this.ExitButton = new Guna.UI2.WinForms.Guna2Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
@@ -51,7 +52,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.label7 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
+            this.TimeLabel = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.guna2GradientPanel1 = new Guna.UI2.WinForms.Guna2GradientPanel();
             this.datalengthLabel1 = new System.Windows.Forms.Label();
@@ -63,6 +64,7 @@
             this.average_CartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.panel6 = new System.Windows.Forms.Panel();
             this.overview_pane = new System.Windows.Forms.Panel();
+            this.rushTimer = new System.Windows.Forms.Timer(this.components);
             this.Titlt_Panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel2.SuspendLayout();
@@ -85,7 +87,7 @@
             this.Titlt_Panel.Controls.Add(this.label10);
             this.Titlt_Panel.Controls.Add(this.label1);
             this.Titlt_Panel.Controls.Add(this.pictureBox1);
-            this.Titlt_Panel.Controls.Add(this.guna2Button7);
+            this.Titlt_Panel.Controls.Add(this.minimizeButton);
             this.Titlt_Panel.Controls.Add(this.ExitButton);
             this.Titlt_Panel.Dock = System.Windows.Forms.DockStyle.Top;
             this.Titlt_Panel.Location = new System.Drawing.Point(0, 0);
@@ -149,29 +151,30 @@
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
             // 
-            // guna2Button7
+            // minimizeButton
             // 
-            this.guna2Button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.guna2Button7.BackColor = System.Drawing.Color.Transparent;
-            this.guna2Button7.BorderRadius = 5;
-            this.guna2Button7.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button7.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button7.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2Button7.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2Button7.FillColor = System.Drawing.Color.Transparent;
-            this.guna2Button7.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
-            this.guna2Button7.ForeColor = System.Drawing.Color.Gray;
-            this.guna2Button7.HoverState.BorderColor = System.Drawing.Color.Transparent;
-            this.guna2Button7.HoverState.FillColor = System.Drawing.Color.Transparent;
-            this.guna2Button7.HoverState.ForeColor = System.Drawing.Color.White;
-            this.guna2Button7.Image = ((System.Drawing.Image)(resources.GetObject("guna2Button7.Image")));
-            this.guna2Button7.ImageSize = new System.Drawing.Size(25, 25);
-            this.guna2Button7.Location = new System.Drawing.Point(1024, 9);
-            this.guna2Button7.Name = "guna2Button7";
-            this.guna2Button7.Size = new System.Drawing.Size(46, 45);
-            this.guna2Button7.TabIndex = 2;
-            this.guna2Button7.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.guna2Button7.TextOffset = new System.Drawing.Point(10, 0);
+            this.minimizeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.minimizeButton.BackColor = System.Drawing.Color.Transparent;
+            this.minimizeButton.BorderRadius = 5;
+            this.minimizeButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.minimizeButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.minimizeButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.minimizeButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.minimizeButton.FillColor = System.Drawing.Color.Transparent;
+            this.minimizeButton.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
+            this.minimizeButton.ForeColor = System.Drawing.Color.Gray;
+            this.minimizeButton.HoverState.BorderColor = System.Drawing.Color.Transparent;
+            this.minimizeButton.HoverState.FillColor = System.Drawing.Color.Transparent;
+            this.minimizeButton.HoverState.ForeColor = System.Drawing.Color.White;
+            this.minimizeButton.Image = ((System.Drawing.Image)(resources.GetObject("minimizeButton.Image")));
+            this.minimizeButton.ImageSize = new System.Drawing.Size(25, 25);
+            this.minimizeButton.Location = new System.Drawing.Point(1024, 9);
+            this.minimizeButton.Name = "minimizeButton";
+            this.minimizeButton.Size = new System.Drawing.Size(46, 45);
+            this.minimizeButton.TabIndex = 2;
+            this.minimizeButton.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.minimizeButton.TextOffset = new System.Drawing.Point(10, 0);
+            this.minimizeButton.Click += new System.EventHandler(this.minimizeButton_Click);
             // 
             // ExitButton
             // 
@@ -380,7 +383,7 @@
             // Dataview_panel
             // 
             this.Dataview_panel.Controls.Add(this.guna2GradientPanel2);
-            this.Dataview_panel.Controls.Add(this.label9);
+            this.Dataview_panel.Controls.Add(this.TimeLabel);
             this.Dataview_panel.Controls.Add(this.label8);
             this.Dataview_panel.Controls.Add(this.guna2GradientPanel1);
             this.Dataview_panel.Dock = System.Windows.Forms.DockStyle.Top;
@@ -453,16 +456,16 @@
             this.label7.Text = "145 Data Length";
             this.label7.Click += new System.EventHandler(this.label1_Click);
             // 
-            // label9
+            // TimeLabel
             // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Century Gothic", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(79, 56);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(132, 27);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "2022-11-20";
-            this.label9.Click += new System.EventHandler(this.label1_Click);
+            this.TimeLabel.AutoSize = true;
+            this.TimeLabel.Font = new System.Drawing.Font("Century Gothic", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TimeLabel.Location = new System.Drawing.Point(79, 56);
+            this.TimeLabel.Name = "TimeLabel";
+            this.TimeLabel.Size = new System.Drawing.Size(132, 27);
+            this.TimeLabel.TabIndex = 2;
+            this.TimeLabel.Text = "2022-11-20";
+            this.TimeLabel.Click += new System.EventHandler(this.label1_Click);
             // 
             // label8
             // 
@@ -556,7 +559,7 @@
             this.chart_panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chart_panel.Location = new System.Drawing.Point(20, 20);
             this.chart_panel.Name = "chart_panel";
-            this.chart_panel.Size = new System.Drawing.Size(654, 222);
+            this.chart_panel.Size = new System.Drawing.Size(754, 222);
             this.chart_panel.TabIndex = 1;
             // 
             // average_CartesianChart
@@ -564,16 +567,16 @@
             this.average_CartesianChart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.average_CartesianChart.Location = new System.Drawing.Point(0, 0);
             this.average_CartesianChart.Name = "average_CartesianChart";
-            this.average_CartesianChart.Size = new System.Drawing.Size(654, 222);
+            this.average_CartesianChart.Size = new System.Drawing.Size(754, 222);
             this.average_CartesianChart.TabIndex = 0;
             this.average_CartesianChart.Text = "cartesianChart1";
             // 
             // panel6
             // 
             this.panel6.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel6.Location = new System.Drawing.Point(674, 20);
+            this.panel6.Location = new System.Drawing.Point(774, 20);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(215, 222);
+            this.panel6.Size = new System.Drawing.Size(115, 222);
             this.panel6.TabIndex = 0;
             // 
             // overview_pane
@@ -585,6 +588,10 @@
             this.overview_pane.Name = "overview_pane";
             this.overview_pane.Size = new System.Drawing.Size(909, 593);
             this.overview_pane.TabIndex = 3;
+            // 
+            // rushTimer
+            // 
+            this.rushTimer.Tick += new System.EventHandler(this.rushTimer_Tick);
             // 
             // Form1
             // 
@@ -633,7 +640,7 @@
         private Guna.UI2.WinForms.Guna2Button guna2Button5;
         private Guna.UI2.WinForms.Guna2Button guna2Button4;
         private Guna.UI2.WinForms.Guna2Button randomPanelswitchButton3;
-        private Guna.UI2.WinForms.Guna2Button guna2Button2;
+        public  Guna.UI2.WinForms.Guna2Button guna2Button2;
         private Guna.UI2.WinForms.Guna2TextBox guna2TextBox1;
         private System.Windows.Forms.Panel Dataview_panel;
         private Guna.UI2.WinForms.Guna2GradientPanel guna2GradientPanel1;
@@ -647,10 +654,10 @@
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label TimeLabel;
         private System.Windows.Forms.Label label10;
         private Guna.UI2.WinForms.Guna2Button ExitButton;
-        private Guna.UI2.WinForms.Guna2Button guna2Button7;
+        private Guna.UI2.WinForms.Guna2Button minimizeButton;
         private System.Windows.Forms.Panel panel4;
         private Guna.UI2.WinForms.Guna2CirclePictureBox guna2CirclePictureBox1;
         private System.Windows.Forms.Label label11;
@@ -659,6 +666,7 @@
         private System.Windows.Forms.Panel panel6;
         private LiveCharts.WinForms.CartesianChart average_CartesianChart;
         private System.Windows.Forms.Panel overview_pane;
+        private System.Windows.Forms.Timer rushTimer;
     }
 }
 
