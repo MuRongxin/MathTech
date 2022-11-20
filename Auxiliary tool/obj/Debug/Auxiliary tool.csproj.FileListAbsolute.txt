@@ -11,3 +11,12 @@ C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.exe
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.pdb
 C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\Guna.UI2.dll
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.CopyComplete
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.WinForms.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.Wpf.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.xml
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.WinForms.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.WinForms.xml
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.Wpf.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.Wpf.xml
