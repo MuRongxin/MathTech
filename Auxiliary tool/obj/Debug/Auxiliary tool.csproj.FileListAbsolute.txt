@@ -1,0 +1,13 @@
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\Auxiliary tool.exe.config
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\Auxiliary tool.exe
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\Auxiliary tool.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.AssemblyReference.cache
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.SuggestedBindingRedirects.cache
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.Form1.resources
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.Properties.Resources.resources
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.GenerateResource.cache
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.CoreCompileInputs.cache
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.exe
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\Guna.UI2.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary tool.csproj.CopyComplete
