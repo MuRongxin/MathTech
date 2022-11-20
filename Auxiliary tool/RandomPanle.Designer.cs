@@ -63,10 +63,10 @@
             // panel4
             // 
             this.panel4.BackColor = System.Drawing.Color.Transparent;
+            this.panel4.Controls.Add(this.resoultLabel);
             this.panel4.Controls.Add(this.radioButton2);
             this.panel4.Controls.Add(this.radioButton1);
             this.panel4.Controls.Add(this.label1);
-            this.panel4.Controls.Add(this.resoultLabel);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(125, 0);
             this.panel4.Name = "panel4";
@@ -77,7 +77,7 @@
             // 
             this.radioButton2.AutoSize = true;
             this.radioButton2.Font = new System.Drawing.Font("Californian FB", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton2.Location = new System.Drawing.Point(333, 208);
+            this.radioButton2.Location = new System.Drawing.Point(311, 276);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(68, 33);
             this.radioButton2.TabIndex = 5;
@@ -90,7 +90,7 @@
             this.radioButton1.AutoSize = true;
             this.radioButton1.Checked = true;
             this.radioButton1.Font = new System.Drawing.Font("Californian FB", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton1.Location = new System.Drawing.Point(217, 208);
+            this.radioButton1.Location = new System.Drawing.Point(199, 276);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(68, 33);
             this.radioButton1.TabIndex = 4;
@@ -103,7 +103,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Trebuchet MS", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(51, 208);
+            this.label1.Location = new System.Drawing.Point(11, 273);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(160, 36);
             this.label1.TabIndex = 3;
@@ -112,10 +112,10 @@
             // resoultLabel
             // 
             this.resoultLabel.AutoSize = true;
-            this.resoultLabel.Font = new System.Drawing.Font("黑体", 22.2F, System.Drawing.FontStyle.Bold);
-            this.resoultLabel.Location = new System.Drawing.Point(50, 63);
+            this.resoultLabel.Font = new System.Drawing.Font("黑体", 21F, System.Drawing.FontStyle.Bold);
+            this.resoultLabel.Location = new System.Drawing.Point(39, 56);
             this.resoultLabel.Name = "resoultLabel";
-            this.resoultLabel.Size = new System.Drawing.Size(666, 37);
+            this.resoultLabel.Size = new System.Drawing.Size(631, 35);
             this.resoultLabel.TabIndex = 2;
             this.resoultLabel.Text = "Hi~ o(*￣▽￣*)ブ  你准备好了吗？";
             // 

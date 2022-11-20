@@ -24,7 +24,7 @@ namespace Auxiliary_tool
             //changeColortimer.Start();
         }
 
-        Color color1, color2, color3;
+        Color color1, color2, color3;Random random= new Random();   
         private void randomTimer_Tick(object sender, EventArgs e)
         {
             if (classStatus == 1)
@@ -32,7 +32,12 @@ namespace Auxiliary_tool
             else
                 resoultLabel.Text = Auxiliarymethods.Instance.GetRandomResoult(Auxiliarymethods.Instance.dataList_2);
 
-           
+
+            int x = random.Next(550);
+            int y = random.Next(200);
+            resoultLabel.Location = new Point(x,y);
+          
+
         }
 
         private void changeColortimer_Tick(object sender, EventArgs e)
@@ -55,6 +60,7 @@ namespace Auxiliary_tool
                 startRandomButton.Text = "Start Random";
                 randomTimer.Stop();
                 changeColortimer.Stop();
+
             }
 
             if (startRandomButton.Text == "Start Random")
