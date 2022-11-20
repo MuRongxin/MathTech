@@ -42,19 +42,19 @@
             this.label11 = new System.Windows.Forms.Label();
             this.guna2Button5 = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Button4 = new Guna.UI2.WinForms.Guna2Button();
-            this.guna2Button3 = new Guna.UI2.WinForms.Guna2Button();
+            this.randomPanelswitchButton3 = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Button2 = new Guna.UI2.WinForms.Guna2Button();
             this.guna2Button1 = new Guna.UI2.WinForms.Guna2Button();
             this.Dataview_panel = new System.Windows.Forms.Panel();
             this.guna2GradientPanel2 = new Guna.UI2.WinForms.Guna2GradientPanel();
-            this.label5 = new System.Windows.Forms.Label();
+            this.datalengthLabel2 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.guna2GradientPanel1 = new Guna.UI2.WinForms.Guna2GradientPanel();
-            this.label3 = new System.Windows.Forms.Label();
+            this.datalengthLabel1 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -62,7 +62,7 @@
             this.chart_panel = new System.Windows.Forms.Panel();
             this.average_CartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.panel6 = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.overview_pane = new System.Windows.Forms.Panel();
             this.Titlt_Panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel2.SuspendLayout();
@@ -75,7 +75,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.ChartView_Panel.SuspendLayout();
             this.chart_panel.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.overview_pane.SuspendLayout();
             this.SuspendLayout();
             // 
             // Titlt_Panel
@@ -203,7 +203,7 @@
             this.panel2.Controls.Add(this.panel4);
             this.panel2.Controls.Add(this.guna2Button5);
             this.panel2.Controls.Add(this.guna2Button4);
-            this.panel2.Controls.Add(this.guna2Button3);
+            this.panel2.Controls.Add(this.randomPanelswitchButton3);
             this.panel2.Controls.Add(this.guna2Button2);
             this.panel2.Controls.Add(this.guna2Button1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
@@ -297,31 +297,32 @@
             this.guna2Button4.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.guna2Button4.TextOffset = new System.Drawing.Point(10, 0);
             // 
-            // guna2Button3
+            // randomPanelswitchButton3
             // 
-            this.guna2Button3.BackColor = System.Drawing.Color.White;
-            this.guna2Button3.BorderRadius = 10;
-            this.guna2Button3.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button3.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button3.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2Button3.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2Button3.FillColor = System.Drawing.Color.White;
-            this.guna2Button3.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2Button3.ForeColor = System.Drawing.Color.Gray;
-            this.guna2Button3.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
-            this.guna2Button3.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
-            this.guna2Button3.HoverState.ForeColor = System.Drawing.Color.White;
-            this.guna2Button3.HoverState.Image = ((System.Drawing.Image)(resources.GetObject("resource.Image2")));
-            this.guna2Button3.Image = ((System.Drawing.Image)(resources.GetObject("guna2Button3.Image")));
-            this.guna2Button3.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.guna2Button3.ImageOffset = new System.Drawing.Point(8, 0);
-            this.guna2Button3.Location = new System.Drawing.Point(3, 219);
-            this.guna2Button3.Name = "guna2Button3";
-            this.guna2Button3.Size = new System.Drawing.Size(212, 61);
-            this.guna2Button3.TabIndex = 4;
-            this.guna2Button3.Text = "Random Call";
-            this.guna2Button3.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.guna2Button3.TextOffset = new System.Drawing.Point(10, 0);
+            this.randomPanelswitchButton3.BackColor = System.Drawing.Color.White;
+            this.randomPanelswitchButton3.BorderRadius = 10;
+            this.randomPanelswitchButton3.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.randomPanelswitchButton3.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.randomPanelswitchButton3.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.randomPanelswitchButton3.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.randomPanelswitchButton3.FillColor = System.Drawing.Color.White;
+            this.randomPanelswitchButton3.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.randomPanelswitchButton3.ForeColor = System.Drawing.Color.Gray;
+            this.randomPanelswitchButton3.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
+            this.randomPanelswitchButton3.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
+            this.randomPanelswitchButton3.HoverState.ForeColor = System.Drawing.Color.White;
+            this.randomPanelswitchButton3.HoverState.Image = ((System.Drawing.Image)(resources.GetObject("resource.Image2")));
+            this.randomPanelswitchButton3.Image = ((System.Drawing.Image)(resources.GetObject("randomPanelswitchButton3.Image")));
+            this.randomPanelswitchButton3.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.randomPanelswitchButton3.ImageOffset = new System.Drawing.Point(8, 0);
+            this.randomPanelswitchButton3.Location = new System.Drawing.Point(3, 219);
+            this.randomPanelswitchButton3.Name = "randomPanelswitchButton3";
+            this.randomPanelswitchButton3.Size = new System.Drawing.Size(212, 61);
+            this.randomPanelswitchButton3.TabIndex = 4;
+            this.randomPanelswitchButton3.Text = "Random Call";
+            this.randomPanelswitchButton3.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.randomPanelswitchButton3.TextOffset = new System.Drawing.Point(10, 0);
+            this.randomPanelswitchButton3.Click += new System.EventHandler(this.randomPanelswitchButton3_Click);
             // 
             // guna2Button2
             // 
@@ -374,10 +375,10 @@
             this.guna2Button1.Text = "Main infomation";
             this.guna2Button1.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.guna2Button1.TextOffset = new System.Drawing.Point(10, 0);
+            this.guna2Button1.Click += new System.EventHandler(this.guna2Button1_Click_1);
             // 
             // Dataview_panel
             // 
-            this.Dataview_panel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Dataview_panel.Controls.Add(this.guna2GradientPanel2);
             this.Dataview_panel.Controls.Add(this.label9);
             this.Dataview_panel.Controls.Add(this.label8);
@@ -391,29 +392,29 @@
             // guna2GradientPanel2
             // 
             this.guna2GradientPanel2.BorderRadius = 5;
-            this.guna2GradientPanel2.Controls.Add(this.label5);
+            this.guna2GradientPanel2.Controls.Add(this.datalengthLabel2);
             this.guna2GradientPanel2.Controls.Add(this.label6);
             this.guna2GradientPanel2.Controls.Add(this.pictureBox3);
             this.guna2GradientPanel2.Controls.Add(this.label7);
             this.guna2GradientPanel2.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
             this.guna2GradientPanel2.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
-            this.guna2GradientPanel2.Location = new System.Drawing.Point(482, 87);
+            this.guna2GradientPanel2.Location = new System.Drawing.Point(482, 97);
             this.guna2GradientPanel2.Name = "guna2GradientPanel2";
             this.guna2GradientPanel2.Size = new System.Drawing.Size(292, 209);
             this.guna2GradientPanel2.TabIndex = 0;
             // 
-            // label5
+            // datalengthLabel2
             // 
-            this.label5.AutoSize = true;
-            this.label5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
-            this.label5.Font = new System.Drawing.Font("Century Gothic", 25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.ForeColor = System.Drawing.Color.White;
-            this.label5.Location = new System.Drawing.Point(18, 64);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(106, 49);
-            this.label5.TabIndex = 2;
-            this.label5.Text = "4.5k";
-            this.label5.Click += new System.EventHandler(this.label1_Click);
+            this.datalengthLabel2.AutoSize = true;
+            this.datalengthLabel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
+            this.datalengthLabel2.Font = new System.Drawing.Font("Century Gothic", 25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.datalengthLabel2.ForeColor = System.Drawing.Color.White;
+            this.datalengthLabel2.Location = new System.Drawing.Point(18, 64);
+            this.datalengthLabel2.Name = "datalengthLabel2";
+            this.datalengthLabel2.Size = new System.Drawing.Size(106, 49);
+            this.datalengthLabel2.TabIndex = 2;
+            this.datalengthLabel2.Text = "4.5k";
+            this.datalengthLabel2.Click += new System.EventHandler(this.label1_Click);
             // 
             // label6
             // 
@@ -432,7 +433,7 @@
             // 
             this.pictureBox3.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox3.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox3.Image")));
-            this.pictureBox3.Location = new System.Drawing.Point(219, 21);
+            this.pictureBox3.Location = new System.Drawing.Point(227, 18);
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.Size = new System.Drawing.Size(58, 41);
             this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -447,16 +448,16 @@
             this.label7.ForeColor = System.Drawing.Color.White;
             this.label7.Location = new System.Drawing.Point(22, 21);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(151, 29);
+            this.label7.Size = new System.Drawing.Size(209, 29);
             this.label7.TabIndex = 2;
-            this.label7.Text = "Data Count";
+            this.label7.Text = "145 Data Length";
             this.label7.Click += new System.EventHandler(this.label1_Click);
             // 
             // label9
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Century Gothic", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(79, 52);
+            this.label9.Location = new System.Drawing.Point(79, 56);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(132, 27);
             this.label9.TabIndex = 2;
@@ -477,29 +478,29 @@
             // guna2GradientPanel1
             // 
             this.guna2GradientPanel1.BorderRadius = 5;
-            this.guna2GradientPanel1.Controls.Add(this.label3);
+            this.guna2GradientPanel1.Controls.Add(this.datalengthLabel1);
             this.guna2GradientPanel1.Controls.Add(this.label4);
             this.guna2GradientPanel1.Controls.Add(this.pictureBox2);
             this.guna2GradientPanel1.Controls.Add(this.label2);
             this.guna2GradientPanel1.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
             this.guna2GradientPanel1.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
-            this.guna2GradientPanel1.Location = new System.Drawing.Point(78, 88);
+            this.guna2GradientPanel1.Location = new System.Drawing.Point(78, 98);
             this.guna2GradientPanel1.Name = "guna2GradientPanel1";
             this.guna2GradientPanel1.Size = new System.Drawing.Size(292, 209);
             this.guna2GradientPanel1.TabIndex = 0;
             // 
-            // label3
+            // datalengthLabel1
             // 
-            this.label3.AutoSize = true;
-            this.label3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
-            this.label3.Font = new System.Drawing.Font("Century Gothic", 25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Location = new System.Drawing.Point(18, 64);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(120, 49);
-            this.label3.TabIndex = 2;
-            this.label3.Text = "405K";
-            this.label3.Click += new System.EventHandler(this.label1_Click);
+            this.datalengthLabel1.AutoSize = true;
+            this.datalengthLabel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
+            this.datalengthLabel1.Font = new System.Drawing.Font("Century Gothic", 25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.datalengthLabel1.ForeColor = System.Drawing.Color.White;
+            this.datalengthLabel1.Location = new System.Drawing.Point(18, 64);
+            this.datalengthLabel1.Name = "datalengthLabel1";
+            this.datalengthLabel1.Size = new System.Drawing.Size(120, 49);
+            this.datalengthLabel1.TabIndex = 2;
+            this.datalengthLabel1.Text = "405K";
+            this.datalengthLabel1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label4
             // 
@@ -518,7 +519,7 @@
             // 
             this.pictureBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(219, 21);
+            this.pictureBox2.Location = new System.Drawing.Point(221, 19);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(58, 41);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -531,11 +532,11 @@
             this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
             this.label2.Font = new System.Drawing.Font("Century Gothic", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(22, 21);
+            this.label2.Location = new System.Drawing.Point(16, 21);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(151, 29);
+            this.label2.Size = new System.Drawing.Size(209, 29);
             this.label2.TabIndex = 2;
-            this.label2.Text = "Data Count";
+            this.label2.Text = "143 Data Length";
             this.label2.Click += new System.EventHandler(this.label1_Click);
             // 
             // ChartView_Panel
@@ -575,28 +576,29 @@
             this.panel6.Size = new System.Drawing.Size(215, 222);
             this.panel6.TabIndex = 0;
             // 
-            // panel1
+            // overview_pane
             // 
-            this.panel1.Controls.Add(this.ChartView_Panel);
-            this.panel1.Controls.Add(this.Dataview_panel);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(217, 70);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(909, 593);
-            this.panel1.TabIndex = 3;
+            this.overview_pane.Controls.Add(this.ChartView_Panel);
+            this.overview_pane.Controls.Add(this.Dataview_panel);
+            this.overview_pane.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.overview_pane.Location = new System.Drawing.Point(217, 70);
+            this.overview_pane.Name = "overview_pane";
+            this.overview_pane.Size = new System.Drawing.Size(909, 593);
+            this.overview_pane.TabIndex = 3;
             // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(249)))), ((int)(((byte)(249)))));
             this.ClientSize = new System.Drawing.Size(1126, 663);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.overview_pane);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.Titlt_Panel);
             this.Font = new System.Drawing.Font("Cascadia Code", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.TopMost = true;
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Titlt_Panel.ResumeLayout(false);
             this.Titlt_Panel.PerformLayout();
@@ -615,7 +617,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ChartView_Panel.ResumeLayout(false);
             this.chart_panel.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
+            this.overview_pane.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -629,17 +631,17 @@
         private Guna.UI2.WinForms.Guna2Button guna2Button1;
         private Guna.UI2.WinForms.Guna2Button guna2Button5;
         private Guna.UI2.WinForms.Guna2Button guna2Button4;
-        private Guna.UI2.WinForms.Guna2Button guna2Button3;
+        private Guna.UI2.WinForms.Guna2Button randomPanelswitchButton3;
         private Guna.UI2.WinForms.Guna2Button guna2Button2;
         private Guna.UI2.WinForms.Guna2TextBox guna2TextBox1;
         private System.Windows.Forms.Panel Dataview_panel;
         private Guna.UI2.WinForms.Guna2GradientPanel guna2GradientPanel1;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label datalengthLabel1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.PictureBox pictureBox2;
         private Guna.UI2.WinForms.Guna2GradientPanel guna2GradientPanel2;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label datalengthLabel2;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.Label label7;
@@ -655,7 +657,7 @@
         private System.Windows.Forms.Panel chart_panel;
         private System.Windows.Forms.Panel panel6;
         private LiveCharts.WinForms.CartesianChart average_CartesianChart;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel overview_pane;
     }
 }
 

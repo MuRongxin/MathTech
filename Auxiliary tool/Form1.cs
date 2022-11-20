@@ -21,6 +21,24 @@ namespace Auxiliary_tool
         private extern static void ReleaseCapture();
         [DllImport("user32.dll", EntryPoint = "SendMessage")]
         private extern static void SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private static Form1 _obj;
+        public static Form1 Instance
+        {
+            get {
+                if (_obj == null) 
+                    _obj = new Form1();
+
+                return _obj;               
+            }           
+        }
+
+        public Panel PanelContainer
+        {
+            get{ return overview_pane; }
+            set { overview_pane = value; }
+        }
+
         private void label1_Click(object sender, EventArgs e)
         {
 
@@ -34,6 +52,19 @@ namespace Auxiliary_tool
         private void Form1_Load(object sender, EventArgs e)
         {
             average_CartesianChart = new LiveCharts.WinForms.CartesianChart();
+            _obj = this;
+
+            RandomPanle randomPanle = new RandomPanle();
+            randomPanle.Dock = DockStyle.Fill; 
+            PanelContainer.Controls.Add(randomPanle);
+
+            InitData();
+        }
+        private void InitData()
+        {
+            Auxiliarymethods.Instance.ReadData();
+            datalengthLabel1.Text = Auxiliarymethods.Instance.dataList_1.Count.ToString();
+            datalengthLabel2.Text = Auxiliarymethods.Instance.dataList_2.Count.ToString();
         }
                 
 
@@ -41,6 +72,25 @@ namespace Auxiliary_tool
         {
             ReleaseCapture();
             SendMessage(this.Handle, 0x112, (IntPtr)0xf012, (IntPtr)0);
+        }
+
+        private void randomPanelswitchButton3_Click(object sender, EventArgs e)
+        {
+            // overview_pane.Visible = false;
+
+            //Dataview_panel
+
+            Dataview_panel.Visible = false;
+            ChartView_Panel.Visible = false;
+            PanelContainer.Controls["RandomPanle"].Visible = true;
+            //PanelContainer.Controls["RandomPanle"].BringToFront();
+        }
+
+        private void guna2Button1_Click_1(object sender, EventArgs e)
+        {
+            Dataview_panel.Visible = true;
+            ChartView_Panel.Visible = true;
+            PanelContainer.Controls["RandomPanle"].Visible=false;   
         }
     }
 }
