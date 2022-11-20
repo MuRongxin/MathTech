@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Auxiliary_tool
 {
@@ -59,5 +60,75 @@ namespace Auxiliary_tool
             int temp = random.Next(data.Count);
             return data[temp];
         }
+
+       
+        public bool isChangeColor = true;
+        int isChangetimer = 0;
+        public void ChangepanelColor(Panel panel, Color falColor,out Color resColor)
+        {
+            if (isChangeColor)
+            {
+                falColor = ThemeColor.RandomColor();                
+                isChangeColor = false;
+            }
+            isChangetimer++;
+            //Test_out.Text = isChangetimer.ToString();
+            if (isChangetimer >= 500)
+            {
+                isChangetimer = 0;
+                isChangeColor = true;
+            }
+            Color resoult_1;
+            SmoothChangeColor(panel.BackColor, falColor, out resoult_1);
+            panel.BackColor = resoult_1;
+
+            resColor = falColor;
+        }
+
+        private void SmoothChangeColor(Color oriColor, Color targetColor, out Color resoultColor)
+        {
+            Color tempColor = targetColor;
+
+            if (targetColor.R > oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp++;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.R < oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp--;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.G > oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R, temp, oriColor.B);
+            }
+            if (targetColor.G < oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, temp, oriColor.B);
+            }
+            if (targetColor.B > oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G, temp);
+            }
+            if (targetColor.B < oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G, temp);
+            }
+
+            resoultColor = tempColor;
+
+        }
+
     }
 }

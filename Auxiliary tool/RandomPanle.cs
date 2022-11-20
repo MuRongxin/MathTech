@@ -12,6 +12,7 @@ namespace Auxiliary_tool
 {
     public partial class RandomPanle : UserControl
     {
+        private int classStatus = 1;
         public RandomPanle()
         {
             InitializeComponent();
@@ -19,15 +20,60 @@ namespace Auxiliary_tool
 
         private void RandomPanle_Load(object sender, EventArgs e)
         {
-            
+            //randomTimer.Start();
+            //changeColortimer.Start();
         }
 
-        Random random = new Random();   
+        Color color1, color2, color3;
         private void randomTimer_Tick(object sender, EventArgs e)
         {
-           int temp=random.Next(Auxiliarymethods.Instance.dataList_1.Count);
-            resoultLabel.Text = Auxiliarymethods.Instance.dataList_1[temp];
+            if (classStatus == 1)
+                resoultLabel.Text = Auxiliarymethods.Instance.GetRandomResoult(Auxiliarymethods.Instance.dataList_1);
+            else
+                resoultLabel.Text = Auxiliarymethods.Instance.GetRandomResoult(Auxiliarymethods.Instance.dataList_2);
+
+           
         }
 
+        private void changeColortimer_Tick(object sender, EventArgs e)
+        {
+            Auxiliarymethods.Instance.ChangepanelColor(panel3, color1, out color1);
+            Auxiliarymethods.Instance.ChangepanelColor(panel2, color2, out color2);
+            Auxiliarymethods.Instance.ChangepanelColor(panel5, color3, out color3);
+        }
+
+        private void startRandomButton_Click(object sender, EventArgs e)
+        {
+            if (startRandomButton.Text == "Start Random")
+            {
+                startRandomButton.Text = "Stop Random";
+                randomTimer.Start();
+                changeColortimer.Start();
+            }
+            else
+            {
+                startRandomButton.Text = "Start Random";
+                randomTimer.Stop();
+                changeColortimer.Stop();
+            }
+
+            if (startRandomButton.Text == "Start Random")
+            {
+                if (classStatus == 1)
+                    Auxiliarymethods.Instance.dataList_1.Remove(resoultLabel.Text);
+                else
+                    Auxiliarymethods.Instance.dataList_2.Remove(resoultLabel.Text);
+            }
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            classStatus = 1;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            classStatus = 2;
+        }
     }
 }

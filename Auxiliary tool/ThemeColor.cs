@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Auxiliary_tools
+namespace Auxiliary_tool
 {
     public static class ThemeColor
     {

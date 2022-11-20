@@ -83,7 +83,7 @@ namespace Auxiliary_tool
             Dataview_panel.Visible = false;
             ChartView_Panel.Visible = false;
             PanelContainer.Controls["RandomPanle"].Visible = true;
-            //PanelContainer.Controls["RandomPanle"].BringToFront();
+            PanelContainer.Controls["RandomPanle"].BringToFront();
         }
 
         private void guna2Button1_Click_1(object sender, EventArgs e)
