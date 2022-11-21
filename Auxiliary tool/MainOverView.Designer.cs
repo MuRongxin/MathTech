@@ -83,6 +83,7 @@
             this.average_CartesianChart.Size = new System.Drawing.Size(654, 222);
             this.average_CartesianChart.TabIndex = 0;
             this.average_CartesianChart.Text = "cartesianChart1";
+            this.average_CartesianChart.ChildChanged += new System.EventHandler<System.Windows.Forms.Integration.ChildChangedEventArgs>(this.average_CartesianChart_ChildChanged);
             // 
             // panel6
             // 

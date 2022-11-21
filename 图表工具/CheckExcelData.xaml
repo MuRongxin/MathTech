@@ -1,0 +1,13 @@
+﻿<Window x:Class="图表工具.CheckExcelData"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:图表工具"
+        mc:Ignorable="d"
+        Title="CheckExcelData" Height="354.717" Width="427.358">
+    <Grid>
+        <Button Content="转换" HorizontalAlignment="Left" Margin="89,53,0,0" VerticalAlignment="Top" Width="184" Height="49" Click="Button_Click"/>
+
+    </Grid>
+</Window>

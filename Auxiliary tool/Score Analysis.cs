@@ -7,22 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LiveCharts;
+using LiveCharts.Defaults;
+using LiveCharts.Wpf;
+
 
 namespace Auxiliary_tool
 {
-    public partial class MainOverView : UserControl
+    public partial class Score_Analysis : UserControl
     {
-        public MainOverView()
+        public Score_Analysis()
         {
             InitializeComponent();
         }
 
-        private void MainOverView_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void average_CartesianChart_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        private void Score_Analysis_Load(object sender, EventArgs e)
         {
 
         }

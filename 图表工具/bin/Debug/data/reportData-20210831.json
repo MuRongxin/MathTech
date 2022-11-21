@@ -1,0 +1,56 @@
+[
+  {
+    "Id": "1e3fc552-f64c-41a3-ac08-11e11793cbf0",
+    "ReportDate": "2020-01-04T00:00:00",
+    "Columns": [
+      {
+        "ColumnName": "基金净多头",
+        "ColumnValue": 288790.0
+      },
+      {
+        "ColumnName": "布伦特原油价格",
+        "ColumnValue": 56.36
+      },
+      {
+        "ColumnName": "成交量",
+        "ColumnValue": 185.6
+      }
+    ]
+  },
+  {
+    "Id": "3167b6e0-7191-45b6-b974-94b053c87856",
+    "ReportDate": "2021-01-11T00:00:00",
+    "Columns": [
+      {
+        "ColumnName": "基金净多头",
+        "ColumnValue": 314832.0
+      },
+      {
+        "ColumnName": "布伦特原油价格",
+        "ColumnValue": 55.0
+      },
+      {
+        "ColumnName": "成交量",
+        "ColumnValue": 135.7
+      }
+    ]
+  },
+  {
+    "Id": "7db4ed3c-7593-4b89-a478-e488e272a57a",
+    "ReportDate": "2021-01-18T00:00:00",
+    "Columns": [
+      {
+        "ColumnName": "基金净多头",
+        "ColumnValue": 309361.0
+      },
+      {
+        "ColumnName": "布伦特原油价格",
+        "ColumnValue": 55.21
+      },
+      {
+        "ColumnName": "成交量",
+        "ColumnValue": 123.9
+      }
+    ]
+  }
+]
