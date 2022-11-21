@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace Auxiliary_tool
 {
@@ -129,6 +130,54 @@ namespace Auxiliary_tool
             resoultColor = tempColor;
 
         }
+
+        private void ReadDataXml()
+        {
+            string number = "";
+            string name = "";
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(".\\data.xml");
+
+            XmlNodeList xmlNodeList = xmlDocument.SelectSingleNode("root").ChildNodes;
+            // List<string> data = new List<string>();
+            foreach (XmlNode childNode in xmlNodeList)
+            {
+                XmlElement childElement = (XmlElement)childNode;
+                //if (xmlElement.GetAttributeNode("id") == null)
+                //    continue;
+
+                //int id = Convert.ToInt32(xmlElement.GetAttributeNode("id"));
+
+                foreach (XmlNode cchildNode in childNode.ChildNodes)
+                {
+                    XmlElement element = (XmlElement)cchildNode;
+                    switch (element.Name)
+                    {
+                        case "number":
+                            number = element.InnerText;
+                            break;
+                        case "name":
+                            name = element.InnerText;
+                            break;
+                        default:
+                            break;
+                    }
+                    //number = element.Item(0).InnerText;
+                    //name=element.Item(1).InnerText;
+
+
+                }
+                //data.Add(number + "_" + name);
+            }
+            //string temp = "";
+            //foreach (var item in data)
+            //{
+            //    temp += item;
+            //}
+            //temp_label.Text=temp;
+
+        }
+
 
     }
 }
