@@ -134,29 +134,29 @@ namespace Auxiliary_tool
 
         }
 
-        private void ReadDataXml()
+        private void ReadDataXml(string path)
         {
             string number = "";
             string name = "";
             XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(".\\data.xml");
+            xmlDocument.Load(path);
 
             XmlNodeList xmlNodeList = xmlDocument.SelectSingleNode("root").ChildNodes;
             // List<string> data = new List<string>();
             foreach (XmlNode childNode in xmlNodeList)
             {
                 XmlElement childElement = (XmlElement)childNode;
-                //if (xmlElement.GetAttributeNode("id") == null)
-                //    continue;
+                if (childElement.GetAttributeNode("id") == null)
+                    continue;
 
-                //int id = Convert.ToInt32(xmlElement.GetAttributeNode("id"));
+                int id = Convert.ToInt32(childElement.GetAttributeNode("id").Value);
 
                 foreach (XmlNode cchildNode in childNode.ChildNodes)
                 {
                     XmlElement element = (XmlElement)cchildNode;
                     switch (element.Name)
                     {
-                        case "number":
+                        case "callCount":
                             number = element.InnerText;
                             break;
                         case "name":
@@ -165,16 +165,118 @@ namespace Auxiliary_tool
                         default:
                             break;
                     }
-                    //number = element.Item(0).InnerText;
-                    //name=element.Item(1).InnerText;
-
-
                 }
-                //data.Add(number + "_" + name);
+                
             }           
 
         }
-
         
+        /// <summary>
+        /// 创建XML文件
+        /// </summary>
+        public void CreatXMLFile(string path, string[] dataArray)
+        {
+
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlDeclaration xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "");
+            xmlDocument.AppendChild(xmlDeclaration);
+
+
+            List<string> oriData = dataArray.ToList<string>();
+
+            //创建根节点
+            XmlElement root = xmlDocument.CreateElement("root");
+
+            foreach (var item in oriData)
+            {
+                string[] strtemp = item.Split(' ');
+                //创建二级子节点
+                XmlElement student = xmlDocument.CreateElement("student");
+                student.SetAttribute("id", strtemp[0]);
+                //创建三级子节点
+                XmlElement name = xmlDocument.CreateElement("name");
+                name.InnerText = strtemp[1];
+
+                XmlElement callCount = xmlDocument.CreateElement("callCount");
+                callCount.InnerText = "0";
+
+                //设置节点父子关系
+                root.AppendChild(student);
+                student.AppendChild(name);
+                student.AppendChild(callCount);
+            }
+            //添加根节点至xml文档
+            xmlDocument.AppendChild(root);
+            //创建
+            xmlDocument.Save(path);
+        }
+
+        public void UpdataXmlData(string path)
+        {
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
+            XmlNode root = xmlDocument.SelectSingleNode("root");
+            XmlNodeList xmlNodeList = xmlDocument.SelectSingleNode("root").ChildNodes;
+
+            //修改节点数值
+            foreach (XmlNode childNode in xmlNodeList)
+            {
+                XmlElement childElement = (XmlElement)childNode;
+                if (childElement.GetAttributeNode("id") == null)
+                    continue;
+
+                int id = Convert.ToInt32(childElement.GetAttributeNode("id").Value);
+                if (id == 3)
+                {
+                    foreach (XmlNode cchildNode in childNode.ChildNodes)
+                    {
+                        XmlElement element = (XmlElement)cchildNode;
+                        switch (element.Name)
+                        {
+                            case "callCount":
+                                element.InnerText = "20";
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                //移除节点
+                if (id == 1002311)
+                    root.RemoveChild(childNode);
+            }
+
+            xmlDocument.Save(path);
+
+        }
+        /// <summary>
+        /// 添加XML节点
+        /// </summary>
+        public void AppendXMLChild(string path)
+        {
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
+            XmlNode root = xmlDocument.SelectSingleNode("root");
+            XmlNodeList xmlNodeList = xmlDocument.SelectSingleNode("root").ChildNodes;
+
+
+            //创建一个新的节点
+            XmlElement student = xmlDocument.CreateElement("student");
+            student.SetAttribute("id", "1002311");
+
+            XmlElement name = xmlDocument.CreateElement("name");
+            name.InnerText = "竹下";
+            XmlElement callCount = xmlDocument.CreateElement("callCount");
+            callCount.InnerText = "111";
+
+            //设置父子关系
+            student.AppendChild(name);
+            student.AppendChild(callCount);
+
+            //放入新节点
+            root.AppendChild(student);
+
+            xmlDocument.Save("./data.xml");
+        }
     }
 }
