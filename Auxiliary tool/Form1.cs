@@ -97,6 +97,7 @@ namespace Auxiliary_tool
             Dataview_panel.Visible = false;
             ChartView_Panel.Visible = false;
             PanelContainer.Controls["RandomPanle"].Visible = true;
+            PanelContainer.Controls["Score_Analysis_Panle"].Visible = false;
             PanelContainer.Controls["RandomPanle"].BringToFront();
         }
 
@@ -109,7 +110,8 @@ namespace Auxiliary_tool
         {
             Dataview_panel.Visible = true; 
             ChartView_Panel.Visible = true;
-            PanelContainer.Controls["RandomPanle"].Visible=false;   
+            PanelContainer.Controls["RandomPanle"].Visible=false;
+            PanelContainer.Controls["Score_Analysis_Panle"].Visible = false;
         }
         /// <summary>
         /// 切换成绩分析界面
