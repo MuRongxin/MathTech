@@ -12,7 +12,9 @@ namespace Auxiliary_tool
         public string Name { get; set; }
         public int CallCount { get; set; }
 
-        public StudentData(int id,string name,int callCount)
+        public List<float> Score  { get; set; }
+
+        public StudentData(int id, string name, int callCount)
         {
             ID = id;
             Name = name;

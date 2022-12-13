@@ -10,6 +10,7 @@ using System.Xml;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
+using ExcelDataReader;
 
 namespace Auxiliary_tool
 {
