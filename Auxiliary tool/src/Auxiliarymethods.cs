@@ -19,6 +19,8 @@ namespace Auxiliary_tool
         public List<string> dataList_1 = new List<string>();
         public List<string> dataList_2 = new List<string>();
 
+        public List<StudentData> studentDatas= new List<StudentData>();
+
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
         {
@@ -136,7 +138,7 @@ namespace Auxiliary_tool
 
         private void ReadDataXml(string path)
         {
-            string number = "";
+            string callCount = "";
             string name = "";
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.Load(path);
@@ -157,7 +159,7 @@ namespace Auxiliary_tool
                     switch (element.Name)
                     {
                         case "callCount":
-                            number = element.InnerText;
+                            callCount = element.InnerText;
                             break;
                         case "name":
                             name = element.InnerText;
@@ -166,7 +168,7 @@ namespace Auxiliary_tool
                             break;
                     }
                 }
-                
+                studentDatas.Add(new StudentData(id, name, int.Parse(callCount)));
             }           
 
         }
@@ -262,7 +264,7 @@ namespace Auxiliary_tool
 
             //创建一个新的节点
             XmlElement student = xmlDocument.CreateElement("student");
-            student.SetAttribute("id", "1002311");
+            student.SetAttribute("id", "112233");
 
             XmlElement name = xmlDocument.CreateElement("name");
             name.InnerText = "竹下";

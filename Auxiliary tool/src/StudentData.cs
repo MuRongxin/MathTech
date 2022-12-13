@@ -8,13 +8,15 @@ namespace Auxiliary_tool
 {
     public class StudentData
     {
-        public int DataX { get; set; }
-        public int DataY { get; set; }
-        public int DataZ { get; set; }
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public int CallCount { get; set; }
 
-        public StudentData()
+        public StudentData(int id,string name,int callCount)
         {
-
+            ID = id;
+            Name = name;
+            CallCount = callCount;
         }
 
     }
