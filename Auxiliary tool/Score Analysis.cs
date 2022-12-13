@@ -49,9 +49,14 @@ namespace Auxiliary_tool
             cartesianChart.Series = seriesCollection;
         }
 
-        private void DisplayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
              displayDataLenthComboBox.SelectedItem.ToString();
+        }
+
+        private void scoreFluctuationComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
