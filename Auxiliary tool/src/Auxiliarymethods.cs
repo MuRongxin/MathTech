@@ -171,16 +171,10 @@ namespace Auxiliary_tool
 
                 }
                 //data.Add(number + "_" + name);
-            }
-            //string temp = "";
-            //foreach (var item in data)
-            //{
-            //    temp += item;
-            //}
-            //temp_label.Text=temp;
+            }           
 
         }
 
-
+        
     }
 }

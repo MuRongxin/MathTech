@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Auxiliary_tool
 {
-    public class Data
+    public class StudentData
     {
         public int DataX { get; set; }
         public int DataY { get; set; }
         public int DataZ { get; set; }
 
-        public Data()
+        public StudentData()
         {
 
         }
