@@ -22,3 +22,5 @@ C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.Wpf.pdb
 C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\LiveCharts.Wpf.xml
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.MainOverView.resources
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.RandomPanle.resources
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\HZH_Controls.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.Score_Analysis_Panle.resources

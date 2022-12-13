@@ -58,8 +58,14 @@ namespace Auxiliary_tool
             _obj = this;
 
             RandomPanle randomPanle = new RandomPanle();
-            randomPanle.Dock = DockStyle.Fill; 
+            randomPanle.Dock = DockStyle.Fill;
+
+            Score_Analysis_Panle score_Analysis = new Score_Analysis_Panle();
+            score_Analysis.Dock = DockStyle.Fill;
+
             PanelContainer.Controls.Add(randomPanle);
+            PanelContainer.Controls.Add(score_Analysis);
+
             rushTimer.Start();
             InitData();
         }
@@ -77,7 +83,12 @@ namespace Auxiliary_tool
             SendMessage(this.Handle, 0x112, (IntPtr)0xf012, (IntPtr)0);
         }
 
-        private void randomPanelswitchButton3_Click(object sender, EventArgs e)
+        /// <summary>
+        /// 切换随机界面
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void switchRandomPanel_Click(object sender, EventArgs e)
         {
             // overview_pane.Visible = false;
 
@@ -89,11 +100,29 @@ namespace Auxiliary_tool
             PanelContainer.Controls["RandomPanle"].BringToFront();
         }
 
-        private void guna2Button1_Click_1(object sender, EventArgs e)
+        /// <summary>
+        /// 切换主界面
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void switchMainpanelButton_Click_1(object sender, EventArgs e)
         {
             Dataview_panel.Visible = true; 
             ChartView_Panel.Visible = true;
             PanelContainer.Controls["RandomPanle"].Visible=false;   
+        }
+        /// <summary>
+        /// 切换成绩分析界面
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void switchScoreAnalysePanelButton2_Click(object sender, EventArgs e)
+        {
+            Dataview_panel.Visible = false;
+            ChartView_Panel.Visible = false;
+            PanelContainer.Controls["Score_Analysis_Panle"].Visible = true;
+            PanelContainer.Controls["Score_Analysis_Panle"].BringToFront();
+            
         }
 
         private void InitChart()
@@ -135,5 +164,12 @@ namespace Auxiliary_tool
         {
             this.WindowState = FormWindowState.Minimized;
         }
+
+        private void Dataview_panel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+       
     }
 }
