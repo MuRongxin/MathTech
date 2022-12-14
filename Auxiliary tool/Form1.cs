@@ -169,7 +169,7 @@ namespace Auxiliary_tool
 
         private void Dataview_panel_Paint(object sender, PaintEventArgs e)
         {
-
+           
         }
 
        

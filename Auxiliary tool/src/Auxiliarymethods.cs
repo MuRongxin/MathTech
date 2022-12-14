@@ -11,6 +11,8 @@ using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
 using ExcelDataReader;
+using System.Data;
+using System.Data.OleDb;
 
 namespace Auxiliary_tool
 {
@@ -213,7 +215,10 @@ namespace Auxiliary_tool
             //创建
             xmlDocument.Save(path);
         }
-
+        /// <summary>
+        /// 更新节点数据
+        /// </summary>
+        /// <param name="path"></param>
         public void UpdataXmlData(string path)
         {
             XmlDocument xmlDocument = new XmlDocument();
@@ -280,6 +285,47 @@ namespace Auxiliary_tool
             root.AppendChild(student);
 
             xmlDocument.Save("./data.xml");
+        }
+
+        public DataTable ReadExcel(string path)
+        {
+            using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read))
+            {
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    //Console.WriteLine("文件中表的数量："+reader.ResultsCount);
+                    int formCount = reader.ResultsCount;
+                    //for (int i = 0; i < formCount; i++)
+                    {
+                        Console.WriteLine("当前表格名称: " + reader.Name);
+                        Console.WriteLine("当前表格列数: " + reader.FieldCount);
+                        Console.WriteLine("当前表格行数: " + reader.RowCount);
+
+                        ///读取日期（第一行）
+                        List<string> date = new List<string>();
+                        reader.Read();//Read()一次就是读取一行；
+                        for (int i = 1; i < reader.FieldCount; i++)
+                        {
+                            date.Add(reader.GetValue(i).ToString());
+                        }
+
+                        ///读取具体数据
+                        while (reader.Read())//按行读取,一个单元格占一位；
+                        {
+                            List<string> score = new List<string>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                score.Add(reader.GetValue(i).ToString());
+                                Console.Write(reader.GetValue(i) + "  ");
+                            }
+                            Console.WriteLine();
+                        }
+                    }
+
+                }
+            }
+
+            return null;
         }
     }
 }
