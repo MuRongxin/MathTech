@@ -141,7 +141,7 @@ namespace Auxiliary_tool
                     Values =new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(1,10),
-                        new ObservablePoint(3,2),
+                        new ObservablePoint(3,2.1),
                          new ObservablePoint(5,5),
                         new ObservablePoint(10,8),
                     },
@@ -152,9 +152,9 @@ namespace Auxiliary_tool
                     Values =new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(1,5),
-                        new ObservablePoint(3,6),
-                         new ObservablePoint(5,4),
-                        new ObservablePoint(10,6),
+                        new ObservablePoint(2,6),
+                         new ObservablePoint(3,4),
+                        new ObservablePoint(8,6),
                     },
                     PointGeometrySize=11              
                  

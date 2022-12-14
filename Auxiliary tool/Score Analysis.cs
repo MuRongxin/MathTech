@@ -44,7 +44,7 @@ namespace Auxiliary_tool
 
         }
 
-        Dictionary<string, List<float>> scoreDic = new Dictionary<string, List<float>>();
+        Dictionary<string, List<double>> scoreDic = new Dictionary<string, List<double>>();
 
         private void DrawChart(List<StudentData> studentDatas)
         {
@@ -53,7 +53,7 @@ namespace Auxiliary_tool
 
             foreach (var item in studentDatas)
             {
-                List<float> scoreList = new List<float>();
+                List<double> scoreList = new List<double>();
                 string name = item.Name;
                 //foreach (var dicVal in item.scoreDic)
                 //{
@@ -64,15 +64,16 @@ namespace Auxiliary_tool
                 //}
                 foreach (var dicVal in item.scoreArr)
                 {
-                    float res = float.Parse(dicVal[1]);
+                    double res = double.Parse(dicVal[1]);
                     scoreList.Add(res);                   
-                }               
+                }
 
-                // scoreDic.Add(name, scoreList);
-                //seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<float>(scoreList), DataLabels = false });
+                scoreDic.Add(name, scoreList);
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
             }
-            List<float> scoreList_1 = new List<float>() { 0.11f, 0.21f, 0.41f, 0.21f, 0.43f, 1.56f, 1.76f, 0.01f, 0.12f, 0.45f, 1f,};
-            seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<float>(scoreList_1), DataLabels = false });
+            //List<double> scoreList_1 = new List<double>() { 0.11, 0.21, 0.41, 0.21, 0.43, 0.56, 1.76, 0.01, 0.12, 0.45, 1};
+            //seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<double>(scoreList_1), DataLabels = false });
+            
             cartesianChart.Series = seriesCollection;
         }
 

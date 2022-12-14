@@ -326,7 +326,7 @@ namespace Auxiliary_tool
                             List<string> score = new List<string>();
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
-                                if (i > 0)
+                                if (i > 0)//去除多余的小数位数；
                                     score.Add(float.Parse(reader.GetValue(i).ToString()).ToString("#0.00"));
                                 else
                                     score.Add(reader.GetValue(i).ToString());
