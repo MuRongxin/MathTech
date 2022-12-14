@@ -18,11 +18,11 @@ namespace Auxiliary_tool
 {
     class Auxiliarymethods
     {
-       
+
         public List<string> dataList_1 = new List<string>();
         public List<string> dataList_2 = new List<string>();
 
-        public List<StudentData> studentDatas= new List<StudentData>();
+        public List<StudentData> studentDatas = new List<StudentData>();
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -33,13 +33,13 @@ namespace Auxiliary_tool
                     _obj = new Auxiliarymethods();
                 return _obj;
             }
-        }       
+        }
         public string Getstring()
         {
             return "1234";
         }
 
-        
+
         static List<string> colors = new List<string>() { };
         static Random random = new Random();
         public static Color RandomColor()
@@ -70,14 +70,14 @@ namespace Auxiliary_tool
             return data[temp];
         }
 
-       
+
         public bool isChangeColor = true;
         int isChangetimer = 0;
-        public void ChangepanelColor(Panel panel, Color falColor,out Color resColor)
+        public void ChangepanelColor(Panel panel, Color falColor, out Color resColor)
         {
             if (isChangeColor)
             {
-                falColor = ThemeColor.RandomColor();                
+                falColor = ThemeColor.RandomColor();
                 isChangeColor = false;
             }
             isChangetimer++;
@@ -172,10 +172,10 @@ namespace Auxiliary_tool
                     }
                 }
                 studentDatas.Add(new StudentData(id, name, int.Parse(callCount)));
-            }           
+            }
 
         }
-        
+
         /// <summary>
         /// 创建XML文件
         /// </summary>
@@ -286,22 +286,23 @@ namespace Auxiliary_tool
 
             xmlDocument.Save("./data.xml");
         }
-
-        public DataTable ReadExcel(string path)
+        /// <summary>
+        /// Excel 读取，务必在xml读取之后调用；
+        /// </summary>
+        /// <param name="path"></param>
+        public void ReadExcel(string path)
         {
             using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read))
             {
                 using (var reader = ExcelReaderFactory.CreateReader(stream))
                 {
-                    //Console.WriteLine("文件中表的数量："+reader.ResultsCount);
-                    int formCount = reader.ResultsCount;
-                    //for (int i = 0; i < formCount; i++)
+                    reader.NextResult();//只读取第二个表的数据
+                    int formCount = reader.ResultsCount;//文件中表的数量
+                    //for (int i = 0; i < formCount; i++)//如果要读取所有的表，则启动循环；
                     {
-                        Console.WriteLine("当前表格名称: " + reader.Name);
-                        Console.WriteLine("当前表格列数: " + reader.FieldCount);
-                        Console.WriteLine("当前表格行数: " + reader.RowCount);
-
-                        int colCount = reader.FieldCount;//当前表格列数;    
+                        string formName = reader.Name;//当前表格名称;
+                        int colCount = reader.FieldCount;//当前表格列数;     
+                        int rowCount = reader.RowCount;//当前表格行数;
 
                         ///读取日期（第一行）
                         List<string> date = new List<string>();
@@ -311,6 +312,10 @@ namespace Auxiliary_tool
                             date.Add(reader.GetValue(i).ToString());
                         }
 
+                        /// 通过 AsDataSet 操作数据;
+                        //var res = reader.AsDataSet();
+                        //string temp = res.Tables[1].Rows[1][0].ToString();
+
                         ///读取具体数据
                         while (reader.Read())//按行读取,一个单元格占一位；
                         {
@@ -318,16 +323,28 @@ namespace Auxiliary_tool
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
                                 score.Add(reader.GetValue(i).ToString());
-                                Console.Write(reader.GetValue(i) + "  ");
                             }
-                            Console.WriteLine();
+
+                            ///读取完一行就处理一行的数据；
+                            foreach (var item in studentDatas)
+                            {
+                                if (item.Name.Replace(" ", "") == score[0])
+                                {
+                                    for (int z = 0; z < date.Count; z++)//因为去除了第一位的缘故，date（日期）比score少一位；
+                                    {
+                                        item.scoreDic.Add(new Dictionary<string, string>() { { date[z], score[z + 1] } });
+                                    }
+
+                                }
+                            }
                         }
+                        ///读取下一张表;(如果需要的话)
+                        reader.NextResult();
                     }
-
                 }
-            }
 
-            return null;
+            }        
+           
         }
     }
 }

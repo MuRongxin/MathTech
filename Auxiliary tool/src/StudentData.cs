@@ -14,6 +14,9 @@ namespace Auxiliary_tool
 
         public List<float> Score  { get; set; }
 
+        public List<Dictionary<string, string>> scoreDic = new List<Dictionary<string, string>>();
+
+
         public StudentData(int id, string name, int callCount)
         {
             ID = id;
