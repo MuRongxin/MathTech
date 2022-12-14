@@ -40,29 +40,54 @@ namespace Auxiliary_tool
 
         private void charttestButton_Click(object sender, EventArgs e)
         {
+            DrawChart(Auxiliarymethods.Instance.studentDatas);
+
+        }
+
+        Dictionary<string, List<float>> scoreDic = new Dictionary<string, List<float>>();
+
+        private void DrawChart(List<StudentData> studentDatas)
+        {
             cartesianChart.Series.Clear();
-            SeriesCollection seriesCollection = new SeriesCollection();    
-                
-            foreach (var item in Auxiliarymethods.Instance.studentDatas)
+            SeriesCollection seriesCollection = new SeriesCollection();
+
+            foreach (var item in studentDatas)
             {
                 List<float> scoreList = new List<float>();
                 string name = item.Name;
-                foreach (var dicVal in item.scoreDic)
+                //foreach (var dicVal in item.scoreDic)
+                //{
+                //    foreach (var score in dicVal)
+                //    {
+                //        scoreList.Add(float.Parse(score.Value.ToString()));
+                //    }
+                //}
+                foreach (var dicVal in item.scoreArr)
                 {
-                    foreach (var score in dicVal)
-                    {
-                        scoreList.Add(float.Parse(score.Value.ToString()));
-                    }
-                }
-                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<float>(scoreList), DataLabels = false });
-                
+                    float res = float.Parse(dicVal[1]);
+                    scoreList.Add(res);                   
+                }               
+
+                // scoreDic.Add(name, scoreList);
+                //seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<float>(scoreList), DataLabels = false });
             }
-            //List<float> temp = new List<float>() { 2, 5, 7, 3, 9, 1, 2, 8, 2, 10 };
-            //seriesCollection.Add(new LineSeries() { Title = "绫小路", DataLabels = true, Values = new ChartValues<float>(temp) });
-            
-            
+            List<float> scoreList_1 = new List<float>() { 0.11f, 0.21f, 0.41f, 0.21f, 0.43f, 1.56f, 1.76f, 0.01f, 0.12f, 0.45f, 1f,};
+            seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<float>(scoreList_1), DataLabels = false });
             cartesianChart.Series = seriesCollection;
-        } 
+        }
+
+        private void ReDrawChart(int displayLenth)
+        {
+            cartesianChart.Series.Clear();
+            SeriesCollection seriesCollection = new SeriesCollection();
+
+            cartesianChart.Series = seriesCollection;
+
+            for (int i = 0; i < displayLenth; i++)
+            {
+
+            }
+        }
 
         private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {

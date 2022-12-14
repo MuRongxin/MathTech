@@ -326,8 +326,12 @@ namespace Auxiliary_tool
                             List<string> score = new List<string>();
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
-                                score.Add(reader.GetValue(i).ToString());
+                                if (i > 0)
+                                    score.Add(float.Parse(reader.GetValue(i).ToString()).ToString("#0.00"));
+                                else
+                                    score.Add(reader.GetValue(i).ToString());
                             }
+
 
                             ///读取完一行就处理一行的数据；
                             foreach (var item in studentDatas)
@@ -335,8 +339,10 @@ namespace Auxiliary_tool
                                 if (item.Name.Replace(" ", "") == score[0])
                                 {
                                     for (int z = 0; z < date.Count; z++)//因为去除了第一位的缘故，date（日期）比score少一位；
-                                    {
+                                    {                                      
+
                                         item.scoreDic.Add(new Dictionary<string, string>() { { date[z], score[z + 1] } });
+                                        item.scoreArr.Add(new string[2] { date[z], score[z + 1] });
                                     }
 
                                 }
