@@ -301,6 +301,8 @@ namespace Auxiliary_tool
                         Console.WriteLine("当前表格列数: " + reader.FieldCount);
                         Console.WriteLine("当前表格行数: " + reader.RowCount);
 
+                        int colCount = reader.FieldCount;//当前表格列数;    
+
                         ///读取日期（第一行）
                         List<string> date = new List<string>();
                         reader.Read();//Read()一次就是读取一行；
