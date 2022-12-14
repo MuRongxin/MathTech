@@ -41,11 +41,26 @@ namespace Auxiliary_tool
         private void charttestButton_Click(object sender, EventArgs e)
         {
             cartesianChart.Series.Clear();
-            SeriesCollection seriesCollection = new SeriesCollection();
-            List<int> temp = new List<int>() { 1, 2, 10, 3, 4, 4, 5, 8, 1, 0 };
-            List<int> temp2 = new List<int>() { 2, 5, 7, 3, 9, 1, 2, 8, 2, 10 };
-            seriesCollection.Add(new LineSeries() { Title = "绫小路", DataLabels = true, Values = new ChartValues<int>(temp) });
-            seriesCollection.Add(new LineSeries() { Title = "砂糖", Values = new ChartValues<int>(temp2), DataLabels = true });
+            SeriesCollection seriesCollection = new SeriesCollection();        
+
+                
+            foreach (var item in Auxiliarymethods.Instance.studentDatas)
+            {
+                List<float> scoreList = new List<float>();
+                string name = item.Name;
+                foreach (var dicVal in item.scoreDic)
+                {
+                    foreach (var score in dicVal)
+                    {
+                        scoreList.Add(float.Parse(score.Value.ToString()));
+                    }
+                }
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<float>(scoreList), DataLabels = false });
+                
+            }
+            //List<float> temp = new List<float>() { 2, 5, 7, 3, 9, 1, 2, 8, 2, 10 };
+            //seriesCollection.Add(new LineSeries() { Title = "绫小路", DataLabels = true, Values = new ChartValues<float>(temp) });
+            //seriesCollection.Add(new LineSeries() { Title = "砂糖", Values = new ChartValues<float>(temp), DataLabels = true });
             cartesianChart.Series = seriesCollection;
         }
 

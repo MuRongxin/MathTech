@@ -139,7 +139,11 @@ namespace Auxiliary_tool
 
         }
 
-        private void ReadDataXml(string path)
+        /// <summary>
+        /// ReadDataXml
+        /// </summary>
+        /// <param name="path"></param>
+        public void ReadDataXml(string path)
         {
             string callCount = "";
             string name = "";
@@ -284,7 +288,7 @@ namespace Auxiliary_tool
             //放入新节点
             root.AppendChild(student);
 
-            xmlDocument.Save("./data.xml");
+            xmlDocument.Save(path);
         }
         /// <summary>
         /// Excel 读取，务必在xml读取之后调用；

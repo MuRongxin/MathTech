@@ -24,3 +24,9 @@ C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.MainOverView.res
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.RandomPanle.resources
 C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\HZH_Controls.dll
 C:\Users\PC\Downloads\s\Auxiliary tool\obj\Debug\Auxiliary_tool.Score_Analysis_Panle.resources
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.DataSet.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.dll
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.xml
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.DataSet.pdb
+C:\Users\PC\Downloads\s\Auxiliary tool\bin\Debug\ExcelDataReader.DataSet.xml

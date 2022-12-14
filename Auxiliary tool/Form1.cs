@@ -72,8 +72,13 @@ namespace Auxiliary_tool
         private void InitData()
         {
             Auxiliarymethods.Instance.ReadData();
-            datalengthLabel1.Text = Auxiliarymethods.Instance.dataList_1.Count.ToString();
+
+            Auxiliarymethods.Instance.ReadDataXml("./data43.xml");
+            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx");
+
+            datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas.Count.ToString();
             datalengthLabel2.Text = Auxiliarymethods.Instance.dataList_2.Count.ToString();
+
         }
                 
 
