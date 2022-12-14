@@ -41,8 +41,7 @@ namespace Auxiliary_tool
         private void charttestButton_Click(object sender, EventArgs e)
         {
             cartesianChart.Series.Clear();
-            SeriesCollection seriesCollection = new SeriesCollection();        
-
+            SeriesCollection seriesCollection = new SeriesCollection();    
                 
             foreach (var item in Auxiliarymethods.Instance.studentDatas)
             {
