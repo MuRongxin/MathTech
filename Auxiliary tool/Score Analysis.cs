@@ -59,9 +59,13 @@ namespace Auxiliary_tool
             }
             //List<float> temp = new List<float>() { 2, 5, 7, 3, 9, 1, 2, 8, 2, 10 };
             //seriesCollection.Add(new LineSeries() { Title = "绫小路", DataLabels = true, Values = new ChartValues<float>(temp) });
-            //seriesCollection.Add(new LineSeries() { Title = "砂糖", Values = new ChartValues<float>(temp), DataLabels = true });
+            
+            
             cartesianChart.Series = seriesCollection;
         }
+
+        
+
 
         private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
