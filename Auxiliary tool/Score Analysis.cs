@@ -62,10 +62,7 @@ namespace Auxiliary_tool
             
             
             cartesianChart.Series = seriesCollection;
-        }
-
-        
-
+        } 
 
         private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
