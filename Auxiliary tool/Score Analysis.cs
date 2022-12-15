@@ -23,24 +23,16 @@ namespace Auxiliary_tool
 
         private void Score_Analysis_Load(object sender, EventArgs e)
         {
-            
-            cartesianChart.AxisX.Add(new Axis
-            {
-                Title = "Examination",
-                Labels = new[] { "2022/12/09", "2022/12/10", "2022/12/11", "2022/12/12", "2022/12/13" }
-            });
+            displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
+                     
+            SetChartFormat();
 
-            cartesianChart.AxisY.Add(new Axis
-            {
-                Title = "Percentage of Score",
-               //LabelFormatter = value => value.ToString("C"),
-            });
-            cartesianChart.LegendLocation=LegendLocation.Right;
+            //DrawChart(Auxiliarymethods.Instance.studentDatas_1);
         }
 
         private void charttestButton_Click(object sender, EventArgs e)
         {
-            DrawChart(Auxiliarymethods.Instance.studentDatas);
+            DrawChart(Auxiliarymethods.Instance.studentDatas_1);
 
         }
 
@@ -55,18 +47,19 @@ namespace Auxiliary_tool
             {
                 List<double> scoreList = new List<double>();
                 string name = item.Name;
+
                 //foreach (var dicVal in item.scoreDic)
                 //{
                 //    foreach (var score in dicVal)
                 //    {
-                //        scoreList.Add(float.Parse(score.Value.ToString()));
+                //        scoreList.Add(double.Parse(score.Value.ToString()));
                 //    }
                 //}
+
+                // 使用另一种记录日期和成绩的方式；
                 foreach (var dicVal in item.scoreArr)
-                {
-                    double res = double.Parse(dicVal[1]);
-                    scoreList.Add(res);                   
-                }
+                    scoreList.Add(double.Parse(dicVal[1]));
+
 
                 scoreDic.Add(name, scoreList);
                 seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
@@ -77,27 +70,79 @@ namespace Auxiliary_tool
             cartesianChart.Series = seriesCollection;
         }
 
-        private void ReDrawChart(int displayLenth)
+        private void SetChartFormat()
         {
+            List<string> date = new List<string>();
+            foreach (var dicVal in Auxiliarymethods.Instance.studentDatas_1[2].scoreArr)
+                date.Add(dicVal[0].Split(' ')[0]);
+
+
+            cartesianChart.AxisX.Add(new Axis
+            {
+                Title = "Examination",
+                Labels = date,
+            });
+
+            cartesianChart.AxisY.Add(new Axis
+            {
+                Title = "Percentage of Score"
+            });
+            cartesianChart.LegendLocation = LegendLocation.Right;
+        }
+
+        int displayDataLenth = 0;
+        int displayIndex = 0;
+        private void ReDrawChart(int displayLenth,int startIndex,List<StudentData> studentData)
+        {
+            if (displayDataLenth == 0)
+                return;
+
             cartesianChart.Series.Clear();
             SeriesCollection seriesCollection = new SeriesCollection();
 
-            cartesianChart.Series = seriesCollection;
+            //if (displayIndex + displayDataLenth < studentData.Count) { }
 
-            for (int i = 0; i < displayLenth; i++)
+            for (int i = startIndex; i < displayLenth; i++)
             {
+                if (i >= studentData.Count)
+                    return;
 
+                List<double> scoreList = new List<double>();
+                string name = studentData[i].Name;
+
+                foreach (var dicVal in studentData[i].scoreArr)
+                    scoreList.Add(double.Parse(dicVal[1]));
+
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
+
+                displayIndex = i + 1;
             }
+
+            cartesianChart.Series = seriesCollection;           
+
         }
 
-        private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)
+       
+        private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)//在启动时，这里会执行一次；
         {
-             displayDataLenthComboBox.SelectedItem.ToString();
+            displayDataLenth = 0;
+            displayIndex = 0;
+
+            if ((string)displayDataLenthComboBox.SelectedItem != "All")
+                displayDataLenth = int.Parse((string)displayDataLenthComboBox.SelectedItem);
+            else
+                displayDataLenth = Auxiliarymethods.Instance.studentDatas_1.Count;
+            
         }
 
         private void scoreFluctuationComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void redrawChartButton_Click(object sender, EventArgs e)//下一组按钮；
+        {
+            ReDrawChart(displayDataLenth, displayIndex, Auxiliarymethods.Instance.studentDatas_1);
         }
     }
 }

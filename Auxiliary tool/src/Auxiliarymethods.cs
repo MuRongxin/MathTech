@@ -22,7 +22,10 @@ namespace Auxiliary_tool
         public List<string> dataList_1 = new List<string>();
         public List<string> dataList_2 = new List<string>();
 
-        public List<StudentData> studentDatas = new List<StudentData>();
+        public List<StudentData> studentDatas_1 = new List<StudentData>();
+        public List<StudentData> studentDatas_2 = new List<StudentData>();
+
+
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -56,7 +59,7 @@ namespace Auxiliary_tool
             return ColorTranslator.FromHtml("#" + r_color + g_color + b_color);
         }
 
-        public void ReadData()
+        public void ReadTxtData()
         {
             string[] dataArray = File.ReadAllLines("./data43.txt");
             dataList_1 = dataArray.ToList();
@@ -143,7 +146,7 @@ namespace Auxiliary_tool
         /// ReadDataXml
         /// </summary>
         /// <param name="path"></param>
-        public void ReadDataXml(string path)
+        public void ReadDataXml(string path, List<StudentData> studentData)
         {
             string callCount = "";
             string name = "";
@@ -175,7 +178,7 @@ namespace Auxiliary_tool
                             break;
                     }
                 }
-                studentDatas.Add(new StudentData(id, name, int.Parse(callCount)));
+                studentData.Add(new StudentData(id, name, int.Parse(callCount)));               
             }
 
         }
@@ -294,7 +297,7 @@ namespace Auxiliary_tool
         /// Excel 读取，务必在xml读取之后调用；
         /// </summary>
         /// <param name="path"></param>
-        public void ReadExcel(string path)
+        public void ReadExcel(string path,List<StudentData> studentDatas)
         {
             using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read))
             {

@@ -31,6 +31,7 @@
             this.cartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.charttestButton = new Guna.UI2.WinForms.Guna2CircleButton();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.redrawChartButton = new Guna.UI2.WinForms.Guna2GradientButton();
             this.scoreFluctuationComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -59,7 +60,7 @@
             this.charttestButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.charttestButton.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.charttestButton.ForeColor = System.Drawing.Color.White;
-            this.charttestButton.Location = new System.Drawing.Point(897, 57);
+            this.charttestButton.Location = new System.Drawing.Point(961, 3);
             this.charttestButton.Name = "charttestButton";
             this.charttestButton.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             this.charttestButton.Size = new System.Drawing.Size(59, 58);
@@ -69,6 +70,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.redrawChartButton);
             this.panel1.Controls.Add(this.scoreFluctuationComboBox);
             this.panel1.Controls.Add(this.displayDataLenthComboBox);
             this.panel1.Controls.Add(this.label3);
@@ -80,6 +82,23 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1023, 121);
             this.panel1.TabIndex = 4;
+            // 
+            // redrawChartButton
+            // 
+            this.redrawChartButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.redrawChartButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.redrawChartButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.redrawChartButton.DisabledState.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.redrawChartButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.redrawChartButton.Font = new System.Drawing.Font("幼圆", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.redrawChartButton.ForeColor = System.Drawing.Color.White;
+            this.redrawChartButton.Location = new System.Drawing.Point(837, 70);
+            this.redrawChartButton.Name = "redrawChartButton";
+            this.redrawChartButton.Size = new System.Drawing.Size(135, 39);
+            this.redrawChartButton.TabIndex = 1;
+            this.redrawChartButton.Text = "下一组数据";
+            this.redrawChartButton.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+            this.redrawChartButton.Click += new System.EventHandler(this.redrawChartButton_Click);
             // 
             // scoreFluctuationComboBox
             // 
@@ -117,16 +136,17 @@
             this.displayDataLenthComboBox.FocusedColor = System.Drawing.Color.White;
             this.displayDataLenthComboBox.FocusedState.BorderColor = System.Drawing.Color.White;
             this.displayDataLenthComboBox.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.displayDataLenthComboBox.ForeColor = System.Drawing.Color.Black;
+            this.displayDataLenthComboBox.ForeColor = System.Drawing.Color.DimGray;
             this.displayDataLenthComboBox.ItemHeight = 30;
             this.displayDataLenthComboBox.Items.AddRange(new object[] {
+            "All",
+            "4",
             "5",
             "6",
             "7",
             "8",
             "9",
-            "10",
-            "All"});
+            "10"});
             this.displayDataLenthComboBox.ItemsAppearance.SelectedBackColor = System.Drawing.Color.White;
             this.displayDataLenthComboBox.Location = new System.Drawing.Point(211, 73);
             this.displayDataLenthComboBox.Name = "displayDataLenthComboBox";
@@ -206,5 +226,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private Guna.UI2.WinForms.Guna2ComboBox scoreFluctuationComboBox;
+        private Guna.UI2.WinForms.Guna2GradientButton redrawChartButton;
     }
 }

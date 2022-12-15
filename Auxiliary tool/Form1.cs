@@ -57,6 +57,8 @@ namespace Auxiliary_tool
             InitChart();
             _obj = this;
 
+            InitData();
+
             RandomPanle randomPanle = new RandomPanle();
             randomPanle.Dock = DockStyle.Fill;
 
@@ -67,17 +69,20 @@ namespace Auxiliary_tool
             PanelContainer.Controls.Add(score_Analysis);
 
             rushTimer.Start();
-            InitData();
+           
         }
         private void InitData()
         {
-            Auxiliarymethods.Instance.ReadData();
 
-            Auxiliarymethods.Instance.ReadDataXml("./data43.xml");
-            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx");
+            Auxiliarymethods.Instance.ReadDataXml("./data43.xml",Auxiliarymethods.Instance.studentDatas_1);
+            Auxiliarymethods.Instance.ReadDataXml("./data45.xml", Auxiliarymethods.Instance.studentDatas_2);
 
-            datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas.Count.ToString();
-            datalengthLabel2.Text = Auxiliarymethods.Instance.dataList_2.Count.ToString();
+            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx",Auxiliarymethods.Instance.studentDatas_1);
+            Auxiliarymethods.Instance.ReadExcel("./Exam145Score.xlsx", Auxiliarymethods.Instance.studentDatas_2);
+
+
+            datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas_1.Count.ToString();
+            datalengthLabel2.Text = Auxiliarymethods.Instance.studentDatas_2.Count.ToString();
 
         }
                 
