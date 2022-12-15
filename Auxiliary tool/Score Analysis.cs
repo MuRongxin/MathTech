@@ -140,7 +140,7 @@ namespace Auxiliary_tool
 
         }
 
-        private void redrawChartButton_Click(object sender, EventArgs e)//下一组按钮；
+        private void redrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
         {
             ReDrawChart(displayDataLenth, displayIndex, Auxiliarymethods.Instance.studentDatas_1);
         }
