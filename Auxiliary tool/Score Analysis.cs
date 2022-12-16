@@ -24,25 +24,32 @@ namespace Auxiliary_tool
         private void Score_Analysis_Load(object sender, EventArgs e)
         {
             displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
-                     
+
+            currentStudentDataList = Auxiliarymethods.Instance.studentDatas_1;
+
             SetChartFormat();
 
             InitDropdownlist();
-            // DrawChart(Auxiliarymethods.Instance.studentDatas_1);
+            
+
+            InitDrawChartData(currentStudentDataList);
+
+           
         }
 
         private void charttestButton_Click(object sender, EventArgs e)
         {
-            DrawChart(Auxiliarymethods.Instance.studentDatas_1);
+            InitDrawChartData(Auxiliarymethods.Instance.studentDatas_1);
 
         }
 
         Dictionary<string, List<double>> scoreDic = new Dictionary<string, List<double>>();
 
-        private void DrawChart(List<StudentData> studentDatas)
+        List<StudentData> currentStudentDataList = new List<StudentData>();
+
+        private void InitDrawChartData(List<StudentData> studentDatas)
         {
-            cartesianChart.Series.Clear();
-            SeriesCollection seriesCollection = new SeriesCollection();
+            cartesianChart.Series.Clear();            
 
             foreach (var item in studentDatas)
             {
@@ -63,18 +70,18 @@ namespace Auxiliary_tool
 
 
                 scoreDic.Add(name, scoreList);
-                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
+                //seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
             }
             //List<double> scoreList_1 = new List<double>() { 0.11, 0.21, 0.41, 0.21, 0.43, 0.56, 1.76, 0.01, 0.12, 0.45, 1};
             //seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<double>(scoreList_1), DataLabels = false });
             
-            cartesianChart.Series = seriesCollection;
+            //cartesianChart.Series = seriesCollection;
         }
 
         private void SetChartFormat()
         {
             List<string> date = new List<string>();
-            foreach (var dicVal in Auxiliarymethods.Instance.studentDatas_1[2].scoreArr)
+            foreach (var dicVal in currentStudentDataList[2].scoreArr)
                 date.Add(dicVal[0].Split(' ')[0]);
 
 
@@ -101,7 +108,6 @@ namespace Auxiliary_tool
             cartesianChart.Series.Clear();
             SeriesCollection seriesCollection = new SeriesCollection();
 
-            //if (displayIndex + displayDataLenth < studentData.Count) { }
 
             for (int i = startIndex; i < startIndex+displayLenth; i++)
             {
@@ -132,7 +138,7 @@ namespace Auxiliary_tool
             if ((string)displayDataLenthComboBox.SelectedItem != "All")
                 displayDataLenth = int.Parse((string)displayDataLenthComboBox.SelectedItem);
             else
-                displayDataLenth = Auxiliarymethods.Instance.studentDatas_1.Count;
+                displayDataLenth = currentStudentDataList.Count;
             
         }
 
@@ -143,13 +149,13 @@ namespace Auxiliary_tool
 
         private void redrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
         {
-            ReDrawChart(displayDataLenth, displayIndex, Auxiliarymethods.Instance.studentDatas_1);
+            ReDrawChart(displayDataLenth, displayIndex, currentStudentDataList);
            
         }
 
         private void InitDropdownlist()
         {
-            foreach (var item in Auxiliarymethods.Instance.studentDatas_1)
+            foreach (var item in currentStudentDataList)
             {
                 selectStuComboBox.Items.Add(item.Name);
                 comboBox1.Items.Add(item.Name);//暂时的;
