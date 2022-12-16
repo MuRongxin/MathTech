@@ -84,6 +84,7 @@ namespace Auxiliary_tool
             datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas_1.Count.ToString();
             datalengthLabel2.Text = Auxiliarymethods.Instance.studentDatas_2.Count.ToString();
 
+            overview_pane.Select();//设置默认焦点；
         }
                 
 
@@ -180,8 +181,25 @@ namespace Auxiliary_tool
         private void Dataview_panel_Paint(object sender, PaintEventArgs e)
         {
            
+        }       
+       
+
+        private void searchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            MessageBox.Show("这是提示框中的文本", "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
         }
 
-       
+        private void searchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode==Keys.Enter)
+            {
+                MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void searchTextBox_Leave(object sender, EventArgs e)
+        {
+            MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+        }
     }
 }

@@ -27,7 +27,8 @@ namespace Auxiliary_tool
                      
             SetChartFormat();
 
-            //DrawChart(Auxiliarymethods.Instance.studentDatas_1);
+            InitDropdownlist();
+            // DrawChart(Auxiliarymethods.Instance.studentDatas_1);
         }
 
         private void charttestButton_Click(object sender, EventArgs e)
@@ -102,10 +103,10 @@ namespace Auxiliary_tool
 
             //if (displayIndex + displayDataLenth < studentData.Count) { }
 
-            for (int i = startIndex; i < displayLenth; i++)
+            for (int i = startIndex; i < startIndex+displayLenth; i++)
             {
                 if (i >= studentData.Count)
-                    return;
+                    break;
 
                 List<double> scoreList = new List<double>();
                 string name = studentData[i].Name;
@@ -143,6 +144,16 @@ namespace Auxiliary_tool
         private void redrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
         {
             ReDrawChart(displayDataLenth, displayIndex, Auxiliarymethods.Instance.studentDatas_1);
+           
+        }
+
+        private void InitDropdownlist()
+        {
+            foreach (var item in Auxiliarymethods.Instance.studentDatas_1)
+            {
+                selectStuComboBox.Items.Add(item.Name);
+                comboBox1.Items.Add(item.Name);//暂时的;
+            }            
         }
     }
 }

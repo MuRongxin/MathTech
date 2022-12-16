@@ -38,6 +38,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.label4 = new System.Windows.Forms.Label();
+            this.selectStuComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
+            this.comboBox1 = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -70,9 +73,12 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.redrawChartButton);
+            this.panel1.Controls.Add(this.selectStuComboBox);
             this.panel1.Controls.Add(this.scoreFluctuationComboBox);
             this.panel1.Controls.Add(this.displayDataLenthComboBox);
+            this.panel1.Controls.Add(this.label4);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
@@ -160,7 +166,7 @@
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("幼圆", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label3.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label3.Location = new System.Drawing.Point(395, 80);
+            this.label3.Location = new System.Drawing.Point(399, 80);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(160, 22);
             this.label3.TabIndex = 6;
@@ -199,6 +205,52 @@
             this.panel2.Size = new System.Drawing.Size(1023, 452);
             this.panel2.TabIndex = 5;
             // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("幼圆", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label4.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label4.Location = new System.Drawing.Point(399, 32);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(125, 22);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "直接选择：";
+            // 
+            // selectStuComboBox
+            // 
+            this.selectStuComboBox.BackColor = System.Drawing.Color.Silver;
+            this.selectStuComboBox.BorderThickness = 0;
+            this.selectStuComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.selectStuComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.selectStuComboBox.FillColor = System.Drawing.SystemColors.Control;
+            this.selectStuComboBox.FocusedColor = System.Drawing.Color.White;
+            this.selectStuComboBox.FocusedState.BorderColor = System.Drawing.Color.White;
+            this.selectStuComboBox.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
+            this.selectStuComboBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.selectStuComboBox.ItemHeight = 30;
+            this.selectStuComboBox.Location = new System.Drawing.Point(590, 20);
+            this.selectStuComboBox.MaxDropDownItems = 3;
+            this.selectStuComboBox.Name = "selectStuComboBox";
+            this.selectStuComboBox.Size = new System.Drawing.Size(174, 36);
+            this.selectStuComboBox.TabIndex = 7;
+            this.selectStuComboBox.SelectedIndexChanged += new System.EventHandler(this.scoreFluctuationComboBox_SelectedIndexChanged);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.BackColor = System.Drawing.Color.Transparent;
+            this.comboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FocusedColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.comboBox1.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.comboBox1.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.comboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
+            this.comboBox1.ItemHeight = 30;
+            this.comboBox1.Location = new System.Drawing.Point(770, 20);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(188, 36);
+            this.comboBox1.TabIndex = 8;
+            // 
             // Score_Analysis_Panle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -227,5 +279,8 @@
         private System.Windows.Forms.Label label3;
         private Guna.UI2.WinForms.Guna2ComboBox scoreFluctuationComboBox;
         private Guna.UI2.WinForms.Guna2GradientButton redrawChartButton;
+        private Guna.UI2.WinForms.Guna2ComboBox selectStuComboBox;
+        private System.Windows.Forms.Label label4;
+        private Guna.UI2.WinForms.Guna2ComboBox comboBox1;
     }
 }
