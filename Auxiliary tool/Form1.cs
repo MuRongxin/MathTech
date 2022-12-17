@@ -235,7 +235,12 @@ namespace Auxiliary_tool
             class43InfoPanel.Visible=true;
             smoothChangeTimer.Start();
             currnetClass = 1;
+
             Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_1;
+            Score_Analysis_Panle.Instance.StartThisPanle();
+
+            select43Button.Enabled = false;
+            select45Button.Enabled = true;
         }
 
         private void select45Button_Click(object sender, EventArgs e)
@@ -245,8 +250,7 @@ namespace Auxiliary_tool
                 Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
                 InitPanel();
                 isInitPanel = true;
-            }
-            Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
+            }            
 
             if (class45InfoPanel.Width==0|| class45InfoPanel.Width>=tagetwith-19)
                 class45InfoPanel.Location = new Point(774, class45InfoPanel.Location.Y);
@@ -256,6 +260,12 @@ namespace Auxiliary_tool
             class45InfoPanel.Visible = true;
             smoothChangeTimer.Start();
             currnetClass = 2;
+
+            Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
+            Score_Analysis_Panle.Instance.StartThisPanle();
+            
+            select43Button.Enabled = true;
+            select45Button.Enabled = false;
         }
 
         int range = 25; int tagetwith = 696;

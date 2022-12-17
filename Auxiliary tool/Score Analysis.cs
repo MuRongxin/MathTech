@@ -16,13 +16,27 @@ namespace Auxiliary_tool
 {
     public partial class Score_Analysis_Panle : UserControl
     {
+        private static Score_Analysis_Panle _obj;
+        public static Score_Analysis_Panle Instance
+        {
+            get
+            {
+                if (_obj == null)
+                    _obj = new Score_Analysis_Panle();
+
+                return _obj;
+            }
+        }
+
         public Score_Analysis_Panle()
         {
             InitializeComponent();
         }
 
         private void Score_Analysis_Load(object sender, EventArgs e)
-        {  
+        {
+            _obj = this;
+
             currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
 
             displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
@@ -34,9 +48,15 @@ namespace Auxiliary_tool
 
             InitDrawChartData(currentStudentDataList);
 
-            FirstChart();
+            //FirstChart();
         }
 
+        public void StartThisPanle()
+        {
+            currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
+            FirstChart();
+            InitDropdownlist();
+        }
         private void charttestButton_Click(object sender, EventArgs e)
         {
             //InitDrawChartData(Auxiliarymethods.Instance.studentDatas_1);
@@ -162,8 +182,10 @@ namespace Auxiliary_tool
 
         private void InitDropdownlist()
         {
+            selectStuComboBox.Items.Clear();
             foreach (var item in currentStudentDataList)
             {
+                
                 selectStuComboBox.Items.Add(item.Name);
                 comboBox1.Items.Add(item.Name);//暂时的;
             }            
@@ -171,6 +193,8 @@ namespace Auxiliary_tool
 
         private void FirstChart()
         {
+            cartesianChart.Series.Clear();
+
             Random random = new Random();
             int count = random.Next(3, 7);
             List<int> randomNumlist = new List<int>();
