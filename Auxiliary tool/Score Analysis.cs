@@ -34,12 +34,12 @@ namespace Auxiliary_tool
 
             InitDrawChartData(currentStudentDataList);
 
-           
+            FirstChart();
         }
 
         private void charttestButton_Click(object sender, EventArgs e)
         {
-            InitDrawChartData(Auxiliarymethods.Instance.studentDatas_1);
+            //InitDrawChartData(Auxiliarymethods.Instance.studentDatas_1);
 
         }
 
@@ -100,12 +100,14 @@ namespace Auxiliary_tool
 
         int displayDataLenth = 0;
         int displayIndex = 0;
-        private void ReDrawChart(int displayLenth,int startIndex,List<StudentData> studentData)
+        private void ReDrawChart(int displayLenth,int startIndex, List<StudentData> studentData, bool isClearSeries = true)
         {
-            if (displayDataLenth == 0)
+            if (displayLenth == 0)
                 return;
 
-            cartesianChart.Series.Clear();
+            if (isClearSeries)
+                cartesianChart.Series.Clear();
+
             SeriesCollection seriesCollection = new SeriesCollection();
 
 
@@ -123,6 +125,11 @@ namespace Auxiliary_tool
                 seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
 
                 displayIndex = i + 1;
+            }
+
+            foreach (var item in cartesianChart.Series)//如果需要的话，在原有的基础上添加图表数据；
+            {
+                seriesCollection.Add(item);
             }
 
             cartesianChart.Series = seriesCollection;           
@@ -160,6 +167,28 @@ namespace Auxiliary_tool
                 selectStuComboBox.Items.Add(item.Name);
                 comboBox1.Items.Add(item.Name);//暂时的;
             }            
+        }
+
+        private void FirstChart()
+        {
+            Random random = new Random();
+            int count = random.Next(3, 7);
+            List<int> randomNumlist = new List<int>();
+            for (int i = 0; i < count; i++)
+            {
+                int startIndex=random.Next(currentStudentDataList.Count);
+                
+                //foreach (var item in randomNumlist)
+                //{
+                //    if (startIndex == item)
+                //        break;
+                //    randomNumlist.Add(startIndex);
+                //}
+
+
+                ReDrawChart(1, startIndex, currentStudentDataList,false);
+            }
+            
         }
     }
 }

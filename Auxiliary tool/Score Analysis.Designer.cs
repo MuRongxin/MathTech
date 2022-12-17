@@ -98,7 +98,7 @@
             this.redrawChartButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.redrawChartButton.Font = new System.Drawing.Font("幼圆", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.redrawChartButton.ForeColor = System.Drawing.Color.White;
-            this.redrawChartButton.Location = new System.Drawing.Point(782, 70);
+            this.redrawChartButton.Location = new System.Drawing.Point(800, 70);
             this.redrawChartButton.Name = "redrawChartButton";
             this.redrawChartButton.Size = new System.Drawing.Size(135, 39);
             this.redrawChartButton.TabIndex = 1;
