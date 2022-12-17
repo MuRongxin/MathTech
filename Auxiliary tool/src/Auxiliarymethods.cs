@@ -25,6 +25,7 @@ namespace Auxiliary_tool
         public List<StudentData> studentDatas_1 = new List<StudentData>();
         public List<StudentData> studentDatas_2 = new List<StudentData>();
 
+        public List<StudentData> studentDatas = new List<StudentData>();
 
 
         private static Auxiliarymethods _obj;
@@ -140,6 +141,25 @@ namespace Auxiliary_tool
 
             resoultColor = tempColor;
 
+        }
+        /// <summary>
+        /// 平滑过度数字
+        /// </summary>
+        /// <param name="startValue">起始数值</param>
+        /// <param name="targetValue">目标数值</param>
+        /// <returns></returns>
+        public int SmoothChangeValue(int startValue,int targetValue,int range,bool isIncrease = true)
+        {
+            if (isIncrease)
+            {
+                if (startValue <= targetValue)
+                    targetValue = startValue + range;
+            }
+            else
+                if (startValue >= targetValue)
+                targetValue = startValue - range;
+
+            return targetValue;
         }
 
         /// <summary>

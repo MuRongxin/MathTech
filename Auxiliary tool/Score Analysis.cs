@@ -22,10 +22,10 @@ namespace Auxiliary_tool
         }
 
         private void Score_Analysis_Load(object sender, EventArgs e)
-        {
-            displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
+        {  
+            currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
 
-            currentStudentDataList = Auxiliarymethods.Instance.studentDatas_1;
+            displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
 
             SetChartFormat();
 
@@ -174,21 +174,28 @@ namespace Auxiliary_tool
             Random random = new Random();
             int count = random.Next(3, 7);
             List<int> randomNumlist = new List<int>();
+            bool isRepeat = false;
             for (int i = 0; i < count; i++)
             {
                 int startIndex=random.Next(currentStudentDataList.Count);
-                
-                //foreach (var item in randomNumlist)
-                //{
-                //    if (startIndex == item)
-                //        break;
-                //    randomNumlist.Add(startIndex);
-                //}
 
+                foreach (var item in randomNumlist)//校验随机开始的index是否出现重复；
+                    if (startIndex == item)
+                    {
+                        isRepeat = true;
+                        break; 
+                    }
+
+                if (isRepeat)
+                {
+                    isRepeat = false;
+                    break;
+                }                
 
                 ReDrawChart(1, startIndex, currentStudentDataList,false);
+                randomNumlist.Add(startIndex);
             }
-            
+           
         }
     }
 }

@@ -47,14 +47,16 @@
             this.switchScoreAnalysePanelButton2 = new Guna.UI2.WinForms.Guna2Button();
             this.switchMainpanelButton = new Guna.UI2.WinForms.Guna2Button();
             this.Dataview_panel = new System.Windows.Forms.Panel();
-            this.guna2GradientPanel2 = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.select45Button = new Guna.UI2.WinForms.Guna2Button();
+            this.select43Button = new Guna.UI2.WinForms.Guna2Button();
+            this.class45InfoPanel = new Guna.UI2.WinForms.Guna2GradientPanel();
             this.datalengthLabel2 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.label7 = new System.Windows.Forms.Label();
             this.TimeLabel = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.guna2GradientPanel1 = new Guna.UI2.WinForms.Guna2GradientPanel();
+            this.class43InfoPanel = new Guna.UI2.WinForms.Guna2GradientPanel();
             this.datalengthLabel1 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -65,16 +67,16 @@
             this.panel6 = new System.Windows.Forms.Panel();
             this.overview_pane = new System.Windows.Forms.Panel();
             this.rushTimer = new System.Windows.Forms.Timer(this.components);
-            this.guna2ContextMenuStrip1 = new Guna.UI2.WinForms.Guna2ContextMenuStrip();
+            this.smoothChangeTimer = new System.Windows.Forms.Timer(this.components);
             this.Titlt_Panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel2.SuspendLayout();
             this.panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.guna2CirclePictureBox1)).BeginInit();
             this.Dataview_panel.SuspendLayout();
-            this.guna2GradientPanel2.SuspendLayout();
+            this.class45InfoPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
-            this.guna2GradientPanel1.SuspendLayout();
+            this.class43InfoPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.ChartView_Panel.SuspendLayout();
             this.chart_panel.SuspendLayout();
@@ -386,30 +388,66 @@
             // 
             // Dataview_panel
             // 
-            this.Dataview_panel.Controls.Add(this.guna2GradientPanel2);
+            this.Dataview_panel.Controls.Add(this.select45Button);
+            this.Dataview_panel.Controls.Add(this.select43Button);
+            this.Dataview_panel.Controls.Add(this.class45InfoPanel);
             this.Dataview_panel.Controls.Add(this.TimeLabel);
             this.Dataview_panel.Controls.Add(this.label8);
-            this.Dataview_panel.Controls.Add(this.guna2GradientPanel1);
+            this.Dataview_panel.Controls.Add(this.class43InfoPanel);
             this.Dataview_panel.Dock = System.Windows.Forms.DockStyle.Top;
             this.Dataview_panel.Location = new System.Drawing.Point(0, 0);
             this.Dataview_panel.Name = "Dataview_panel";
-            this.Dataview_panel.Size = new System.Drawing.Size(909, 331);
+            this.Dataview_panel.Size = new System.Drawing.Size(909, 355);
             this.Dataview_panel.TabIndex = 2;
             this.Dataview_panel.Paint += new System.Windows.Forms.PaintEventHandler(this.Dataview_panel_Paint);
             // 
-            // guna2GradientPanel2
+            // select45Button
             // 
-            this.guna2GradientPanel2.BorderRadius = 5;
-            this.guna2GradientPanel2.Controls.Add(this.datalengthLabel2);
-            this.guna2GradientPanel2.Controls.Add(this.label6);
-            this.guna2GradientPanel2.Controls.Add(this.pictureBox3);
-            this.guna2GradientPanel2.Controls.Add(this.label7);
-            this.guna2GradientPanel2.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
-            this.guna2GradientPanel2.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
-            this.guna2GradientPanel2.Location = new System.Drawing.Point(482, 97);
-            this.guna2GradientPanel2.Name = "guna2GradientPanel2";
-            this.guna2GradientPanel2.Size = new System.Drawing.Size(292, 209);
-            this.guna2GradientPanel2.TabIndex = 0;
+            this.select45Button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.select45Button.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.select45Button.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.select45Button.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.select45Button.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.select45Button.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
+            this.select45Button.Font = new System.Drawing.Font("Century", 10F);
+            this.select45Button.ForeColor = System.Drawing.Color.White;
+            this.select45Button.Location = new System.Drawing.Point(482, 312);
+            this.select45Button.Name = "select45Button";
+            this.select45Button.Size = new System.Drawing.Size(292, 34);
+            this.select45Button.TabIndex = 3;
+            this.select45Button.Text = "Select the current class as 145";
+            this.select45Button.Click += new System.EventHandler(this.select45Button_Click);
+            // 
+            // select43Button
+            // 
+            this.select43Button.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.select43Button.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.select43Button.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.select43Button.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.select43Button.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
+            this.select43Button.Font = new System.Drawing.Font("Century", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.select43Button.ForeColor = System.Drawing.Color.White;
+            this.select43Button.Location = new System.Drawing.Point(78, 313);
+            this.select43Button.Name = "select43Button";
+            this.select43Button.Size = new System.Drawing.Size(292, 34);
+            this.select43Button.TabIndex = 3;
+            this.select43Button.Text = "Select the current class as 143";
+            this.select43Button.Click += new System.EventHandler(this.select43Button_Click);
+            // 
+            // class45InfoPanel
+            // 
+            this.class45InfoPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.class45InfoPanel.BorderRadius = 5;
+            this.class45InfoPanel.Controls.Add(this.datalengthLabel2);
+            this.class45InfoPanel.Controls.Add(this.label6);
+            this.class45InfoPanel.Controls.Add(this.pictureBox3);
+            this.class45InfoPanel.Controls.Add(this.label7);
+            this.class45InfoPanel.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
+            this.class45InfoPanel.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
+            this.class45InfoPanel.Location = new System.Drawing.Point(482, 97);
+            this.class45InfoPanel.Name = "class45InfoPanel";
+            this.class45InfoPanel.Size = new System.Drawing.Size(292, 209);
+            this.class45InfoPanel.TabIndex = 0;
             // 
             // datalengthLabel2
             // 
@@ -439,6 +477,7 @@
             // 
             // pictureBox3
             // 
+            this.pictureBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox3.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox3.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox3.Image")));
             this.pictureBox3.Location = new System.Drawing.Point(227, 18);
@@ -483,19 +522,19 @@
             this.label8.Text = "Data overview";
             this.label8.Click += new System.EventHandler(this.label1_Click);
             // 
-            // guna2GradientPanel1
+            // class43InfoPanel
             // 
-            this.guna2GradientPanel1.BorderRadius = 5;
-            this.guna2GradientPanel1.Controls.Add(this.datalengthLabel1);
-            this.guna2GradientPanel1.Controls.Add(this.label4);
-            this.guna2GradientPanel1.Controls.Add(this.pictureBox2);
-            this.guna2GradientPanel1.Controls.Add(this.label2);
-            this.guna2GradientPanel1.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
-            this.guna2GradientPanel1.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
-            this.guna2GradientPanel1.Location = new System.Drawing.Point(78, 98);
-            this.guna2GradientPanel1.Name = "guna2GradientPanel1";
-            this.guna2GradientPanel1.Size = new System.Drawing.Size(292, 209);
-            this.guna2GradientPanel1.TabIndex = 0;
+            this.class43InfoPanel.BorderRadius = 5;
+            this.class43InfoPanel.Controls.Add(this.datalengthLabel1);
+            this.class43InfoPanel.Controls.Add(this.label4);
+            this.class43InfoPanel.Controls.Add(this.pictureBox2);
+            this.class43InfoPanel.Controls.Add(this.label2);
+            this.class43InfoPanel.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
+            this.class43InfoPanel.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
+            this.class43InfoPanel.Location = new System.Drawing.Point(78, 98);
+            this.class43InfoPanel.Name = "class43InfoPanel";
+            this.class43InfoPanel.Size = new System.Drawing.Size(292, 209);
+            this.class43InfoPanel.TabIndex = 0;
             // 
             // datalengthLabel1
             // 
@@ -525,6 +564,7 @@
             // 
             // pictureBox2
             // 
+            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(231)))));
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
             this.pictureBox2.Location = new System.Drawing.Point(221, 19);
@@ -552,10 +592,10 @@
             this.ChartView_Panel.Controls.Add(this.chart_panel);
             this.ChartView_Panel.Controls.Add(this.panel6);
             this.ChartView_Panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ChartView_Panel.Location = new System.Drawing.Point(0, 331);
+            this.ChartView_Panel.Location = new System.Drawing.Point(0, 355);
             this.ChartView_Panel.Name = "ChartView_Panel";
             this.ChartView_Panel.Padding = new System.Windows.Forms.Padding(20);
-            this.ChartView_Panel.Size = new System.Drawing.Size(909, 262);
+            this.ChartView_Panel.Size = new System.Drawing.Size(909, 238);
             this.ChartView_Panel.TabIndex = 3;
             // 
             // chart_panel
@@ -564,7 +604,7 @@
             this.chart_panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chart_panel.Location = new System.Drawing.Point(20, 20);
             this.chart_panel.Name = "chart_panel";
-            this.chart_panel.Size = new System.Drawing.Size(754, 222);
+            this.chart_panel.Size = new System.Drawing.Size(794, 198);
             this.chart_panel.TabIndex = 1;
             // 
             // average_CartesianChart
@@ -572,16 +612,16 @@
             this.average_CartesianChart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.average_CartesianChart.Location = new System.Drawing.Point(0, 0);
             this.average_CartesianChart.Name = "average_CartesianChart";
-            this.average_CartesianChart.Size = new System.Drawing.Size(754, 222);
+            this.average_CartesianChart.Size = new System.Drawing.Size(794, 198);
             this.average_CartesianChart.TabIndex = 0;
             this.average_CartesianChart.Text = "cartesianChart1";
             // 
             // panel6
             // 
             this.panel6.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel6.Location = new System.Drawing.Point(774, 20);
+            this.panel6.Location = new System.Drawing.Point(814, 20);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(115, 222);
+            this.panel6.Size = new System.Drawing.Size(75, 198);
             this.panel6.TabIndex = 0;
             // 
             // overview_pane
@@ -598,20 +638,10 @@
             // 
             this.rushTimer.Tick += new System.EventHandler(this.rushTimer_Tick);
             // 
-            // guna2ContextMenuStrip1
+            // smoothChangeTimer
             // 
-            this.guna2ContextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.guna2ContextMenuStrip1.Name = "guna2ContextMenuStrip1";
-            this.guna2ContextMenuStrip1.RenderStyle.ArrowColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(143)))), ((int)(((byte)(255)))));
-            this.guna2ContextMenuStrip1.RenderStyle.BorderColor = System.Drawing.Color.Gainsboro;
-            this.guna2ContextMenuStrip1.RenderStyle.ColorTable = null;
-            this.guna2ContextMenuStrip1.RenderStyle.RoundedEdges = true;
-            this.guna2ContextMenuStrip1.RenderStyle.SelectionArrowColor = System.Drawing.Color.White;
-            this.guna2ContextMenuStrip1.RenderStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(88)))), ((int)(((byte)(255)))));
-            this.guna2ContextMenuStrip1.RenderStyle.SelectionForeColor = System.Drawing.Color.White;
-            this.guna2ContextMenuStrip1.RenderStyle.SeparatorColor = System.Drawing.Color.Gainsboro;
-            this.guna2ContextMenuStrip1.RenderStyle.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            this.guna2ContextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+            this.smoothChangeTimer.Interval = 1;
+            this.smoothChangeTimer.Tick += new System.EventHandler(this.smoothChangeTimer_Tick);
             // 
             // Form1
             // 
@@ -637,11 +667,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.guna2CirclePictureBox1)).EndInit();
             this.Dataview_panel.ResumeLayout(false);
             this.Dataview_panel.PerformLayout();
-            this.guna2GradientPanel2.ResumeLayout(false);
-            this.guna2GradientPanel2.PerformLayout();
+            this.class45InfoPanel.ResumeLayout(false);
+            this.class45InfoPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
-            this.guna2GradientPanel1.ResumeLayout(false);
-            this.guna2GradientPanel1.PerformLayout();
+            this.class43InfoPanel.ResumeLayout(false);
+            this.class43InfoPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ChartView_Panel.ResumeLayout(false);
             this.chart_panel.ResumeLayout(false);
@@ -663,12 +693,12 @@
         public  Guna.UI2.WinForms.Guna2Button switchScoreAnalysePanelButton2;
         private Guna.UI2.WinForms.Guna2TextBox searchTextBox;
         private System.Windows.Forms.Panel Dataview_panel;
-        private Guna.UI2.WinForms.Guna2GradientPanel guna2GradientPanel1;
+        private Guna.UI2.WinForms.Guna2GradientPanel class43InfoPanel;
         private System.Windows.Forms.Label datalengthLabel1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.PictureBox pictureBox2;
-        private Guna.UI2.WinForms.Guna2GradientPanel guna2GradientPanel2;
+        private Guna.UI2.WinForms.Guna2GradientPanel class45InfoPanel;
         private System.Windows.Forms.Label datalengthLabel2;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.PictureBox pictureBox3;
@@ -687,7 +717,9 @@
         private LiveCharts.WinForms.CartesianChart average_CartesianChart;
         private System.Windows.Forms.Panel overview_pane;
         private System.Windows.Forms.Timer rushTimer;
-        private Guna.UI2.WinForms.Guna2ContextMenuStrip guna2ContextMenuStrip1;
+        private Guna.UI2.WinForms.Guna2Button select45Button;
+        private Guna.UI2.WinForms.Guna2Button select43Button;
+        private System.Windows.Forms.Timer smoothChangeTimer;
     }
 }
 

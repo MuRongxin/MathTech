@@ -59,14 +59,14 @@ namespace Auxiliary_tool
 
             InitData();
 
-            RandomPanle randomPanle = new RandomPanle();
-            randomPanle.Dock = DockStyle.Fill;
+            //RandomPanle randomPanle = new RandomPanle();
+            //randomPanle.Dock = DockStyle.Fill;
 
-            Score_Analysis_Panle score_Analysis = new Score_Analysis_Panle();
-            score_Analysis.Dock = DockStyle.Fill;
+            //Score_Analysis_Panle score_Analysis = new Score_Analysis_Panle();
+            //score_Analysis.Dock = DockStyle.Fill;
 
-            PanelContainer.Controls.Add(randomPanle);
-            PanelContainer.Controls.Add(score_Analysis);
+            //PanelContainer.Controls.Add(randomPanle);
+            //PanelContainer.Controls.Add(score_Analysis);
 
             rushTimer.Start();
            
@@ -86,7 +86,19 @@ namespace Auxiliary_tool
 
             overview_pane.Select();//设置默认焦点；
         }
-                
+
+        private bool isInitPanel;
+        private void InitPanel()
+        {
+            RandomPanle randomPanle = new RandomPanle();
+            randomPanle.Dock = DockStyle.Fill;
+
+            Score_Analysis_Panle score_Analysis = new Score_Analysis_Panle();
+            score_Analysis.Dock = DockStyle.Fill;
+
+            PanelContainer.Controls.Add(randomPanle);
+            PanelContainer.Controls.Add(score_Analysis);
+        }
 
         private void DropWindow(object sender, MouseEventArgs e)
         {
@@ -101,9 +113,9 @@ namespace Auxiliary_tool
         /// <param name="e"></param>
         private void switchRandomPanel_Click(object sender, EventArgs e)
         {
-            // overview_pane.Visible = false;
-
-            //Dataview_panel
+            if (!isInitPanel) { 
+                MessageBox.Show("请先选择执教班级", "注意", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;}
 
             Dataview_panel.Visible = false;
             ChartView_Panel.Visible = false;
@@ -119,6 +131,11 @@ namespace Auxiliary_tool
         /// <param name="e"></param>
         private void switchMainpanelButton_Click_1(object sender, EventArgs e)
         {
+            if (!isInitPanel)
+            {
+                MessageBox.Show("请先选择执教班级", "注意", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             Dataview_panel.Visible = true; 
             ChartView_Panel.Visible = true;
             PanelContainer.Controls["RandomPanle"].Visible=false;
@@ -131,6 +148,9 @@ namespace Auxiliary_tool
         /// <param name="e"></param>
         private void switchScoreAnalysePanelButton2_Click(object sender, EventArgs e)
         {
+            if (!isInitPanel) {
+                MessageBox.Show("请先选择执教班级","注意", MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                return; }
             Dataview_panel.Visible = false;
             ChartView_Panel.Visible = false;
             PanelContainer.Controls["Score_Analysis_Panle"].Visible = true;
@@ -201,5 +221,78 @@ namespace Auxiliary_tool
         {
             MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
         }
+
+        int currnetClass = 0;
+
+        private void select43Button_Click(object sender, EventArgs e)
+        {
+            if (!isInitPanel) 
+            {
+                Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_1;
+                InitPanel();
+                isInitPanel = true;
+            }
+            class43InfoPanel.Visible=true;
+            smoothChangeTimer.Start();
+            currnetClass = 1;
+            Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_1;
+        }
+
+        private void select45Button_Click(object sender, EventArgs e)
+        {
+            if (!isInitPanel)
+            {
+                Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
+                InitPanel();
+                isInitPanel = true;
+            }
+            Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
+
+            if (class45InfoPanel.Width==0|| class45InfoPanel.Width>=tagetwith-19)
+                class45InfoPanel.Location = new Point(774, class45InfoPanel.Location.Y);
+            if ( class45InfoPanel.Width >= tagetwith - 19)
+                class45InfoPanel.Location = new Point(78, class45InfoPanel.Location.Y);
+
+            class45InfoPanel.Visible = true;
+            smoothChangeTimer.Start();
+            currnetClass = 2;
+        }
+
+        int range = 25; int tagetwith = 696;
+        private void smoothChangeTimer_Tick(object sender, EventArgs e)
+        {
+            if (currnetClass == 1)
+            {                 
+                if (class43InfoPanel.Size.Width >= tagetwith)
+                {
+                    smoothChangeTimer.Stop();
+                    class45InfoPanel.Visible = false;
+                }
+
+                class43InfoPanel.Size = new Size(Auxiliarymethods.Instance.SmoothChangeValue(class43InfoPanel.Width, tagetwith, range), class43InfoPanel.Size.Height);
+                                
+                if(class45InfoPanel.Width>0)
+                    class45InfoPanel.Location = new Point(class45InfoPanel.Location.X + range, class45InfoPanel.Location.Y);
+
+                class45InfoPanel.Width -= range;             
+
+            }
+            else
+            {
+               
+                class45InfoPanel.Width = Auxiliarymethods.Instance.SmoothChangeValue(class45InfoPanel.Width, tagetwith, range);
+                class45InfoPanel.Location = new Point(class45InfoPanel.Location.X - range, class45InfoPanel.Location.Y);
+
+                class43InfoPanel.Width -= range;
+
+                 if (class45InfoPanel.Size.Width >= tagetwith) 
+                { 
+                    smoothChangeTimer.Stop();
+                    class43InfoPanel.Visible = false;
+                }
+            }
+        }
+
+       
     }
 }
