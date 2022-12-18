@@ -239,5 +239,14 @@ namespace Auxiliary_tool
 
             cartesianChart.Series = seriesCollection;
         }
+
+        private void ClearChartButton_Click(object sender, EventArgs e)
+        {
+            cartesianChart.Series.Clear();
+            directSelectStudentBox.SelectedItem = null;
+        }
+
+
+
     }
 }
