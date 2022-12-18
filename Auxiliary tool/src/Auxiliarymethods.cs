@@ -27,6 +27,7 @@ namespace Auxiliary_tool
 
         public List<StudentData> studentDatas = new List<StudentData>();
 
+        
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -447,6 +448,29 @@ namespace Auxiliary_tool
 
             }        
            
+        }
+        /// <summary>
+        /// 获取组件的所有子控件，包括子控件的子控件，从childControlList获取数结果；
+        /// </summary>
+        /// <param name="panel"></param>
+
+        public List<Control> GetControlChildControl(Control control)
+        {
+            List<Control> childControlList = new List<Control>();
+            GetChildControl(control, childControlList);
+
+            return childControlList;
+        }
+        private void GetChildControl(Control control, List<Control> childControlList)
+        {
+            if (control.Controls.Count == 0)
+                return;
+
+            for (int i = 0; i < control.Controls.Count; i++)
+            {
+                childControlList.Add(control.Controls[i]);
+                GetChildControl(control.Controls[i], childControlList);
+            }
         }
     }
 }

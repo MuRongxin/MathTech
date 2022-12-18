@@ -22,15 +22,20 @@ namespace Auxiliary_tool
 
         private void RandomPanle_Load(object sender, EventArgs e)
         {
-            InitNameList();
+            
+            panelsList = Auxiliarymethods.Instance.GetControlChildControl(panel2);//获取panel2里面的所有子节点；
+
         }
 
-        Color color1, color2, color3;
+       
         Random random= new Random(); 
         
         private void randomTimer_Tick(object sender, EventArgs e)
         {
-            resoultLabel.Text = Auxiliarymethods.Instance.GetRandomResoult(nameList);   
+            int ran = random.Next(Auxiliarymethods.Instance.studentDatas.Count);
+            StudentData studentData = Auxiliarymethods.Instance.studentDatas[ran];
+            resoultLabel.Text = studentData.Name + " " + studentData.ID;
+
 
             int x = random.Next(550);
             int y = random.Next(200);
@@ -38,45 +43,27 @@ namespace Auxiliary_tool
 
         }
 
-        private void InitNameList()
-        {
-            nameList.Clear();
-            foreach (var item in Auxiliarymethods.Instance.studentDatas)
-            {
-                nameList.Add(item.Name);
-            }
 
-            GetChildControl(panel2);
+        List<Control> panelsList = new List<Control>();     
+        private void InitNameList()
+        {      
+            
+            
+
             foreach (var item in panelsList)
             {
                 item.ForeColor = Color.White;
             }
         }
 
-        List<Control> panelsList = new List<Control>();
-        
-        /// <summary>
-        /// 递归获得所有子控件
-        /// </summary>
-        /// <param name="panel"></param>
-        private void GetChildControl(Control panel)
-        {
-            if (panel.Controls.Count == 0)
-                return;
-
-            for (int i = 0; i < panel.Controls.Count; i++)
-            {
-                panelsList.Add(panel.Controls[i]);
-                GetChildControl(panel.Controls[i]);
-            }           
-        }
+       
+      
         
         private void changeColortimer_Tick(object sender, EventArgs e)
         {
-            Auxiliarymethods.Instance.ChangepanelColor(panel3, color1, out color1);
-            Auxiliarymethods.Instance.ChangepanelColor(panel2, color2, out color2);
-            //Auxiliarymethods.Instance.ChangepanelColor(panel5, color3, out color3);
-
+            panel3.BackColor = Auxiliarymethods.Instance.SmoothChangeColor(panel3.BackColor, "panel3.BackColor");
+            panel2.BackColor = Auxiliarymethods.Instance.SmoothChangeColor(panel2.BackColor, "panel2.BackColor");
+           
             startRandomButton.BackColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.BackColor, "startRandomButton");
             startRandomButton.ForeColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.ForeColor, "startRandomButtonForeColor");
          
