@@ -193,7 +193,7 @@ namespace Auxiliary_tool
             {
                 
                 directSelectStudentBox.Items.Add(item.Name);
-                comboBox1.Items.Add(item.Name);//暂时的;
+               
             }            
         }
 
