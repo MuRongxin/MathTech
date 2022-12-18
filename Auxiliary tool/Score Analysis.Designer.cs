@@ -31,16 +31,16 @@
             this.cartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.charttestButton = new Guna.UI2.WinForms.Guna2CircleButton();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.comboBox1 = new Guna.UI2.WinForms.Guna2ComboBox();
             this.redrawChartButton = new Guna.UI2.WinForms.Guna2GradientButton();
+            this.directSelectStudentBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.scoreFluctuationComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.label4 = new System.Windows.Forms.Label();
-            this.selectStuComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
-            this.comboBox1 = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -61,21 +61,21 @@
             this.charttestButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
             this.charttestButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.charttestButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.charttestButton.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.charttestButton.Font = new System.Drawing.Font("Segoe UI", 7F);
             this.charttestButton.ForeColor = System.Drawing.Color.White;
-            this.charttestButton.Location = new System.Drawing.Point(961, 3);
+            this.charttestButton.Location = new System.Drawing.Point(942, 59);
             this.charttestButton.Name = "charttestButton";
             this.charttestButton.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
-            this.charttestButton.Size = new System.Drawing.Size(59, 58);
+            this.charttestButton.Size = new System.Drawing.Size(60, 56);
             this.charttestButton.TabIndex = 3;
-            this.charttestButton.Text = "Chart Value";
+            this.charttestButton.Text = "ClearChart ";
             this.charttestButton.Click += new System.EventHandler(this.charttestButton_Click);
             // 
             // panel1
             // 
             this.panel1.Controls.Add(this.comboBox1);
             this.panel1.Controls.Add(this.redrawChartButton);
-            this.panel1.Controls.Add(this.selectStuComboBox);
+            this.panel1.Controls.Add(this.directSelectStudentBox);
             this.panel1.Controls.Add(this.scoreFluctuationComboBox);
             this.panel1.Controls.Add(this.displayDataLenthComboBox);
             this.panel1.Controls.Add(this.label4);
@@ -89,6 +89,21 @@
             this.panel1.Size = new System.Drawing.Size(1023, 121);
             this.panel1.TabIndex = 4;
             // 
+            // comboBox1
+            // 
+            this.comboBox1.BackColor = System.Drawing.Color.Transparent;
+            this.comboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FocusedColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.comboBox1.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
+            this.comboBox1.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.comboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
+            this.comboBox1.ItemHeight = 30;
+            this.comboBox1.Location = new System.Drawing.Point(770, 20);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(188, 36);
+            this.comboBox1.TabIndex = 8;
+            // 
             // redrawChartButton
             // 
             this.redrawChartButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
@@ -96,15 +111,36 @@
             this.redrawChartButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.redrawChartButton.DisabledState.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.redrawChartButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.redrawChartButton.FillColor = System.Drawing.Color.Orchid;
+            this.redrawChartButton.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
             this.redrawChartButton.Font = new System.Drawing.Font("幼圆", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.redrawChartButton.ForeColor = System.Drawing.Color.White;
-            this.redrawChartButton.Location = new System.Drawing.Point(800, 70);
+            this.redrawChartButton.Location = new System.Drawing.Point(770, 70);
             this.redrawChartButton.Name = "redrawChartButton";
             this.redrawChartButton.Size = new System.Drawing.Size(135, 39);
             this.redrawChartButton.TabIndex = 1;
             this.redrawChartButton.Text = "下一组数据";
             this.redrawChartButton.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
-            this.redrawChartButton.Click += new System.EventHandler(this.redrawChartButton_Click);
+            this.redrawChartButton.Click += new System.EventHandler(this.RedrawChartButton_Click);
+            // 
+            // directSelectStudentBox
+            // 
+            this.directSelectStudentBox.BackColor = System.Drawing.Color.Silver;
+            this.directSelectStudentBox.BorderThickness = 0;
+            this.directSelectStudentBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.directSelectStudentBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.directSelectStudentBox.FillColor = System.Drawing.SystemColors.Control;
+            this.directSelectStudentBox.FocusedColor = System.Drawing.Color.White;
+            this.directSelectStudentBox.FocusedState.BorderColor = System.Drawing.Color.White;
+            this.directSelectStudentBox.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
+            this.directSelectStudentBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.directSelectStudentBox.ItemHeight = 30;
+            this.directSelectStudentBox.Location = new System.Drawing.Point(590, 20);
+            this.directSelectStudentBox.MaxDropDownItems = 3;
+            this.directSelectStudentBox.Name = "directSelectStudentBox";
+            this.directSelectStudentBox.Size = new System.Drawing.Size(174, 36);
+            this.directSelectStudentBox.TabIndex = 7;
+            this.directSelectStudentBox.SelectedIndexChanged += new System.EventHandler(this.DirectSelectStudentComboBox_SelectedIndexChanged);
             // 
             // scoreFluctuationComboBox
             // 
@@ -127,7 +163,7 @@
             this.scoreFluctuationComboBox.Name = "scoreFluctuationComboBox";
             this.scoreFluctuationComboBox.Size = new System.Drawing.Size(174, 36);
             this.scoreFluctuationComboBox.TabIndex = 7;
-            this.scoreFluctuationComboBox.SelectedIndexChanged += new System.EventHandler(this.scoreFluctuationComboBox_SelectedIndexChanged);
+            this.scoreFluctuationComboBox.SelectedIndexChanged += new System.EventHandler(this.DirectSelectStudentComboBox_SelectedIndexChanged);
             // 
             // displayDataLenthComboBox
             // 
@@ -159,6 +195,18 @@
             this.displayDataLenthComboBox.Size = new System.Drawing.Size(108, 36);
             this.displayDataLenthComboBox.TabIndex = 5;
             this.displayDataLenthComboBox.SelectedIndexChanged += new System.EventHandler(this.displayDataLenthComboBox_SelectedIndexChanged);
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("幼圆", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label4.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label4.Location = new System.Drawing.Point(399, 32);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(125, 22);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "直接选择：";
             // 
             // label3
             // 
@@ -205,52 +253,6 @@
             this.panel2.Size = new System.Drawing.Size(1023, 452);
             this.panel2.TabIndex = 5;
             // 
-            // label4
-            // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("幼圆", 13F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label4.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label4.Location = new System.Drawing.Point(399, 32);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(125, 22);
-            this.label4.TabIndex = 6;
-            this.label4.Text = "直接选择：";
-            // 
-            // selectStuComboBox
-            // 
-            this.selectStuComboBox.BackColor = System.Drawing.Color.Silver;
-            this.selectStuComboBox.BorderThickness = 0;
-            this.selectStuComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.selectStuComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.selectStuComboBox.FillColor = System.Drawing.SystemColors.Control;
-            this.selectStuComboBox.FocusedColor = System.Drawing.Color.White;
-            this.selectStuComboBox.FocusedState.BorderColor = System.Drawing.Color.White;
-            this.selectStuComboBox.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
-            this.selectStuComboBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.selectStuComboBox.ItemHeight = 30;
-            this.selectStuComboBox.Location = new System.Drawing.Point(590, 20);
-            this.selectStuComboBox.MaxDropDownItems = 3;
-            this.selectStuComboBox.Name = "selectStuComboBox";
-            this.selectStuComboBox.Size = new System.Drawing.Size(174, 36);
-            this.selectStuComboBox.TabIndex = 7;
-            this.selectStuComboBox.SelectedIndexChanged += new System.EventHandler(this.scoreFluctuationComboBox_SelectedIndexChanged);
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.BackColor = System.Drawing.Color.Transparent;
-            this.comboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FocusedColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.comboBox1.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(94)))), ((int)(((byte)(148)))), ((int)(((byte)(255)))));
-            this.comboBox1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.comboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(68)))), ((int)(((byte)(88)))), ((int)(((byte)(112)))));
-            this.comboBox1.ItemHeight = 30;
-            this.comboBox1.Location = new System.Drawing.Point(770, 20);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(188, 36);
-            this.comboBox1.TabIndex = 8;
-            // 
             // Score_Analysis_Panle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -279,7 +281,7 @@
         private System.Windows.Forms.Label label3;
         private Guna.UI2.WinForms.Guna2ComboBox scoreFluctuationComboBox;
         private Guna.UI2.WinForms.Guna2GradientButton redrawChartButton;
-        private Guna.UI2.WinForms.Guna2ComboBox selectStuComboBox;
+        private Guna.UI2.WinForms.Guna2ComboBox directSelectStudentBox;
         private System.Windows.Forms.Label label4;
         private Guna.UI2.WinForms.Guna2ComboBox comboBox1;
     }

@@ -38,8 +38,7 @@ namespace Auxiliary_tool
             _obj = this;
 
             currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
-
-            displayDataLenthComboBox.SelectedIndex = 0;//默认显示的数据量；
+           
 
             SetChartFormat();
 
@@ -54,13 +53,15 @@ namespace Auxiliary_tool
         public void StartThisPanle()
         {
             currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
+            InitDrawChartData(currentStudentDataList);
             FirstChart();
             InitDropdownlist();
         }
-        private void charttestButton_Click(object sender, EventArgs e)
+        private void charttestButton_Click(object sender, EventArgs e)//清除所有 数据图；
         {
             //InitDrawChartData(Auxiliarymethods.Instance.studentDatas_1);
-
+            cartesianChart.Series.Clear();
+            directSelectStudentBox.SelectedItem = null;
         }
 
         Dictionary<string, List<double>> scoreDic = new Dictionary<string, List<double>>();
@@ -68,8 +69,9 @@ namespace Auxiliary_tool
         List<StudentData> currentStudentDataList = new List<StudentData>();
 
         private void InitDrawChartData(List<StudentData> studentDatas)
-        {
-            cartesianChart.Series.Clear();            
+        {           
+            cartesianChart.Series.Clear();
+            scoreDic.Clear();
 
             foreach (var item in studentDatas)
             {
@@ -157,7 +159,7 @@ namespace Auxiliary_tool
         }
 
        
-        private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)//在启动时，这里会执行一次；
+        private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)//选择数据量下拉框，在启动时，这里会执行一次；
         {
             displayDataLenth = 0;
             displayIndex = 0;
@@ -169,12 +171,16 @@ namespace Auxiliary_tool
             
         }
 
-        private void scoreFluctuationComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void DirectSelectStudentComboBox_SelectedIndexChanged(object sender, EventArgs e)//直接选择学生下拉框；
         {
+            if (directSelectStudentBox.SelectedItem == null)
+                return;
+            string name = directSelectStudentBox.SelectedItem.ToString();
 
+            DirectSelectStudent(name);
         }
 
-        private void redrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
+        private void RedrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
         {
             ReDrawChart(displayDataLenth, displayIndex, currentStudentDataList);
            
@@ -182,11 +188,11 @@ namespace Auxiliary_tool
 
         private void InitDropdownlist()
         {
-            selectStuComboBox.Items.Clear();
+            directSelectStudentBox.Items.Clear();
             foreach (var item in currentStudentDataList)
             {
                 
-                selectStuComboBox.Items.Add(item.Name);
+                directSelectStudentBox.Items.Add(item.Name);
                 comboBox1.Items.Add(item.Name);//暂时的;
             }            
         }
@@ -220,6 +226,18 @@ namespace Auxiliary_tool
                 randomNumlist.Add(startIndex);
             }
            
+        }
+
+        /// <summary>
+        /// 通过下拉框直接选择学生
+        /// </summary>
+        private void DirectSelectStudent(string name)
+        {
+            SeriesCollection seriesCollection = cartesianChart.Series;
+
+            seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name]), DataLabels = false });
+
+            cartesianChart.Series = seriesCollection;
         }
     }
 }
