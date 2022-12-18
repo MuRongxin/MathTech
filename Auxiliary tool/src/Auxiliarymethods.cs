@@ -142,6 +142,75 @@ namespace Auxiliary_tool
             resoultColor = tempColor;
 
         }
+
+        Dictionary<string, Color> resoultColorsDic = new Dictionary<string, Color>();//存储每个控件的目标颜色；
+
+        /// <summary>
+        /// 平滑改变控件颜色
+        /// </summary>
+        /// <param name="oriColor">控件现在的颜色</param>
+        /// <param name="key">控件名</param>
+        /// <returns></returns>
+        public Color SmoothChangeColor(Color oriColor, string key)
+        {
+            Color falColor ;
+
+            if (!resoultColorsDic.ContainsKey(key))//如果当前没有该控件的颜色信息；
+                resoultColorsDic.Add(key, ThemeColor.RandomColor());
+
+            if (oriColor == resoultColorsDic[key])
+                resoultColorsDic[key] = ThemeColor.RandomColor();
+
+            falColor = SmoothChangeColor(oriColor, resoultColorsDic[key]);
+            
+            return falColor;
+        }
+
+        public Color SmoothChangeColor(Color oriColor, Color targetColor)
+        {
+            Color tempColor = targetColor;
+
+            if (targetColor.R > oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp++;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.R < oriColor.R)
+            {
+                int temp = oriColor.R;
+                temp--;
+                tempColor = Color.FromArgb(temp, oriColor.G, oriColor.B);
+            }
+            if (targetColor.G > oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R, temp, oriColor.B);
+            }
+            if (targetColor.G < oriColor.G)
+            {
+                int temp = oriColor.G;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, temp, oriColor.B);
+            }
+            if (targetColor.B > oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp++;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G, temp);
+            }
+            if (targetColor.B < oriColor.B)
+            {
+                int temp = oriColor.B;
+                temp--;
+                tempColor = Color.FromArgb(oriColor.R, oriColor.G, temp);
+            }
+
+            return tempColor;
+
+        }
+
         /// <summary>
         /// 平滑过度数字
         /// </summary>

@@ -180,7 +180,7 @@ namespace Auxiliary_tool
                         new ObservablePoint(1,5),
                         new ObservablePoint(2,6),
                          new ObservablePoint(3,4),
-                        new ObservablePoint(8,6),
+                        new ObservablePoint(10,6),
                     },
                     PointGeometrySize=11              
                  
@@ -213,7 +213,7 @@ namespace Auxiliary_tool
         {
             if (e.KeyCode==Keys.Enter)
             {
-                MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
             }
         }
 
