@@ -12,7 +12,7 @@ namespace Auxiliary_tool
 {
     public partial class RandomPanle : UserControl
     {
-        private List<string> nameList=new List<string>();
+        
         public RandomPanle()
         {
             InitializeComponent();
@@ -24,32 +24,56 @@ namespace Auxiliary_tool
         {
             
             panelsList = Auxiliarymethods.Instance.GetControlChildControl(panel2);//获取panel2里面的所有子节点；
-
+            
         }
 
        
-        Random random= new Random(); 
-        
+        Random random= new Random();
+        StudentData studentData;
         private void randomTimer_Tick(object sender, EventArgs e)
         {
-            int ran = random.Next(Auxiliarymethods.Instance.studentDatas.Count);
-            StudentData studentData = Auxiliarymethods.Instance.studentDatas[ran];
-            resoultLabel.Text = studentData.Name + " " + studentData.ID;
+            int rang = random.Next(Auxiliarymethods.Instance.studentDatas.Count);
+            //studentData = Auxiliarymethods.Instance.studentDatas[rang];
+            resoultLabel.Text = Auxiliarymethods.Instance.studentDatas[rang].Name;
 
 
             int x = random.Next(550);
             int y = random.Next(200);
-            resoultLabel.Location = new Point(x,y);          
+            resoultLabel.Location = new Point(x,y);        
 
         }
 
+        private List<StudentData> resoultList = new List<StudentData>();
+       
+        private void GetRandomResoult()
+        {
+            while (true)
+            {
+                bool isIdentical = false;
+                int rang = random.Next(Auxiliarymethods.Instance.studentDatas.Count);
+                studentData = Auxiliarymethods.Instance.studentDatas[rang];
+
+                foreach (var item in resoultList)
+                {
+                    if (item == studentData)
+                    {
+                        isIdentical = true;
+                        break;
+                    }
+                }
+
+                if (!isIdentical)
+                    break;
+
+            }
+            resoultList.Add(studentData);
+            resoultLabel.Text = studentData.Name;
+
+        }
 
         List<Control> panelsList = new List<Control>();     
-        private void InitNameList()
-        {      
-            
-            
-
+        private void Initpanel()
+        { 
             foreach (var item in panelsList)
             {
                 item.ForeColor = Color.White;
@@ -84,6 +108,11 @@ namespace Auxiliary_tool
             else
             {
                 startRandomButton.Text = "Start Random";
+
+                GetRandomResoult();
+
+                SetResoultTexBox(studentData.Name, studentData.CallCount.ToString());
+
                 randomTimer.Stop();
                 changeColortimer.Stop();
 
@@ -93,6 +122,24 @@ namespace Auxiliary_tool
             {
                 
             }
+        }
+
+        private void SetResoultTexBox(string name, string callCount)
+        {            
+            List<string> res = new List<string>();
+            if (richTextBox.Lines != null)
+                res = richTextBox.Lines.ToList<string>();
+            
+            res.Insert(0," " + name + " " + "[" + callCount + "]");
+            richTextBox.Lines = res.ToArray();
+
+            richTextBox.Clear();
+            foreach (var item in res)
+            {
+                richTextBox.SelectionColor = ThemeColor.RandomColor();
+                richTextBox.AppendText(item + "\n");
+            }
+
         }
 
     }

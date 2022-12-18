@@ -32,6 +32,8 @@
             this.randomTimer = new System.Windows.Forms.Timer(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.panel20 = new System.Windows.Forms.Panel();
+            this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.resoultLabel = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.startRandomButton = new System.Windows.Forms.Button();
@@ -39,29 +41,30 @@
             this.panel6 = new System.Windows.Forms.Panel();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.panel9 = new System.Windows.Forms.Panel();
             this.panel10 = new System.Windows.Forms.Panel();
             this.panel11 = new System.Windows.Forms.Panel();
-            this.changeColortimer = new System.Windows.Forms.Timer(this.components);
-            this.panel9 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel12 = new System.Windows.Forms.Panel();
             this.panel13 = new System.Windows.Forms.Panel();
             this.panel14 = new System.Windows.Forms.Panel();
             this.panel15 = new System.Windows.Forms.Panel();
             this.panel16 = new System.Windows.Forms.Panel();
-            this.panel17 = new System.Windows.Forms.Panel();
             this.panel18 = new System.Windows.Forms.Panel();
             this.panel19 = new System.Windows.Forms.Panel();
+            this.panel17 = new System.Windows.Forms.Panel();
+            this.changeColortimer = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             this.panel4.SuspendLayout();
+            this.panel20.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel6.SuspendLayout();
             this.panel7.SuspendLayout();
             this.panel8.SuspendLayout();
+            this.panel9.SuspendLayout();
             this.panel10.SuspendLayout();
             this.panel11.SuspendLayout();
-            this.panel9.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel12.SuspendLayout();
             this.panel13.SuspendLayout();
@@ -88,6 +91,7 @@
             // panel4
             // 
             this.panel4.BackColor = System.Drawing.Color.Transparent;
+            this.panel4.Controls.Add(this.panel20);
             this.panel4.Controls.Add(this.resoultLabel);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(147, 0);
@@ -95,15 +99,40 @@
             this.panel4.Size = new System.Drawing.Size(762, 494);
             this.panel4.TabIndex = 3;
             // 
+            // panel20
+            // 
+            this.panel20.Controls.Add(this.richTextBox);
+            this.panel20.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panel20.Location = new System.Drawing.Point(536, 0);
+            this.panel20.Name = "panel20";
+            this.panel20.Size = new System.Drawing.Size(226, 494);
+            this.panel20.TabIndex = 4;
+            // 
+            // richTextBox
+            // 
+            this.richTextBox.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.richTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox.Font = new System.Drawing.Font("微软雅黑", 20F);
+            this.richTextBox.ForeColor = System.Drawing.Color.Firebrick;
+            this.richTextBox.Location = new System.Drawing.Point(0, 0);
+            this.richTextBox.Name = "richTextBox";
+            this.richTextBox.ReadOnly = true;
+            this.richTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox.ShortcutsEnabled = false;
+            this.richTextBox.Size = new System.Drawing.Size(226, 494);
+            this.richTextBox.TabIndex = 5;
+            this.richTextBox.Text = "";
+            // 
             // resoultLabel
             // 
             this.resoultLabel.AutoSize = true;
             this.resoultLabel.Font = new System.Drawing.Font("黑体", 21F, System.Drawing.FontStyle.Bold);
             this.resoultLabel.Location = new System.Drawing.Point(39, 56);
             this.resoultLabel.Name = "resoultLabel";
-            this.resoultLabel.Size = new System.Drawing.Size(631, 35);
+            this.resoultLabel.Size = new System.Drawing.Size(372, 70);
             this.resoultLabel.TabIndex = 2;
-            this.resoultLabel.Text = "Hi~ o(*￣▽￣*)ブ  你准备好了吗？";
+            this.resoultLabel.Text = "Hi~ o(*￣▽￣*)ブ  \r\n你准备好了吗？";
             // 
             // panel3
             // 
@@ -174,6 +203,18 @@
             this.panel8.Size = new System.Drawing.Size(618, 70);
             this.panel8.TabIndex = 2;
             // 
+            // panel9
+            // 
+            this.panel9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel9.BackColor = System.Drawing.Color.Silver;
+            this.panel9.Controls.Add(this.panel10);
+            this.panel9.Location = new System.Drawing.Point(87, 0);
+            this.panel9.Name = "panel9";
+            this.panel9.Size = new System.Drawing.Size(531, 60);
+            this.panel9.TabIndex = 3;
+            // 
             // panel10
             // 
             this.panel10.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -197,23 +238,6 @@
             this.panel11.Name = "panel11";
             this.panel11.Size = new System.Drawing.Size(404, 40);
             this.panel11.TabIndex = 5;
-            // 
-            // changeColortimer
-            // 
-            this.changeColortimer.Interval = 10;
-            this.changeColortimer.Tick += new System.EventHandler(this.changeColortimer_Tick);
-            // 
-            // panel9
-            // 
-            this.panel9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel9.BackColor = System.Drawing.Color.Silver;
-            this.panel9.Controls.Add(this.panel10);
-            this.panel9.Location = new System.Drawing.Point(87, 0);
-            this.panel9.Name = "panel9";
-            this.panel9.Size = new System.Drawing.Size(531, 60);
-            this.panel9.TabIndex = 3;
             // 
             // panel5
             // 
@@ -288,17 +312,6 @@
             this.panel16.Size = new System.Drawing.Size(59, 0);
             this.panel16.TabIndex = 11;
             // 
-            // panel17
-            // 
-            this.panel17.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel17.BackColor = System.Drawing.Color.OrangeRed;
-            this.panel17.Location = new System.Drawing.Point(3, 3);
-            this.panel17.Name = "panel17";
-            this.panel17.Size = new System.Drawing.Size(20, 0);
-            this.panel17.TabIndex = 12;
-            // 
             // panel18
             // 
             this.panel18.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -322,6 +335,22 @@
             this.panel19.Size = new System.Drawing.Size(33, 0);
             this.panel19.TabIndex = 14;
             // 
+            // panel17
+            // 
+            this.panel17.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel17.BackColor = System.Drawing.Color.OrangeRed;
+            this.panel17.Location = new System.Drawing.Point(3, 3);
+            this.panel17.Name = "panel17";
+            this.panel17.Size = new System.Drawing.Size(20, 0);
+            this.panel17.TabIndex = 12;
+            // 
+            // changeColortimer
+            // 
+            this.changeColortimer.Interval = 10;
+            this.changeColortimer.Tick += new System.EventHandler(this.changeColortimer_Tick);
+            // 
             // RandomPanle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -334,14 +363,15 @@
             this.panel1.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
+            this.panel20.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel6.ResumeLayout(false);
             this.panel7.ResumeLayout(false);
             this.panel8.ResumeLayout(false);
+            this.panel9.ResumeLayout(false);
             this.panel10.ResumeLayout(false);
             this.panel11.ResumeLayout(false);
-            this.panel9.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel12.ResumeLayout(false);
             this.panel13.ResumeLayout(false);
@@ -377,5 +407,7 @@
         private System.Windows.Forms.Panel panel18;
         private System.Windows.Forms.Panel panel17;
         private System.Windows.Forms.Panel panel19;
+        private System.Windows.Forms.Panel panel20;
+        private System.Windows.Forms.RichTextBox richTextBox;
     }
 }
