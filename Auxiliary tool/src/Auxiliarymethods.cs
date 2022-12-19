@@ -27,7 +27,10 @@ namespace Auxiliary_tool
 
         public List<StudentData> studentDatas = new List<StudentData>();
 
-        
+        public int currnetClass = 0;
+
+        public string classFilePath_1 = "./data43.txt";
+        public string classFilePath_2 = "./data43.txt";
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -377,7 +380,7 @@ namespace Auxiliary_tool
         /// 更新节点数据
         /// </summary>
         /// <param name="path"></param>
-        public void UpdataXmlData(string path)
+        public void UpdataXmlData(string path,int stuId,int value)
         {
             XmlDocument xmlDocument = new XmlDocument();
             xmlDocument.Load(path);
@@ -392,7 +395,7 @@ namespace Auxiliary_tool
                     continue;
 
                 int id = Convert.ToInt32(childElement.GetAttributeNode("id").Value);
-                if (id == 3)
+                if (id == stuId)
                 {
                     foreach (XmlNode cchildNode in childNode.ChildNodes)
                     {
@@ -400,7 +403,7 @@ namespace Auxiliary_tool
                         switch (element.Name)
                         {
                             case "callCount":
-                                element.InnerText = "20";
+                                element.InnerText = value.ToString();
                                 break;
                             default:
                                 break;

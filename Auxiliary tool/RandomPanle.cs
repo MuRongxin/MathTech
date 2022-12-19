@@ -68,6 +68,10 @@ namespace Auxiliary_tool
             resoultList.Add(studentData);
             resoultLabel.Text = studentData.Name;
 
+            if (Auxiliarymethods.Instance.currnetClass == 1)
+                Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_1, studentData.ID, studentData.CallCount + 1);
+            if (Auxiliarymethods.Instance.currnetClass == 2)
+                Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_1, studentData.ID, studentData.CallCount + 1);
         }
 
         List<Control> panelsList = new List<Control>();     

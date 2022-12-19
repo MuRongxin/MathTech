@@ -221,8 +221,7 @@ namespace Auxiliary_tool
         {
             MessageBox.Show(searchTextBox.Text, "提示框标题", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
         }
-
-        int currnetClass = 0;
+       
 
         private void select43Button_Click(object sender, EventArgs e)
         {
@@ -234,7 +233,7 @@ namespace Auxiliary_tool
             }
             class43InfoPanel.Visible=true;
             smoothChangeTimer.Start();
-            currnetClass = 1;
+            Auxiliarymethods.Instance.currnetClass = 1;
 
             Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_1;
             Score_Analysis_Panle.Instance.StartThisPanle();
@@ -259,7 +258,7 @@ namespace Auxiliary_tool
 
             class45InfoPanel.Visible = true;
             smoothChangeTimer.Start();
-            currnetClass = 2;
+            Auxiliarymethods.Instance.currnetClass = 2;
 
             Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_2;
             Score_Analysis_Panle.Instance.StartThisPanle();
@@ -271,7 +270,7 @@ namespace Auxiliary_tool
         int range = 25; int tagetwith = 696;
         private void smoothChangeTimer_Tick(object sender, EventArgs e)
         {
-            if (currnetClass == 1)
+            if (Auxiliarymethods.Instance.currnetClass == 1)
             {                 
                 if (class43InfoPanel.Size.Width >= tagetwith)
                 {
