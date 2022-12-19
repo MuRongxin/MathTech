@@ -29,8 +29,8 @@ namespace Auxiliary_tool
 
         public int currnetClass = 0;
 
-        public string classFilePath_1 = "./data43.txt";
-        public string classFilePath_2 = "./data43.txt";
+        public string classFilePath_1 = "./data43.xml";
+        public string classFilePath_2 = "./data45.xml";
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -236,13 +236,13 @@ namespace Auxiliary_tool
         }
 
         public Dictionary<string,Point> targetLocationDic=new Dictionary<string,Point>();
-        public Point SmoothChangeLocation(Point oriLocation,string key,int randomRange,int changeRange)
+        public Point SmoothChangeLocation(Point oriLocation, string key, int randomRange, int changeRange, int state = 0)
         {
             if (!targetLocationDic.ContainsKey(key))
-                targetLocationDic.Add(key, GetRandomLocation(oriLocation, randomRange));
+                targetLocationDic.Add(key, GetRandomLocation(oriLocation, randomRange, state));
 
             if (JudgeControlSpacing(oriLocation, targetLocationDic[key]) < 2.5)
-                targetLocationDic[key] = GetRandomLocation(oriLocation, randomRange);
+                targetLocationDic[key] = GetRandomLocation(oriLocation, randomRange, state);
 
             return SmoothChangeLocation(oriLocation, targetLocationDic[key], changeRange);
         }
@@ -259,18 +259,19 @@ namespace Auxiliary_tool
             if (oriLocation.Y > targetLocation.Y)
                 oriLocation.Y -= range;
 
+
             return oriLocation;
         }
 
-        private Point GetRandomLocation(Point oriLocation,int range)
+        private Point GetRandomLocation(Point oriLocation,int range, int state)
         {
             Random random = new Random();
 
-            if (random.Next(-1, 2) < 0)
+            if (random.Next(-10, 10) < 0)
                 range = -range;
 
-            int startX = 0, endX = 0;
-            int startY = 0, endY = 0;
+            int startX, endX;
+            int startY, endY;
 
             if (oriLocation.X < oriLocation.X + range) { 
                 startX = oriLocation.X; endX = oriLocation.X + range;}
@@ -285,6 +286,11 @@ namespace Auxiliary_tool
             int x = random.Next(startX, endX);
             int y = random.Next(startY, endY);
 
+            if (state == 1)
+                return new Point(x, oriLocation.Y);
+            if (state == 2)
+                return new Point(oriLocation.X, y);
+
             return new Point(x, y);
         }
 
@@ -294,6 +300,59 @@ namespace Auxiliary_tool
             int y = Math.Abs(currentLocation.Y - targetLocation.Y);
 
             return Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+        }
+
+        bool isIncreX, isIncreY, isRandom;
+        public Point SmoothMoveCollider(int boundaryX,int boundaryY,Point oriLocation,int range)
+        {
+            if (!isRandom)
+            {
+                int judge = random.Next(10);
+
+                if (judge < 3)
+                    isIncreX = true;
+                else if (judge < 6&& judge>=3)
+                    isIncreY = true;
+                else
+                    isIncreX = true; isIncreY = true;
+
+                isRandom = true;
+            }
+
+            if (isIncreX)
+            {
+                oriLocation.X+=range;
+                if (oriLocation.X >= boundaryX)
+                {
+                    isIncreX = false;
+                }
+            }
+            else
+            {
+                oriLocation.X-=range;
+                if (oriLocation.X <= 0)
+                {
+                   isIncreX = true;
+                }            
+            }
+            if (isIncreY)
+            {
+                oriLocation.Y+=range;
+                if(oriLocation.Y >= boundaryY)
+                {
+                    isIncreY = false;
+                }
+            }
+           else
+            {
+                oriLocation.Y-=range;
+                if(oriLocation.Y <= 0)
+                {
+                    isIncreY = true;
+                }
+            }
+
+            return oriLocation;
         }
 
         /// <summary>

@@ -35,10 +35,10 @@ namespace Auxiliary_tool
             int rang = random.Next(Auxiliarymethods.Instance.studentDatas.Count);           
             resoultLabel.Text = Auxiliarymethods.Instance.studentDatas[rang].Name;
 
-            int x = random.Next(550);
-            int y = random.Next(200);
-            // resoultLabel.Location = new Point(x,y);        
-            resoultLabel.Location = Auxiliarymethods.Instance.SmoothChangeLocation(resoultLabel.Location, "Lable", 100, 2);
+            int x = panel4.Width -panel20.Width- resoultLabel.Width;
+            int y = panel4.Height-resoultLabel.Height;
+            //resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(x, y, resoultLabel.Location,2);      
+            //resoultLabel.Location = Auxiliarymethods.Instance.SmoothChangeLocation(resoultLabel.Location, "Lable", 100, 2);
 
         }
 
@@ -68,10 +68,12 @@ namespace Auxiliary_tool
             resoultList.Add(studentData);
             resoultLabel.Text = studentData.Name;
 
-            if (Auxiliarymethods.Instance.currnetClass == 1)
-                Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_1, studentData.ID, studentData.CallCount + 1);
-            if (Auxiliarymethods.Instance.currnetClass == 2)
-                Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_1, studentData.ID, studentData.CallCount + 1);
+            
+            //修改callcount
+            //if (Auxiliarymethods.Instance.currnetClass == 1)
+            //    Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_1, studentData.ID, studentData.CallCount + 1);
+            //if (Auxiliarymethods.Instance.currnetClass == 2)
+            //    Auxiliarymethods.Instance.UpdataXmlData(Auxiliarymethods.Instance.classFilePath_2, studentData.ID, studentData.CallCount + 1);
         }
 
         List<Control> panelsList = new List<Control>();     
@@ -99,17 +101,14 @@ namespace Auxiliary_tool
             {
                 panelsList[i].BackColor = Auxiliarymethods.Instance.SmoothChangeColor(panelsList[i].BackColor, panelsList[i].Name);               
             }
-
-
-
-
-
         }
 
         private void ChangeLocation_Tick(object sender, EventArgs e)
         {
-            for (int i = 0; i < panelsList.Count; i++)
-             panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1);
+            for (int i = 0; i < panelsList.Count; i++) {
+                panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 1);              
+            }
+            resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(x, y, resoultLabel.Location, 2);
 
         }
 

@@ -74,12 +74,12 @@ namespace Auxiliary_tool
         private void InitData()
         {
 
-            Auxiliarymethods.Instance.ReadDataXml("./data43.xml",Auxiliarymethods.Instance.studentDatas_1);
-            Auxiliarymethods.Instance.ReadDataXml("./data45.xml", Auxiliarymethods.Instance.studentDatas_2);
+            Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_1,Auxiliarymethods.Instance.studentDatas_1);
+            Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_2, Auxiliarymethods.Instance.studentDatas_2);
 
             Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx",Auxiliarymethods.Instance.studentDatas_1);
             Auxiliarymethods.Instance.ReadExcel("./Exam145Score.xlsx", Auxiliarymethods.Instance.studentDatas_2);
-
+              
 
             datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas_1.Count.ToString();
             datalengthLabel2.Text = Auxiliarymethods.Instance.studentDatas_2.Count.ToString();
@@ -234,7 +234,7 @@ namespace Auxiliary_tool
             class43InfoPanel.Visible=true;
             smoothChangeTimer.Start();
             Auxiliarymethods.Instance.currnetClass = 1;
-
+            
             Auxiliarymethods.Instance.studentDatas = Auxiliarymethods.Instance.studentDatas_1;
             Score_Analysis_Panle.Instance.StartThisPanle();
 

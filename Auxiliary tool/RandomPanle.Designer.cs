@@ -129,7 +129,7 @@
             // 
             this.resoultLabel.AutoSize = true;
             this.resoultLabel.Font = new System.Drawing.Font("黑体", 21F, System.Drawing.FontStyle.Bold);
-            this.resoultLabel.Location = new System.Drawing.Point(3, 45);
+            this.resoultLabel.Location = new System.Drawing.Point(50, 45);
             this.resoultLabel.Name = "resoultLabel";
             this.resoultLabel.Size = new System.Drawing.Size(372, 70);
             this.resoultLabel.TabIndex = 2;
@@ -354,7 +354,7 @@
             // 
             // ChangeLocation
             // 
-            this.ChangeLocation.Interval = 300;
+            this.ChangeLocation.Interval = 50;
             this.ChangeLocation.Tick += new System.EventHandler(this.ChangeLocation_Tick);
             // 
             // RandomPanle
