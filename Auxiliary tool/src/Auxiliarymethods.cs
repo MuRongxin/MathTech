@@ -232,6 +232,44 @@ namespace Auxiliary_tool
             return targetValue;
         }
 
+        Dictionary<string,Point> targetLocationDic=new Dictionary<string,Point>();
+        public Point SmoothChangeLocation(Point oriLocation,string key,int randomRange,int changeRange)
+        {
+            if (!targetLocationDic.ContainsKey(key))
+                targetLocationDic.Add(key, GetRandomLocation(oriLocation, randomRange));
+            //if(oriLocation)
+
+            return SmoothChangeLocation(oriLocation, targetLocationDic[key], changeRange);
+        }
+
+        private Point SmoothChangeLocation(Point oriLocation, Point targetLocation,int range)
+        {
+            if (oriLocation.X < targetLocation.X)
+                oriLocation.X += range;
+            if (oriLocation.X > targetLocation.X)
+                oriLocation.X -= range;
+
+            if (oriLocation.Y < targetLocation.Y)
+                oriLocation.Y += range;
+            if (oriLocation.Y > targetLocation.Y)
+                oriLocation.Y -= range;
+
+            return oriLocation;
+        }
+
+        private Point GetRandomLocation(Point oriLocation,int range)
+        {
+            Random random = new Random();
+
+            if (random.Next(-1, 2) < 0)
+                range = -range;
+
+            int x = random.Next(oriLocation.X, oriLocation.X + range);
+            int y = random.Next(oriLocation.Y, oriLocation.Y + range);
+
+            return new Point(x, y);
+        }
+
         /// <summary>
         /// ReadDataXml
         /// </summary>

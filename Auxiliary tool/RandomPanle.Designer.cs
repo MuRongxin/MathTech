@@ -94,16 +94,16 @@
             this.panel4.Controls.Add(this.panel20);
             this.panel4.Controls.Add(this.resoultLabel);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel4.Location = new System.Drawing.Point(147, 0);
+            this.panel4.Location = new System.Drawing.Point(162, 0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(762, 494);
+            this.panel4.Size = new System.Drawing.Size(747, 494);
             this.panel4.TabIndex = 3;
             // 
             // panel20
             // 
             this.panel20.Controls.Add(this.richTextBox);
             this.panel20.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel20.Location = new System.Drawing.Point(536, 0);
+            this.panel20.Location = new System.Drawing.Point(521, 0);
             this.panel20.Name = "panel20";
             this.panel20.Size = new System.Drawing.Size(226, 494);
             this.panel20.TabIndex = 4;
@@ -141,7 +141,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(147, 494);
+            this.panel3.Size = new System.Drawing.Size(162, 494);
             this.panel3.TabIndex = 2;
             // 
             // startRandomButton
@@ -151,7 +151,7 @@
             this.startRandomButton.ForeColor = System.Drawing.SystemColors.ButtonShadow;
             this.startRandomButton.Location = new System.Drawing.Point(0, 0);
             this.startRandomButton.Name = "startRandomButton";
-            this.startRandomButton.Size = new System.Drawing.Size(147, 494);
+            this.startRandomButton.Size = new System.Drawing.Size(162, 494);
             this.startRandomButton.TabIndex = 1;
             this.startRandomButton.Text = "Start Random";
             this.startRandomButton.UseVisualStyleBackColor = true;
@@ -321,7 +321,7 @@
             this.panel18.Controls.Add(this.panel19);
             this.panel18.Location = new System.Drawing.Point(20, 58);
             this.panel18.Name = "panel18";
-            this.panel18.Size = new System.Drawing.Size(39, 0);
+            this.panel18.Size = new System.Drawing.Size(30, 0);
             this.panel18.TabIndex = 13;
             // 
             // panel19
@@ -330,9 +330,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel19.BackColor = System.Drawing.Color.BurlyWood;
-            this.panel19.Location = new System.Drawing.Point(0, 16);
+            this.panel19.Location = new System.Drawing.Point(0, 10);
             this.panel19.Name = "panel19";
-            this.panel19.Size = new System.Drawing.Size(33, 0);
+            this.panel19.Size = new System.Drawing.Size(24, 0);
             this.panel19.TabIndex = 14;
             // 
             // panel17
@@ -343,7 +343,7 @@
             this.panel17.BackColor = System.Drawing.Color.OrangeRed;
             this.panel17.Location = new System.Drawing.Point(3, 3);
             this.panel17.Name = "panel17";
-            this.panel17.Size = new System.Drawing.Size(20, 0);
+            this.panel17.Size = new System.Drawing.Size(15, 0);
             this.panel17.TabIndex = 12;
             // 
             // changeColortimer

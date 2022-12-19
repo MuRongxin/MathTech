@@ -24,7 +24,7 @@ namespace Auxiliary_tool
         {
             
             panelsList = Auxiliarymethods.Instance.GetControlChildControl(panel2);//获取panel2里面的所有子节点；
-            
+            Initpanel();
         }
 
        
@@ -32,10 +32,8 @@ namespace Auxiliary_tool
         StudentData studentData;
         private void randomTimer_Tick(object sender, EventArgs e)
         {
-            int rang = random.Next(Auxiliarymethods.Instance.studentDatas.Count);
-            //studentData = Auxiliarymethods.Instance.studentDatas[rang];
+            int rang = random.Next(Auxiliarymethods.Instance.studentDatas.Count);           
             resoultLabel.Text = Auxiliarymethods.Instance.studentDatas[rang].Name;
-
 
             int x = random.Next(550);
             int y = random.Next(200);
@@ -76,8 +74,9 @@ namespace Auxiliary_tool
         { 
             foreach (var item in panelsList)
             {
-                item.ForeColor = Color.White;
+                item.BackColor = Color.Transparent;
             }
+            panel2.BackColor = Color.Transparent;
         }
 
        
