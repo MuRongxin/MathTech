@@ -82,6 +82,10 @@ namespace Auxiliary_tool
             foreach (var item in panelsList)
             {
                 item.BackColor = Color.Transparent;
+
+                item.Anchor = AnchorStyles.None;
+
+                item.Size = panel2.Size;
             }
             panel2.BackColor = Color.Transparent;
         }
@@ -97,7 +101,8 @@ namespace Auxiliary_tool
             startRandomButton.BackColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.BackColor, "startRandomButton");
             startRandomButton.ForeColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.ForeColor, "startRandomButtonForeColor");
             
-            resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(panel4.Width - panel20.Width - resoultLabel.Width, panel4.Height - resoultLabel.Height, resoultLabel.Location, 2);
+            resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(panel4.Width - panel20.Width - resoultLabel.Width, panel4.Height - resoultLabel.Height, resoultLabel.Location, 3);
+            resoultLabel.ForeColor= Auxiliarymethods.Instance.SmoothChangeColor(resoultLabel.ForeColor, "resoultLabel.ForeColor");
 
             for (int i = 0; i < panelsList.Count; i++)
             {
@@ -107,8 +112,14 @@ namespace Auxiliary_tool
 
         private void ChangeLocation_Tick(object sender, EventArgs e)
         {
-            for (int i = 0; i < panelsList.Count; i++) {
-                panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 1);              
+            for (int i = 0; i < panelsList.Count; i++)
+            {
+                 panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 0);              
+            }
+
+            for (int i = 0; i < panelsList.Count; i++)
+            {
+                //panelsList[i].Size = Auxiliarymethods.Instance.SmoothChangeSize(panelsList[i], panelsList[i].Name, 60);
             }
 
         }

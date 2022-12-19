@@ -363,6 +363,54 @@ namespace Auxiliary_tool
             return oriLocation;
         }
 
+        Dictionary<string, Size> sizeDic = new Dictionary<string, Size>();
+        public Size SmoothChangeSize(Control control,string key,int range)
+        {
+            if (!sizeDic.ContainsKey(key))
+                sizeDic.Add(key, GetRandomSize(control, range));
+
+            if (control.Size == sizeDic[key])
+                sizeDic[key] = GetRandomSize(control, range);
+
+            return SmooothChangeSize(control, sizeDic[key], 1);
+        }
+
+        private Size SmooothChangeSize(Control control,Size targetSize,int changeRange)
+        {
+            if (control.Size.Width < targetSize.Width)
+                control.Width += changeRange;
+            if (control.Width > targetSize.Width)
+                control.Width -= changeRange;
+
+            if (control.Height < targetSize.Height)
+                control.Height += changeRange;
+            if (control.Height > targetSize.Height)
+                control.Height -= changeRange;
+
+            if (control.Size.Width == 0 || control.Size.Height == 0)
+                return GetRandomSize(control, 10);
+
+            return control.Size;
+        }
+
+        private Size GetRandomSize(Control control,int range)
+        {
+            Size size = new Size();
+            Random rand = new Random();
+
+            if (rand.Next(-10, 11) > 0)
+                size.Width = control.Size.Width + range;
+            else
+                size.Width = control.Size.Width - range;
+
+            if (rand.Next(-10, 11) > 0)
+                size.Height = control.Size.Height + range;
+            else
+                size.Height = control.Size.Height - range;
+
+            return size;
+        }
+
         /// <summary>
         /// ReadDataXml
         /// </summary>
