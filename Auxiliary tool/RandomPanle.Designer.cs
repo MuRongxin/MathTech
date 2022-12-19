@@ -54,6 +54,7 @@
             this.panel19 = new System.Windows.Forms.Panel();
             this.panel17 = new System.Windows.Forms.Panel();
             this.changeColortimer = new System.Windows.Forms.Timer(this.components);
+            this.ChangeLocation = new System.Windows.Forms.Timer(this.components);
             this.panel1.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel20.SuspendLayout();
@@ -128,7 +129,7 @@
             // 
             this.resoultLabel.AutoSize = true;
             this.resoultLabel.Font = new System.Drawing.Font("黑体", 21F, System.Drawing.FontStyle.Bold);
-            this.resoultLabel.Location = new System.Drawing.Point(39, 56);
+            this.resoultLabel.Location = new System.Drawing.Point(3, 45);
             this.resoultLabel.Name = "resoultLabel";
             this.resoultLabel.Size = new System.Drawing.Size(372, 70);
             this.resoultLabel.TabIndex = 2;
@@ -351,6 +352,11 @@
             this.changeColortimer.Interval = 10;
             this.changeColortimer.Tick += new System.EventHandler(this.changeColortimer_Tick);
             // 
+            // ChangeLocation
+            // 
+            this.ChangeLocation.Interval = 300;
+            this.ChangeLocation.Tick += new System.EventHandler(this.ChangeLocation_Tick);
+            // 
             // RandomPanle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -409,5 +415,6 @@
         private System.Windows.Forms.Panel panel19;
         private System.Windows.Forms.Panel panel20;
         private System.Windows.Forms.RichTextBox richTextBox;
+        private System.Windows.Forms.Timer ChangeLocation;
     }
 }

@@ -232,12 +232,14 @@ namespace Auxiliary_tool
             return targetValue;
         }
 
-        Dictionary<string,Point> targetLocationDic=new Dictionary<string,Point>();
+        public Dictionary<string,Point> targetLocationDic=new Dictionary<string,Point>();
         public Point SmoothChangeLocation(Point oriLocation,string key,int randomRange,int changeRange)
         {
             if (!targetLocationDic.ContainsKey(key))
                 targetLocationDic.Add(key, GetRandomLocation(oriLocation, randomRange));
-            //if(oriLocation)
+
+            if (JudgeControlSpacing(oriLocation, targetLocationDic[key]) < 2.5)
+                targetLocationDic[key] = GetRandomLocation(oriLocation, randomRange);
 
             return SmoothChangeLocation(oriLocation, targetLocationDic[key], changeRange);
         }
@@ -264,10 +266,31 @@ namespace Auxiliary_tool
             if (random.Next(-1, 2) < 0)
                 range = -range;
 
-            int x = random.Next(oriLocation.X, oriLocation.X + range);
-            int y = random.Next(oriLocation.Y, oriLocation.Y + range);
+            int startX = 0, endX = 0;
+            int startY = 0, endY = 0;
+
+            if (oriLocation.X < oriLocation.X + range) { 
+                startX = oriLocation.X; endX = oriLocation.X + range;}
+            else
+                endX = oriLocation.X; startX = oriLocation.X + range;
+
+            if (oriLocation.Y < oriLocation.Y + range) { 
+                startY = oriLocation.Y; endY = oriLocation.Y + range;}
+            else
+                endY = oriLocation.Y; startY = oriLocation.Y + range;
+
+            int x = random.Next(startX, endX);
+            int y = random.Next(startY, endY);
 
             return new Point(x, y);
+        }
+
+        private double JudgeControlSpacing(Point currentLocation,Point targetLocation)
+        {
+            int x = Math.Abs(currentLocation.X - targetLocation.X);
+            int y = Math.Abs(currentLocation.Y - targetLocation.Y);
+
+            return Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
         }
 
         /// <summary>

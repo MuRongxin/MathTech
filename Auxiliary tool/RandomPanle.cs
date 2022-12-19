@@ -37,7 +37,8 @@ namespace Auxiliary_tool
 
             int x = random.Next(550);
             int y = random.Next(200);
-            resoultLabel.Location = new Point(x,y);        
+            // resoultLabel.Location = new Point(x,y);        
+            resoultLabel.Location = Auxiliarymethods.Instance.SmoothChangeLocation(resoultLabel.Location, "Lable", 100, 2);
 
         }
 
@@ -94,6 +95,18 @@ namespace Auxiliary_tool
             {
                 panelsList[i].BackColor = Auxiliarymethods.Instance.SmoothChangeColor(panelsList[i].BackColor, panelsList[i].Name);               
             }
+
+
+
+
+
+        }
+
+        private void ChangeLocation_Tick(object sender, EventArgs e)
+        {
+            for (int i = 0; i < panelsList.Count; i++)
+             panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1);
+
         }
 
         private void startRandomButton_Click(object sender, EventArgs e)
@@ -103,6 +116,7 @@ namespace Auxiliary_tool
                 startRandomButton.Text = "Stop Random";
                 randomTimer.Start();
                 changeColortimer.Start();
+                ChangeLocation.Start();
             }
             else
             {
@@ -114,7 +128,8 @@ namespace Auxiliary_tool
 
                 randomTimer.Stop();
                 changeColortimer.Stop();
-
+                ChangeLocation.Stop();
+                Auxiliarymethods.Instance.targetLocationDic.Clear();
             }
 
             if (startRandomButton.Text == "Start Random")
@@ -141,5 +156,6 @@ namespace Auxiliary_tool
 
         }
 
+       
     }
 }
