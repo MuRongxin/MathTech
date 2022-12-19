@@ -96,7 +96,9 @@ namespace Auxiliary_tool
            
             startRandomButton.BackColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.BackColor, "startRandomButton");
             startRandomButton.ForeColor = Auxiliarymethods.Instance.SmoothChangeColor(startRandomButton.ForeColor, "startRandomButtonForeColor");
-         
+            
+            resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(panel4.Width - panel20.Width - resoultLabel.Width, panel4.Height - resoultLabel.Height, resoultLabel.Location, 2);
+
             for (int i = 0; i < panelsList.Count; i++)
             {
                 panelsList[i].BackColor = Auxiliarymethods.Instance.SmoothChangeColor(panelsList[i].BackColor, panelsList[i].Name);               
@@ -108,7 +110,6 @@ namespace Auxiliary_tool
             for (int i = 0; i < panelsList.Count; i++) {
                 panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 1);              
             }
-            resoultLabel.Location = Auxiliarymethods.Instance.SmoothMoveCollider(x, y, resoultLabel.Location, 2);
 
         }
 

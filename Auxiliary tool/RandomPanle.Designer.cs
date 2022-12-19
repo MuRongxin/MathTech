@@ -349,7 +349,7 @@
             // 
             // changeColortimer
             // 
-            this.changeColortimer.Interval = 10;
+            this.changeColortimer.Interval = 5;
             this.changeColortimer.Tick += new System.EventHandler(this.changeColortimer_Tick);
             // 
             // ChangeLocation

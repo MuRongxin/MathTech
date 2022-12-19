@@ -303,6 +303,14 @@ namespace Auxiliary_tool
         }
 
         bool isIncreX, isIncreY, isRandom;
+        /// <summary>
+        /// 移动位置，实现碰撞效果
+        /// </summary>
+        /// <param name="boundaryX">X边界最小为零</param>
+        /// <param name="boundaryY">Y边界最小为零</param>
+        /// <param name="oriLocation">当前位置</param>
+        /// <param name="range">位置变化幅度</param>
+        /// <returns></returns>
         public Point SmoothMoveCollider(int boundaryX,int boundaryY,Point oriLocation,int range)
         {
             if (!isRandom)
