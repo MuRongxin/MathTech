@@ -69,7 +69,10 @@ namespace Auxiliary_tool
             //PanelContainer.Controls.Add(score_Analysis);
 
             rushTimer.Start();
-           
+
+            SetChartFormat();
+
+            SetAverageCartesianChar();
         }
         private void InitData()
         {
@@ -167,7 +170,7 @@ namespace Auxiliary_tool
                     Values =new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(1,10),
-                        new ObservablePoint(3,2.1),
+                        new ObservablePoint(3,5.1),
                          new ObservablePoint(5,5),
                         new ObservablePoint(10,8),
                     },
@@ -179,7 +182,7 @@ namespace Auxiliary_tool
                     {
                         new ObservablePoint(1,5),
                         new ObservablePoint(2,6),
-                         new ObservablePoint(3,4),
+                         new ObservablePoint(3,7),
                         new ObservablePoint(10,6),
                     },
                     PointGeometrySize=11              
@@ -302,6 +305,55 @@ namespace Auxiliary_tool
             }
         }
 
-       
+        private void SetChartFormat()
+        {
+            List<string> date = new List<string>();
+            foreach (var dicVal in Auxiliarymethods.Instance.studentDatas_1[2].scoreArr)
+                date.Add(dicVal[0].Split(' ')[0]);
+
+
+            average_CartesianChart.AxisX.Add(new Axis
+            {
+                Title = "Examination",
+                Labels = date,
+            });
+
+            average_CartesianChart.AxisY.Add(new Axis
+            {
+                Title = "Percentage of Score"
+            });
+            average_CartesianChart.LegendLocation = LegendLocation.Right;
+        }
+
+        Dictionary<string, double> scoreDic_1 = new Dictionary<string, double>();
+        List<string[]> score = new List<string[]>();
+        private void SetAverageCartesianChar()
+        {
+            foreach (var dicVal in Auxiliarymethods.Instance.studentDatas_1)
+            {
+                foreach (var item in dicVal.scoreArr)
+                {
+                    score.Add(item);
+                }
+            }
+
+            foreach (var item in score)
+            {
+                if (!scoreDic_1.ContainsKey(item[0].Split(' ')[0]))
+                {
+                    scoreDic_1.Add(item[0].Split(' ')[0], double.Parse(item[1]));
+                }
+                else
+                    scoreDic_1[item[0].Split(' ')[0]] += double.Parse(item[1]);
+            }
+
+            var list = scoreDic_1.ToList();
+            foreach (var item in list)
+            {
+                scoreDic_1[item.Key] = item.Value / Auxiliarymethods.Instance.studentDatas_1.Count();
+            }
+            //22.66 	28.60 	37.28 	20.40 	26.03 	25.50 	27.40 	17.28 	12.59 	12.53 	19.55 	29.55 	25.00 	35.67 	21.03 
+
+        }
     }
 }

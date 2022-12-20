@@ -83,9 +83,9 @@ namespace Auxiliary_tool
             {
                 item.BackColor = Color.Transparent;
 
-                item.Anchor = AnchorStyles.None;
+                //item.Anchor = AnchorStyles.None;
 
-                item.Size = panel2.Size;
+                //item.Size = panel2.Size;
             }
             panel2.BackColor = Color.Transparent;
         }
@@ -114,7 +114,7 @@ namespace Auxiliary_tool
         {
             for (int i = 0; i < panelsList.Count; i++)
             {
-                 panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 0);              
+                 //panelsList[i].Location = Auxiliarymethods.Instance.SmoothChangeLocation(panelsList[i].Location, panelsList[i].Name, 10, 1, 1);              
             }
 
             for (int i = 0; i < panelsList.Count; i++)
