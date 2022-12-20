@@ -144,7 +144,7 @@ namespace Auxiliary_tool
                 foreach (var dicVal in studentData[i].scoreArr)
                     scoreList.Add(double.Parse(dicVal[1]));
 
-                if (isOnlyRedrawLastWeek && scoreList.Count > 6)
+                if (isOnlyRedrawLastWeek)
                 {
                     scoreList = scoreList.GetRange(scoreList.Count - 7, 7);
                 }
@@ -152,9 +152,6 @@ namespace Auxiliary_tool
 
                 displayIndex = i + 1;
             }
-
-
-
 
             foreach (var item in cartesianChart.Series)//如果需要的话，在原有的基础上添加图表数据；
             {
@@ -196,7 +193,6 @@ namespace Auxiliary_tool
             }
 
             ReDrawChart(displayDataLenth, displayIndex, currentStudentDataList);
-
         }
 
         private void InitDropdownlist()
@@ -204,9 +200,7 @@ namespace Auxiliary_tool
             directSelectStudentBox.Items.Clear();
             foreach (var item in currentStudentDataList)
             {
-
                 directSelectStudentBox.Items.Add(item.Name);
-
             }
         }
 
@@ -249,7 +243,7 @@ namespace Auxiliary_tool
             SeriesCollection seriesCollection = cartesianChart.Series;
 
             if (isOnlyRedrawLastweek)
-                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name].GetRange(scoreDic[name].Count-7, 7)), DataLabels = false });
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name].GetRange(scoreDic[name].Count - 7, 7)), DataLabels = false });
             else
                 seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name]), DataLabels = false });
 
@@ -262,44 +256,62 @@ namespace Auxiliary_tool
             directSelectStudentBox.SelectedItem = null;
         }
 
+        SeriesCollection oriSeries = new SeriesCollection();
         private void lastWeekScoreButton_Click(object sender, EventArgs e)
         {
             if (lastWeekScoreButton.Text == "Last 7 days")
             {
                 isOnlyRedrawLastweek = true;
+                foreach (var item in cartesianChart.Series)
+                {
+                    oriSeries.Add(new LineSeries() { Title = item.Title, Values = new ChartValues<double>((ChartValues<double>)item.Values) });
+                }
+
                 CheckLastWeekScore();
                 lastWeekScoreButton.Text = "All";
+
+                List<string> lastWeekdate = date.GetRange(date.Count - 7, 7);
+
+                cartesianChart.AxisX.Clear();
+                cartesianChart.AxisX.Add(new Axis
+                {
+                    Title = "Examination",
+                    Labels = lastWeekdate,
+                });
+
             }
             else
             {
                 isOnlyRedrawLastweek = false;
                 lastWeekScoreButton.Text = "Last 7 days";
+
                 cartesianChart.AxisX.Clear();
                 cartesianChart.AxisX.Add(new Axis
                 {
                     Title = "Examination",
                     Labels = date,
                 });
+
+                RecoverAllScore();
             }
+        }
+
+        private void RecoverAllScore()
+        {
+            cartesianChart.Series = oriSeries;
+            //oriSeries.Clear();
         }
 
         bool isOnlyRedrawLastweek;
         private void CheckLastWeekScore()
         {
+            if (Auxiliarymethods.Instance.studentDatas[0].scoreArr.Count < 7)
+            {
+                MessageBox.Show("当前成绩数量小于7，无法筛选", "警告", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             SeriesCollection series = new SeriesCollection();
             Dictionary<string, ChartValues<double>> scoreDic = new Dictionary<string, ChartValues<double>>();
-
-            List<string> lastWeekdate = new List<string>();
-
-            lastWeekdate = date.GetRange(date.Count - 7, 7);
-
-            cartesianChart.AxisX.Clear();
-            cartesianChart.AxisX.Add(new Axis
-            {
-                Title = "Examination",
-                Labels = lastWeekdate,
-            });
-
 
             foreach (Series item in cartesianChart.Series)
             {
@@ -309,20 +321,16 @@ namespace Auxiliary_tool
 
             foreach (var item in scoreDic)
             {
-                List<double> score = new List<double>();
 
                 var currentScoreList = scoreDic[item.Key].ToList();
-                for (int i = currentScoreList.Count - 7; i < currentScoreList.Count; i++)
-                {
-                    score.Add(currentScoreList[i]);
-                }
+                if (isOnlyRedrawLastweek)
+                    series.Add(new LineSeries() { Title = item.Key, Values = new ChartValues<double>(currentScoreList.GetRange(currentScoreList.Count - 7, 7)) });
 
-                series.Add(new LineSeries() { Title = item.Key, Values = new ChartValues<double>(score) });
             }
 
             cartesianChart.Series.Clear();
             cartesianChart.Series = series;
-        }
 
+        }
     }
 }
