@@ -72,6 +72,8 @@ namespace Auxiliary_tool
 
             SetChartFormat();
 
+            GetAverage(Auxiliarymethods.Instance.studentDatas_1, averageScoreDic_1);
+            GetAverage(Auxiliarymethods.Instance.studentDatas_2, averageScoreDic_2);
             SetAverageCartesianChar();
         }
         private void InitData()
@@ -322,14 +324,16 @@ namespace Auxiliary_tool
             {
                 Title = "Percentage of Score"
             });
-            average_CartesianChart.LegendLocation = LegendLocation.Right;
+            //average_CartesianChart.LegendLocation = LegendLocation.Right;
         }
 
-        Dictionary<string, double> scoreDic_1 = new Dictionary<string, double>();
-        List<string[]> score = new List<string[]>();
-        private void SetAverageCartesianChar()
+        Dictionary<string, double> averageScoreDic_1 = new Dictionary<string, double>();//按照日期存储当日的平均值；
+        Dictionary<string, double> averageScoreDic_2 = new Dictionary<string, double>();
+
+        private void GetAverage(List<StudentData> studentDataList, Dictionary<string, double> averageScoreDic)
         {
-            foreach (var dicVal in Auxiliarymethods.Instance.studentDatas_1)
+            List<string[]> score = new List<string[]>();//每个人每天的成绩;
+            foreach (var dicVal in studentDataList)
             {
                 foreach (var item in dicVal.scoreArr)
                 {
@@ -337,23 +341,44 @@ namespace Auxiliary_tool
                 }
             }
 
-            foreach (var item in score)
+            foreach (var item in score)//把每天的成绩归到一起；
             {
-                if (!scoreDic_1.ContainsKey(item[0].Split(' ')[0]))
+                if (!averageScoreDic.ContainsKey(item[0].Split(' ')[0]))
                 {
-                    scoreDic_1.Add(item[0].Split(' ')[0], double.Parse(item[1]));
+                    averageScoreDic.Add(item[0].Split(' ')[0], double.Parse(item[1]));
                 }
                 else
-                    scoreDic_1[item[0].Split(' ')[0]] += double.Parse(item[1]);
+                    averageScoreDic[item[0].Split(' ')[0]] += double.Parse(item[1]);
             }
-
-            var list = scoreDic_1.ToList();
+            
+            var list = averageScoreDic.ToList();
             foreach (var item in list)
             {
-                scoreDic_1[item.Key] = item.Value / Auxiliarymethods.Instance.studentDatas_1.Count();
-            }
-            //22.66 	28.60 	37.28 	20.40 	26.03 	25.50 	27.40 	17.28 	12.59 	12.53 	19.55 	29.55 	25.00 	35.67 	21.03 
+                averageScoreDic[item.Key] = Math.Round(item.Value / studentDataList.Count(),2);
+            }          
+        }
 
+        private void SetAverageCartesianChar()
+        {
+            SeriesCollection series = new SeriesCollection();
+
+            List<double> averageScoreList_1=new List<double>();
+            List<double> averageScoreList_2 = new List<double>();
+
+            foreach (var item in averageScoreDic_1)
+            {
+                averageScoreList_1.Add(item.Value);
+            }
+
+            foreach (var item in averageScoreDic_2)
+            {
+                averageScoreList_2.Add(item.Value);
+            }
+
+            series.Add(new LineSeries() { Title = "143", Values = new ChartValues<double>(averageScoreList_1) });
+            series.Add(new LineSeries() { Title = "145", Values = new ChartValues<double>(averageScoreList_2) });
+
+            average_CartesianChart.Series = series;
         }
     }
 }
