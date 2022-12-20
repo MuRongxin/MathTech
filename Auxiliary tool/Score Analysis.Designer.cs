@@ -42,6 +42,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.lastWeekScoreButton = new Guna.UI2.WinForms.Guna2Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -69,6 +70,7 @@
             // 
             // panel5
             // 
+            this.panel5.Controls.Add(this.lastWeekScoreButton);
             this.panel5.Controls.Add(this.clearChartButton);
             this.panel5.Controls.Add(this.directSelectStudentBox);
             this.panel5.Controls.Add(this.redrawChartButton);
@@ -91,7 +93,7 @@
             this.clearChartButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.clearChartButton.Font = new System.Drawing.Font("Century", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.clearChartButton.ForeColor = System.Drawing.Color.White;
-            this.clearChartButton.Location = new System.Drawing.Point(446, 20);
+            this.clearChartButton.Location = new System.Drawing.Point(446, 38);
             this.clearChartButton.Name = "clearChartButton";
             this.clearChartButton.Size = new System.Drawing.Size(126, 32);
             this.clearChartButton.TabIndex = 1;
@@ -131,7 +133,7 @@
             this.redrawChartButton.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
             this.redrawChartButton.Font = new System.Drawing.Font("幼圆", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.redrawChartButton.ForeColor = System.Drawing.Color.White;
-            this.redrawChartButton.Location = new System.Drawing.Point(446, 73);
+            this.redrawChartButton.Location = new System.Drawing.Point(446, 76);
             this.redrawChartButton.Name = "redrawChartButton";
             this.redrawChartButton.Size = new System.Drawing.Size(124, 32);
             this.redrawChartButton.TabIndex = 1;
@@ -160,7 +162,6 @@
             this.scoreFluctuationComboBox.Name = "scoreFluctuationComboBox";
             this.scoreFluctuationComboBox.Size = new System.Drawing.Size(165, 36);
             this.scoreFluctuationComboBox.TabIndex = 7;
-            this.scoreFluctuationComboBox.SelectedIndexChanged += new System.EventHandler(this.DirectSelectStudentComboBox_SelectedIndexChanged);
             // 
             // label4
             // 
@@ -262,6 +263,24 @@
             this.panel2.Size = new System.Drawing.Size(1051, 452);
             this.panel2.TabIndex = 5;
             // 
+            // lastWeekScoreButton
+            // 
+            this.lastWeekScoreButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lastWeekScoreButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.lastWeekScoreButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.lastWeekScoreButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.lastWeekScoreButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.lastWeekScoreButton.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.lastWeekScoreButton.Font = new System.Drawing.Font("Century", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lastWeekScoreButton.ForeColor = System.Drawing.Color.White;
+            this.lastWeekScoreButton.Location = new System.Drawing.Point(446, 8);
+            this.lastWeekScoreButton.Name = "lastWeekScoreButton";
+            this.lastWeekScoreButton.Size = new System.Drawing.Size(126, 25);
+            this.lastWeekScoreButton.TabIndex = 8;
+            this.lastWeekScoreButton.Text = "Last 7 days";
+            this.lastWeekScoreButton.Click += new System.EventHandler(this.lastWeekScoreButton_Click);
+            // 
             // Score_Analysis_Panle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -297,5 +316,6 @@
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.Panel panel3;
         private Guna.UI2.WinForms.Guna2TileButton clearChartButton;
+        private Guna.UI2.WinForms.Guna2Button lastWeekScoreButton;
     }
 }

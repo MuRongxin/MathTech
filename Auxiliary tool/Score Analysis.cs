@@ -38,12 +38,12 @@ namespace Auxiliary_tool
             _obj = this;
 
             currentStudentDataList = Auxiliarymethods.Instance.studentDatas;
-           
+
 
             SetChartFormat();
 
             InitDropdownlist();
-            
+
 
             InitDrawChartData(currentStudentDataList);
 
@@ -69,7 +69,7 @@ namespace Auxiliary_tool
         List<StudentData> currentStudentDataList = new List<StudentData>();
 
         private void InitDrawChartData(List<StudentData> studentDatas)
-        {           
+        {
             cartesianChart.Series.Clear();
             scoreDic.Clear();
 
@@ -96,13 +96,13 @@ namespace Auxiliary_tool
             }
             //List<double> scoreList_1 = new List<double>() { 0.11, 0.21, 0.41, 0.21, 0.43, 0.56, 1.76, 0.01, 0.12, 0.45, 1};
             //seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<double>(scoreList_1), DataLabels = false });
-            
+
             //cartesianChart.Series = seriesCollection;
         }
 
+        List<string> date = new List<string>();
         private void SetChartFormat()
         {
-            List<string> date = new List<string>();
             foreach (var dicVal in currentStudentDataList[2].scoreArr)
                 date.Add(dicVal[0].Split(' ')[0]);
 
@@ -122,7 +122,7 @@ namespace Auxiliary_tool
 
         int displayDataLenth = 0;
         int displayIndex = 0;
-        private void ReDrawChart(int displayLenth,int startIndex, List<StudentData> studentData, bool isClearSeries = true)
+        private void ReDrawChart(int displayLenth, int startIndex, List<StudentData> studentData, bool isClearSeries = true, bool isOnlyRedrawLastWeek = false)
         {
             if (displayLenth == 0)
                 return;
@@ -133,7 +133,7 @@ namespace Auxiliary_tool
             SeriesCollection seriesCollection = new SeriesCollection();
 
 
-            for (int i = startIndex; i < startIndex+displayLenth; i++)
+            for (int i = startIndex; i < startIndex + displayLenth; i++)
             {
                 if (i >= studentData.Count)
                     break;
@@ -144,21 +144,28 @@ namespace Auxiliary_tool
                 foreach (var dicVal in studentData[i].scoreArr)
                     scoreList.Add(double.Parse(dicVal[1]));
 
+                if (isOnlyRedrawLastWeek && scoreList.Count > 6)
+                {
+                    scoreList = scoreList.GetRange(scoreList.Count - 7, 7);
+                }
                 seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
 
                 displayIndex = i + 1;
             }
+
+
+
 
             foreach (var item in cartesianChart.Series)//如果需要的话，在原有的基础上添加图表数据；
             {
                 seriesCollection.Add(item);
             }
 
-            cartesianChart.Series = seriesCollection;           
+            cartesianChart.Series = seriesCollection;
 
         }
 
-       
+
         private void displayDataLenthComboBox_SelectedIndexChanged(object sender, EventArgs e)//选择数据量下拉框，在启动时，这里会执行一次；
         {
             displayDataLenth = 0;
@@ -168,7 +175,7 @@ namespace Auxiliary_tool
                 displayDataLenth = int.Parse((string)displayDataLenthComboBox.SelectedItem);
             else
                 displayDataLenth = currentStudentDataList.Count;
-            
+
         }
 
         private void DirectSelectStudentComboBox_SelectedIndexChanged(object sender, EventArgs e)//直接选择学生下拉框；
@@ -182,8 +189,14 @@ namespace Auxiliary_tool
 
         private void RedrawChartButton_Click(object sender, EventArgs e)//下一组 按钮；
         {
+            if (isOnlyRedrawLastweek)
+            {
+                ReDrawChart(displayDataLenth, displayIndex, currentStudentDataList, isOnlyRedrawLastWeek: true);
+                return;
+            }
+
             ReDrawChart(displayDataLenth, displayIndex, currentStudentDataList);
-           
+
         }
 
         private void InitDropdownlist()
@@ -191,10 +204,10 @@ namespace Auxiliary_tool
             directSelectStudentBox.Items.Clear();
             foreach (var item in currentStudentDataList)
             {
-                
+
                 directSelectStudentBox.Items.Add(item.Name);
-               
-            }            
+
+            }
         }
 
         private void FirstChart()
@@ -207,25 +220,25 @@ namespace Auxiliary_tool
             bool isRepeat = false;
             for (int i = 0; i < count; i++)
             {
-                int startIndex=random.Next(currentStudentDataList.Count);
+                int startIndex = random.Next(currentStudentDataList.Count);
 
                 foreach (var item in randomNumlist)//校验随机开始的index是否出现重复；
                     if (startIndex == item)
                     {
                         isRepeat = true;
-                        break; 
+                        break;
                     }
 
                 if (isRepeat)
                 {
                     isRepeat = false;
                     break;
-                }                
+                }
 
-                ReDrawChart(1, startIndex, currentStudentDataList,false);
+                ReDrawChart(1, startIndex, currentStudentDataList, false);
                 randomNumlist.Add(startIndex);
             }
-           
+
         }
 
         /// <summary>
@@ -235,7 +248,10 @@ namespace Auxiliary_tool
         {
             SeriesCollection seriesCollection = cartesianChart.Series;
 
-            seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name]), DataLabels = false });
+            if (isOnlyRedrawLastweek)
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name].GetRange(scoreDic[name].Count-7, 7)), DataLabels = false });
+            else
+                seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreDic[name]), DataLabels = false });
 
             cartesianChart.Series = seriesCollection;
         }
@@ -246,7 +262,67 @@ namespace Auxiliary_tool
             directSelectStudentBox.SelectedItem = null;
         }
 
+        private void lastWeekScoreButton_Click(object sender, EventArgs e)
+        {
+            if (lastWeekScoreButton.Text == "Last 7 days")
+            {
+                isOnlyRedrawLastweek = true;
+                CheckLastWeekScore();
+                lastWeekScoreButton.Text = "All";
+            }
+            else
+            {
+                isOnlyRedrawLastweek = false;
+                lastWeekScoreButton.Text = "Last 7 days";
+                cartesianChart.AxisX.Clear();
+                cartesianChart.AxisX.Add(new Axis
+                {
+                    Title = "Examination",
+                    Labels = date,
+                });
+            }
+        }
 
+        bool isOnlyRedrawLastweek;
+        private void CheckLastWeekScore()
+        {
+            SeriesCollection series = new SeriesCollection();
+            Dictionary<string, ChartValues<double>> scoreDic = new Dictionary<string, ChartValues<double>>();
+
+            List<string> lastWeekdate = new List<string>();
+
+            lastWeekdate = date.GetRange(date.Count - 7, 7);
+
+            cartesianChart.AxisX.Clear();
+            cartesianChart.AxisX.Add(new Axis
+            {
+                Title = "Examination",
+                Labels = lastWeekdate,
+            });
+
+
+            foreach (Series item in cartesianChart.Series)
+            {
+                if (!scoreDic.ContainsKey(item.Title))
+                    scoreDic.Add(item.Title, (ChartValues<double>)item.Values);
+            }
+
+            foreach (var item in scoreDic)
+            {
+                List<double> score = new List<double>();
+
+                var currentScoreList = scoreDic[item.Key].ToList();
+                for (int i = currentScoreList.Count - 7; i < currentScoreList.Count; i++)
+                {
+                    score.Add(currentScoreList[i]);
+                }
+
+                series.Add(new LineSeries() { Title = item.Key, Values = new ChartValues<double>(score) });
+            }
+
+            cartesianChart.Series.Clear();
+            cartesianChart.Series = series;
+        }
 
     }
 }
