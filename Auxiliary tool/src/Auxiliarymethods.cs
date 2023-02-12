@@ -565,14 +565,19 @@ namespace Auxiliary_tool
         /// <summary>
         /// Excel 读取，务必在xml读取之后调用；
         /// </summary>
-        /// <param name="path"></param>
-        public void ReadExcel(string path,List<StudentData> studentDatas)
+        /// <param name="path">文件路径</param>
+        /// <param name="tableIndex">读取哪个表</param>
+        public void ReadExcel(string path,List<StudentData> studentDatas,int tableIndex=0)
         {
             using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read))
             {
                 using (var reader = ExcelReaderFactory.CreateReader(stream))
                 {
-                    reader.NextResult();//只读取第二个表的数据
+                    for (int i = 0; i < tableIndex; i++)
+                    {
+                        reader.NextResult();//只读取哪个表的数据
+                    }
+                    
                     int formCount = reader.ResultsCount;//文件中表的数量
                     //for (int i = 0; i < formCount; i++)//如果要读取所有的表，则启动循环；
                     {
@@ -604,24 +609,21 @@ namespace Auxiliary_tool
                                     score.Add(reader.GetValue(i).ToString());
                             }
 
-
                             ///读取完一行就处理一行的数据；
                             foreach (var item in studentDatas)
                             {
                                 if (item.Name.Replace(" ", "") == score[0])
                                 {
                                     for (int z = 0; z < date.Count; z++)//因为去除了第一位的缘故，date（日期）比score少一位；
-                                    {                                      
-
-                                        item.scoreDic.Add(new Dictionary<string, string>() { { date[z], score[z + 1] } });
+                                    {                                        
+                                        item.scoreList.Add(new Dictionary<string, string>() { { date[z], score[z + 1] } });                                        
                                         item.scoreArr.Add(new string[2] { date[z], score[z + 1] });
-                                    }
-
+                                    }                                   
                                 }
                             }
                         }
                         ///读取下一张表;(如果需要的话)
-                        reader.NextResult();
+                        //reader.NextResult();
                     }
                 }
 

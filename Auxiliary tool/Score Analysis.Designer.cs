@@ -31,6 +31,7 @@
             this.cartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.lastWeekScoreButton = new Guna.UI2.WinForms.Guna2Button();
             this.clearChartButton = new Guna.UI2.WinForms.Guna2TileButton();
             this.directSelectStudentBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.redrawChartButton = new Guna.UI2.WinForms.Guna2GradientButton();
@@ -42,7 +43,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.lastWeekScoreButton = new Guna.UI2.WinForms.Guna2Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -82,6 +82,24 @@
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(691, 121);
             this.panel5.TabIndex = 10;
+            // 
+            // lastWeekScoreButton
+            // 
+            this.lastWeekScoreButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lastWeekScoreButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.lastWeekScoreButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.lastWeekScoreButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.lastWeekScoreButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.lastWeekScoreButton.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.lastWeekScoreButton.Font = new System.Drawing.Font("Century", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lastWeekScoreButton.ForeColor = System.Drawing.Color.White;
+            this.lastWeekScoreButton.Location = new System.Drawing.Point(446, 8);
+            this.lastWeekScoreButton.Name = "lastWeekScoreButton";
+            this.lastWeekScoreButton.Size = new System.Drawing.Size(126, 25);
+            this.lastWeekScoreButton.TabIndex = 8;
+            this.lastWeekScoreButton.Text = "Last 7 days";
+            this.lastWeekScoreButton.Click += new System.EventHandler(this.lastWeekScoreButton_Click);
             // 
             // clearChartButton
             // 
@@ -262,24 +280,6 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1051, 452);
             this.panel2.TabIndex = 5;
-            // 
-            // lastWeekScoreButton
-            // 
-            this.lastWeekScoreButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lastWeekScoreButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.lastWeekScoreButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.lastWeekScoreButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.lastWeekScoreButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.lastWeekScoreButton.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.lastWeekScoreButton.Font = new System.Drawing.Font("Century", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lastWeekScoreButton.ForeColor = System.Drawing.Color.White;
-            this.lastWeekScoreButton.Location = new System.Drawing.Point(446, 8);
-            this.lastWeekScoreButton.Name = "lastWeekScoreButton";
-            this.lastWeekScoreButton.Size = new System.Drawing.Size(126, 25);
-            this.lastWeekScoreButton.TabIndex = 8;
-            this.lastWeekScoreButton.Text = "Last 7 days";
-            this.lastWeekScoreButton.Click += new System.EventHandler(this.lastWeekScoreButton_Click);
             // 
             // Score_Analysis_Panle
             // 

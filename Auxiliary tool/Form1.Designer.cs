@@ -314,7 +314,7 @@
             this.switchRandomPanelButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.switchRandomPanelButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.switchRandomPanelButton.FillColor = System.Drawing.Color.White;
-            this.switchRandomPanelButton.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.switchRandomPanelButton.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold);
             this.switchRandomPanelButton.ForeColor = System.Drawing.Color.Gray;
             this.switchRandomPanelButton.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
             this.switchRandomPanelButton.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
@@ -327,7 +327,7 @@
             this.switchRandomPanelButton.Name = "switchRandomPanelButton";
             this.switchRandomPanelButton.Size = new System.Drawing.Size(212, 61);
             this.switchRandomPanelButton.TabIndex = 4;
-            this.switchRandomPanelButton.Text = "Random Call";
+            this.switchRandomPanelButton.Text = "随机点名";
             this.switchRandomPanelButton.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.switchRandomPanelButton.TextOffset = new System.Drawing.Point(10, 0);
             this.switchRandomPanelButton.Click += new System.EventHandler(this.switchRandomPanel_Click);
@@ -341,7 +341,7 @@
             this.switchScoreAnalysePanelButton2.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.switchScoreAnalysePanelButton2.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.switchScoreAnalysePanelButton2.FillColor = System.Drawing.Color.White;
-            this.switchScoreAnalysePanelButton2.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.switchScoreAnalysePanelButton2.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold);
             this.switchScoreAnalysePanelButton2.ForeColor = System.Drawing.Color.Gray;
             this.switchScoreAnalysePanelButton2.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
             this.switchScoreAnalysePanelButton2.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
@@ -354,7 +354,7 @@
             this.switchScoreAnalysePanelButton2.Name = "switchScoreAnalysePanelButton2";
             this.switchScoreAnalysePanelButton2.Size = new System.Drawing.Size(212, 61);
             this.switchScoreAnalysePanelButton2.TabIndex = 3;
-            this.switchScoreAnalysePanelButton2.Text = "Score Analysis";
+            this.switchScoreAnalysePanelButton2.Text = "成绩曲线";
             this.switchScoreAnalysePanelButton2.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.switchScoreAnalysePanelButton2.TextOffset = new System.Drawing.Point(10, 0);
             this.switchScoreAnalysePanelButton2.Click += new System.EventHandler(this.switchScoreAnalysePanelButton2_Click);
@@ -368,7 +368,7 @@
             this.switchMainpanelButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
             this.switchMainpanelButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.switchMainpanelButton.FillColor = System.Drawing.Color.White;
-            this.switchMainpanelButton.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.switchMainpanelButton.Font = new System.Drawing.Font("微软雅黑", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.switchMainpanelButton.ForeColor = System.Drawing.Color.Gray;
             this.switchMainpanelButton.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
             this.switchMainpanelButton.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(170)))), ((int)(((byte)(192)))));
@@ -381,7 +381,7 @@
             this.switchMainpanelButton.Name = "switchMainpanelButton";
             this.switchMainpanelButton.Size = new System.Drawing.Size(212, 61);
             this.switchMainpanelButton.TabIndex = 2;
-            this.switchMainpanelButton.Text = "Main infomation";
+            this.switchMainpanelButton.Text = "主界面";
             this.switchMainpanelButton.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.switchMainpanelButton.TextOffset = new System.Drawing.Point(10, 0);
             this.switchMainpanelButton.Click += new System.EventHandler(this.switchMainpanelButton_Click_1);

@@ -14,7 +14,8 @@ namespace Auxiliary_tool
 
         public List<float> Score  { get; set; }
 
-        public List<Dictionary<string, string>> scoreDic = new List<Dictionary<string, string>>();
+        public List<Dictionary<string, string>> scoreList = new List<Dictionary<string, string>>();
+        public Dictionary<string,List<string>> scoreDic=new Dictionary<string,List<string>>();
         public List<string[]> scoreArr = new List<string[]>();
 
         public StudentData(int id, string name, int callCount)
@@ -22,6 +23,16 @@ namespace Auxiliary_tool
             ID = id;
             Name = name;
             CallCount = callCount;
+        }
+
+        public string GetScoreInfoByDate(string date)
+        {
+            foreach (var item in scoreArr)
+            {
+                if (item[0] == date)
+                    return item[1];
+            }
+            return null;
         }
 
     }
