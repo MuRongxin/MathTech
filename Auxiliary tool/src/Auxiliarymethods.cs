@@ -25,6 +25,9 @@ namespace Auxiliary_tool
         public List<StudentData> studentDatas_1 = new List<StudentData>();
         public List<StudentData> studentDatas_2 = new List<StudentData>();
 
+        public List<StudentData> studentDatas_1_2 = new List<StudentData>();
+        public List<StudentData> studentDatas_2_2 = new List<StudentData>();
+
         public List<StudentData> studentDatas = new List<StudentData>();
 
         public int currnetClass = 0;
@@ -450,6 +453,21 @@ namespace Auxiliary_tool
                 studentData.Add(new StudentData(id, name, int.Parse(callCount)));               
             }
 
+        }
+
+        public string[] ReadConfig(string path)
+        {
+            string[] filePath=new string [4];
+            
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
+
+            XmlNodeList xmlNodeList = xmlDocument.SelectSingleNode("config").ChildNodes;
+
+            for (int i = 0; i < xmlNodeList.Count; i++)
+                filePath[i] = xmlNodeList[i].InnerText;
+
+            return filePath;
         }
 
         /// <summary>

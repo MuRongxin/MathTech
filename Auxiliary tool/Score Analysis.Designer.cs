@@ -42,7 +42,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.guna2Button1 = new Guna.UI2.WinForms.Guna2Button();
+            this.all_score = new Guna.UI2.WinForms.Guna2Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -70,7 +70,7 @@
             // 
             // panel5
             // 
-            this.panel5.Controls.Add(this.guna2Button1);
+            this.panel5.Controls.Add(this.all_score);
             this.panel5.Controls.Add(this.half_score);
             this.panel5.Controls.Add(this.lastWeekScoreButton);
             this.panel5.Controls.Add(this.clearChartButton);
@@ -94,7 +94,7 @@
             this.half_score.ForeColor = System.Drawing.Color.White;
             this.half_score.Location = new System.Drawing.Point(18, 74);
             this.half_score.Name = "half_score";
-            this.half_score.Size = new System.Drawing.Size(180, 41);
+            this.half_score.Size = new System.Drawing.Size(239, 41);
             this.half_score.TabIndex = 9;
             this.half_score.Text = "非全分[客观分]";
             this.half_score.Click += new System.EventHandler(this.half_score_Click);
@@ -110,7 +110,7 @@
             this.lastWeekScoreButton.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.lastWeekScoreButton.Font = new System.Drawing.Font("Century", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lastWeekScoreButton.ForeColor = System.Drawing.Color.White;
-            this.lastWeekScoreButton.Location = new System.Drawing.Point(446, 8);
+            this.lastWeekScoreButton.Location = new System.Drawing.Point(545, 7);
             this.lastWeekScoreButton.Name = "lastWeekScoreButton";
             this.lastWeekScoreButton.Size = new System.Drawing.Size(126, 25);
             this.lastWeekScoreButton.TabIndex = 8;
@@ -127,7 +127,7 @@
             this.clearChartButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
             this.clearChartButton.Font = new System.Drawing.Font("Century", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.clearChartButton.ForeColor = System.Drawing.Color.White;
-            this.clearChartButton.Location = new System.Drawing.Point(446, 38);
+            this.clearChartButton.Location = new System.Drawing.Point(545, 38);
             this.clearChartButton.Name = "clearChartButton";
             this.clearChartButton.Size = new System.Drawing.Size(126, 32);
             this.clearChartButton.TabIndex = 1;
@@ -167,7 +167,7 @@
             this.redrawChartButton.FillColor2 = System.Drawing.Color.FromArgb(((int)(((byte)(57)))), ((int)(((byte)(197)))), ((int)(((byte)(187)))));
             this.redrawChartButton.Font = new System.Drawing.Font("幼圆", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.redrawChartButton.ForeColor = System.Drawing.Color.White;
-            this.redrawChartButton.Location = new System.Drawing.Point(446, 76);
+            this.redrawChartButton.Location = new System.Drawing.Point(545, 74);
             this.redrawChartButton.Name = "redrawChartButton";
             this.redrawChartButton.Size = new System.Drawing.Size(124, 32);
             this.redrawChartButton.TabIndex = 1;
@@ -263,20 +263,20 @@
             this.panel2.Size = new System.Drawing.Size(1051, 452);
             this.panel2.TabIndex = 5;
             // 
-            // guna2Button1
+            // all_score
             // 
-            this.guna2Button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.guna2Button1.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button1.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.guna2Button1.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.guna2Button1.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.guna2Button1.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.guna2Button1.ForeColor = System.Drawing.Color.White;
-            this.guna2Button1.Location = new System.Drawing.Point(234, 73);
-            this.guna2Button1.Name = "guna2Button1";
-            this.guna2Button1.Size = new System.Drawing.Size(180, 41);
-            this.guna2Button1.TabIndex = 10;
-            this.guna2Button1.Text = "非全分[客观分]";
+            this.all_score.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.all_score.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.all_score.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.all_score.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.all_score.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.all_score.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.all_score.ForeColor = System.Drawing.Color.White;
+            this.all_score.Location = new System.Drawing.Point(309, 74);
+            this.all_score.Name = "all_score";
+            this.all_score.Size = new System.Drawing.Size(230, 41);
+            this.all_score.TabIndex = 10;
+            this.all_score.Text = "全分[主客观分]";
             // 
             // Score_Analysis_Panle
             // 
@@ -313,6 +313,6 @@
         private Guna.UI2.WinForms.Guna2TileButton clearChartButton;
         private Guna.UI2.WinForms.Guna2Button lastWeekScoreButton;
         private Guna.UI2.WinForms.Guna2Button half_score;
-        private Guna.UI2.WinForms.Guna2Button guna2Button1;
+        private Guna.UI2.WinForms.Guna2Button all_score;
     }
 }

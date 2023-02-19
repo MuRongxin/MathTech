@@ -52,10 +52,16 @@ namespace Auxiliary_tool
             this.Close();
         }
 
+        string[] dataFilePath;
+
         private void Form1_Load(object sender, EventArgs e)
         {
             InitChart();
             _obj = this;
+
+            dataFilePath = Auxiliarymethods.Instance.ReadConfig("./config.xml");
+            Auxiliarymethods.Instance.classFilePath_1 = "./" + dataFilePath[0];
+            Auxiliarymethods.Instance.classFilePath_2 = "./" + dataFilePath[1];
 
             InitData();
 
@@ -79,12 +85,15 @@ namespace Auxiliary_tool
         private void InitData()
         {
 
-            Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_1,Auxiliarymethods.Instance.studentDatas_1);
-            Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_2, Auxiliarymethods.Instance.studentDatas_2);
+            Auxiliarymethods.Instance.ReadDataXml(dataFilePath[0], Auxiliarymethods.Instance.studentDatas_1);
+            Auxiliarymethods.Instance.ReadDataXml(dataFilePath[1], Auxiliarymethods.Instance.studentDatas_2);
 
-            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx",Auxiliarymethods.Instance.studentDatas_1,1);
-            Auxiliarymethods.Instance.ReadExcel("./Exam145Score.xlsx", Auxiliarymethods.Instance.studentDatas_2,1);
-              
+            Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[2], Auxiliarymethods.Instance.studentDatas_1);
+            Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[3], Auxiliarymethods.Instance.studentDatas_2);
+
+            Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[2], Auxiliarymethods.Instance.studentDatas_1_2, 1);
+            Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[3], Auxiliarymethods.Instance.studentDatas_2_2, 1);
+
 
             datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas_1.Count.ToString();
             datalengthLabel2.Text = Auxiliarymethods.Instance.studentDatas_2.Count.ToString();
