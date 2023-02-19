@@ -332,5 +332,10 @@ namespace Auxiliary_tool
             cartesianChart.Series = series;
 
         }
+
+        private void half_score_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

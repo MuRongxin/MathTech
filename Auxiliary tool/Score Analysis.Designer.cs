@@ -31,18 +31,18 @@
             this.cartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.half_score = new Guna.UI2.WinForms.Guna2Button();
             this.lastWeekScoreButton = new Guna.UI2.WinForms.Guna2Button();
             this.clearChartButton = new Guna.UI2.WinForms.Guna2TileButton();
             this.directSelectStudentBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.redrawChartButton = new Guna.UI2.WinForms.Guna2GradientButton();
-            this.scoreFluctuationComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.guna2Button1 = new Guna.UI2.WinForms.Guna2Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -70,18 +70,34 @@
             // 
             // panel5
             // 
+            this.panel5.Controls.Add(this.guna2Button1);
+            this.panel5.Controls.Add(this.half_score);
             this.panel5.Controls.Add(this.lastWeekScoreButton);
             this.panel5.Controls.Add(this.clearChartButton);
             this.panel5.Controls.Add(this.directSelectStudentBox);
             this.panel5.Controls.Add(this.redrawChartButton);
-            this.panel5.Controls.Add(this.scoreFluctuationComboBox);
             this.panel5.Controls.Add(this.label4);
-            this.panel5.Controls.Add(this.label3);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel5.Location = new System.Drawing.Point(360, 0);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(691, 121);
             this.panel5.TabIndex = 10;
+            // 
+            // half_score
+            // 
+            this.half_score.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.half_score.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.half_score.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.half_score.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.half_score.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.half_score.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.half_score.ForeColor = System.Drawing.Color.White;
+            this.half_score.Location = new System.Drawing.Point(18, 74);
+            this.half_score.Name = "half_score";
+            this.half_score.Size = new System.Drawing.Size(180, 41);
+            this.half_score.TabIndex = 9;
+            this.half_score.Text = "非全分[客观分]";
+            this.half_score.Click += new System.EventHandler(this.half_score_Click);
             // 
             // lastWeekScoreButton
             // 
@@ -159,28 +175,6 @@
             this.redrawChartButton.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
             this.redrawChartButton.Click += new System.EventHandler(this.RedrawChartButton_Click);
             // 
-            // scoreFluctuationComboBox
-            // 
-            this.scoreFluctuationComboBox.BackColor = System.Drawing.Color.Silver;
-            this.scoreFluctuationComboBox.BorderThickness = 0;
-            this.scoreFluctuationComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.scoreFluctuationComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.scoreFluctuationComboBox.FillColor = System.Drawing.SystemColors.Control;
-            this.scoreFluctuationComboBox.FocusedColor = System.Drawing.Color.White;
-            this.scoreFluctuationComboBox.FocusedState.BorderColor = System.Drawing.Color.White;
-            this.scoreFluctuationComboBox.Font = new System.Drawing.Font("Century Gothic", 11F, System.Drawing.FontStyle.Bold);
-            this.scoreFluctuationComboBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            this.scoreFluctuationComboBox.ItemHeight = 30;
-            this.scoreFluctuationComboBox.Items.AddRange(new object[] {
-            "0~0.2",
-            "0.2~0.4",
-            "0.4~1.0",
-            "All"});
-            this.scoreFluctuationComboBox.Location = new System.Drawing.Point(270, 73);
-            this.scoreFluctuationComboBox.Name = "scoreFluctuationComboBox";
-            this.scoreFluctuationComboBox.Size = new System.Drawing.Size(165, 36);
-            this.scoreFluctuationComboBox.TabIndex = 7;
-            // 
             // label4
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -192,18 +186,6 @@
             this.label4.Size = new System.Drawing.Size(125, 22);
             this.label4.TabIndex = 6;
             this.label4.Text = "直接选择：";
-            // 
-            // label3
-            // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("幼圆", 13F, System.Drawing.FontStyle.Bold);
-            this.label3.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label3.Location = new System.Drawing.Point(14, 79);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(160, 22);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "成绩波动范围:";
             // 
             // panel3
             // 
@@ -281,6 +263,21 @@
             this.panel2.Size = new System.Drawing.Size(1051, 452);
             this.panel2.TabIndex = 5;
             // 
+            // guna2Button1
+            // 
+            this.guna2Button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.guna2Button1.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.guna2Button1.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.guna2Button1.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.guna2Button1.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.guna2Button1.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.guna2Button1.ForeColor = System.Drawing.Color.White;
+            this.guna2Button1.Location = new System.Drawing.Point(234, 73);
+            this.guna2Button1.Name = "guna2Button1";
+            this.guna2Button1.Size = new System.Drawing.Size(180, 41);
+            this.guna2Button1.TabIndex = 10;
+            this.guna2Button1.Text = "非全分[客观分]";
+            // 
             // Score_Analysis_Panle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -308,8 +305,6 @@
         private System.Windows.Forms.Label label1;
         private Guna.UI2.WinForms.Guna2ComboBox displayDataLenthComboBox;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private Guna.UI2.WinForms.Guna2ComboBox scoreFluctuationComboBox;
         private Guna.UI2.WinForms.Guna2GradientButton redrawChartButton;
         private Guna.UI2.WinForms.Guna2ComboBox directSelectStudentBox;
         private System.Windows.Forms.Label label4;
@@ -317,5 +312,7 @@
         private System.Windows.Forms.Panel panel3;
         private Guna.UI2.WinForms.Guna2TileButton clearChartButton;
         private Guna.UI2.WinForms.Guna2Button lastWeekScoreButton;
+        private Guna.UI2.WinForms.Guna2Button half_score;
+        private Guna.UI2.WinForms.Guna2Button guna2Button1;
     }
 }

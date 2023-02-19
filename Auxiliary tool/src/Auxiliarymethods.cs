@@ -590,7 +590,9 @@ namespace Auxiliary_tool
                         reader.Read();//Read()一次就是读取一行；
                         for (int i = 1; i < reader.FieldCount; i++)
                         {
-                            date.Add(reader.GetValue(i).ToString());
+                            if (reader.GetValue(i) == null)
+                                continue;
+                            date.Add(reader.GetValue(i).ToString());                                              
                         }
 
                         /// 通过 AsDataSet 操作数据;
@@ -603,6 +605,8 @@ namespace Auxiliary_tool
                             List<string> score = new List<string>();
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
+                                if (reader.GetValue(i) == null)
+                                    continue;
                                 if (i > 0)//去除多余的小数位数；
                                     score.Add(float.Parse(reader.GetValue(i).ToString()).ToString("#0.00"));
                                 else
@@ -612,6 +616,8 @@ namespace Auxiliary_tool
                             ///读取完一行就处理一行的数据；
                             foreach (var item in studentDatas)
                             {
+                                if (score.Count ==0)
+                                    continue;
                                 if (item.Name.Replace(" ", "") == score[0])
                                 {
                                     for (int z = 0; z < date.Count; z++)//因为去除了第一位的缘故，date（日期）比score少一位；

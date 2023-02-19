@@ -82,8 +82,8 @@ namespace Auxiliary_tool
             Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_1,Auxiliarymethods.Instance.studentDatas_1);
             Auxiliarymethods.Instance.ReadDataXml(Auxiliarymethods.Instance.classFilePath_2, Auxiliarymethods.Instance.studentDatas_2);
 
-            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx",Auxiliarymethods.Instance.studentDatas_1);
-            Auxiliarymethods.Instance.ReadExcel("./Exam145Score.xlsx", Auxiliarymethods.Instance.studentDatas_2);
+            Auxiliarymethods.Instance.ReadExcel("./Exam143Score.xlsx",Auxiliarymethods.Instance.studentDatas_1,1);
+            Auxiliarymethods.Instance.ReadExcel("./Exam145Score.xlsx", Auxiliarymethods.Instance.studentDatas_2,1);
               
 
             datalengthLabel1.Text = Auxiliarymethods.Instance.studentDatas_1.Count.ToString();
