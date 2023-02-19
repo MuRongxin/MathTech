@@ -103,6 +103,10 @@ namespace Auxiliary_tool
         List<string> date = new List<string>();
         private void SetChartFormat()
         {
+            cartesianChart.AxisX.Clear();
+            cartesianChart.AxisY.Clear();
+            date.Clear();
+
             foreach (var dicVal in currentStudentDataList[2].scoreArr)
                 date.Add(dicVal[0].Split(' ')[0]);
 
@@ -333,9 +337,30 @@ namespace Auxiliary_tool
 
         }
 
-        private void half_score_Click(object sender, EventArgs e)
+        private void Half_score_Click(object sender, EventArgs e)
         {
+            if (Auxiliarymethods.Instance.currnetClass == 1)
+                currentStudentDataList = Auxiliarymethods.Instance.studentDatas_1;
+            if (Auxiliarymethods.Instance.currnetClass == 2)
+                currentStudentDataList = Auxiliarymethods.Instance.studentDatas_2;
 
+            cartesianChart.Series.Clear();
+           
+            SetChartFormat();
+            FirstChart();
+        }
+
+        private void all_score_Click(object sender, EventArgs e)
+        {
+            if (Auxiliarymethods.Instance.currnetClass == 1)
+                currentStudentDataList = Auxiliarymethods.Instance.studentDatas_1_2;
+            if (Auxiliarymethods.Instance.currnetClass == 2)
+                currentStudentDataList = Auxiliarymethods.Instance.studentDatas_2_2;
+
+            cartesianChart.Series.Clear();
+         
+            SetChartFormat();
+            FirstChart();
         }
     }
 }

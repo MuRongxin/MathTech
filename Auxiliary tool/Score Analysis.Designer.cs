@@ -31,6 +31,7 @@
             this.cartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.all_score = new Guna.UI2.WinForms.Guna2Button();
             this.half_score = new Guna.UI2.WinForms.Guna2Button();
             this.lastWeekScoreButton = new Guna.UI2.WinForms.Guna2Button();
             this.clearChartButton = new Guna.UI2.WinForms.Guna2TileButton();
@@ -42,7 +43,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.displayDataLenthComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.all_score = new Guna.UI2.WinForms.Guna2Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -83,6 +83,22 @@
             this.panel5.Size = new System.Drawing.Size(691, 121);
             this.panel5.TabIndex = 10;
             // 
+            // all_score
+            // 
+            this.all_score.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.all_score.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+            this.all_score.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+            this.all_score.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
+            this.all_score.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.all_score.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.all_score.ForeColor = System.Drawing.Color.White;
+            this.all_score.Location = new System.Drawing.Point(297, 74);
+            this.all_score.Name = "all_score";
+            this.all_score.Size = new System.Drawing.Size(222, 41);
+            this.all_score.TabIndex = 10;
+            this.all_score.Text = "全分[主客观分]";
+            this.all_score.Click += new System.EventHandler(this.all_score_Click);
+            // 
             // half_score
             // 
             this.half_score.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -94,10 +110,10 @@
             this.half_score.ForeColor = System.Drawing.Color.White;
             this.half_score.Location = new System.Drawing.Point(18, 74);
             this.half_score.Name = "half_score";
-            this.half_score.Size = new System.Drawing.Size(239, 41);
+            this.half_score.Size = new System.Drawing.Size(246, 41);
             this.half_score.TabIndex = 9;
             this.half_score.Text = "非全分[客观分]";
-            this.half_score.Click += new System.EventHandler(this.half_score_Click);
+            this.half_score.Click += new System.EventHandler(this.Half_score_Click);
             // 
             // lastWeekScoreButton
             // 
@@ -262,21 +278,6 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1051, 452);
             this.panel2.TabIndex = 5;
-            // 
-            // all_score
-            // 
-            this.all_score.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.all_score.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-            this.all_score.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-            this.all_score.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(169)))), ((int)(((byte)(169)))), ((int)(((byte)(169)))));
-            this.all_score.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.all_score.Font = new System.Drawing.Font("微软雅黑", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.all_score.ForeColor = System.Drawing.Color.White;
-            this.all_score.Location = new System.Drawing.Point(309, 74);
-            this.all_score.Name = "all_score";
-            this.all_score.Size = new System.Drawing.Size(230, 41);
-            this.all_score.TabIndex = 10;
-            this.all_score.Text = "全分[主客观分]";
             // 
             // Score_Analysis_Panle
             // 

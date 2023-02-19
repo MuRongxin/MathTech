@@ -87,6 +87,9 @@ namespace Auxiliary_tool
 
             Auxiliarymethods.Instance.ReadDataXml(dataFilePath[0], Auxiliarymethods.Instance.studentDatas_1);
             Auxiliarymethods.Instance.ReadDataXml(dataFilePath[1], Auxiliarymethods.Instance.studentDatas_2);
+                
+            Auxiliarymethods.Instance.ReadDataXml(dataFilePath[0], Auxiliarymethods.Instance.studentDatas_1_2);
+            Auxiliarymethods.Instance.ReadDataXml(dataFilePath[1], Auxiliarymethods.Instance.studentDatas_2_2);
 
             Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[2], Auxiliarymethods.Instance.studentDatas_1);
             Auxiliarymethods.Instance.ReadExcel("./" + dataFilePath[3], Auxiliarymethods.Instance.studentDatas_2);
