@@ -4,15 +4,24 @@ import os
 import win32com.client as win32
 from datetime import datetime
 import time
+import re
 
-#xmlFileName=input("原始成绩文件名: ")
-#targetFileName=input("目标文件名：")
-#targetSheetName=input("目标表名：")
-#fullScore==input("理论满分：")
+# xmlFileName=input("原始成绩文件名: ")
+# targetFileName=input("目标文件名：")
+# targetSheetFocusName=input("目标表名(40 or 100): ")
+# fullScore=int(input("理论满分："))
 
-targetFileName="Exam143Score.xlsx"
-targetSheetName="143Alldata"
-fullScore=40
+
+# 获取当前所在的目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 列出当前目录下的所有。xls文件
+files = [f for f in os.listdir(current_dir) if os.path.isfile(os.path.join(current_dir, f))and f.endswith('.xls')]
+
+targetSheetName="Alldata"
+
+targetFileName=None
+targetSheetFocusName=None
+fullScore=None
 
 def changeXlsToXlsx(fileName):    
     fileName = os.getcwd()+"\\"+fileName
@@ -26,73 +35,177 @@ def changeXlsToXlsx(fileName):
 
 #changeXlsToXlsx(xmlFileName)
 
-#print(xmlFileName.split('.')[0]+".xlsx")
+workBookTar=None
 
-workBookOri=load_workbook("0217高一周测143班数学成绩单.xlsx")
-workSheetOri=workBookOri.active
+workSheetOri = None
+workSheetTar=None
+workFocusSheetTar=None
+# targetSheetFocusName= None
 
-workBookTar=load_workbook(targetFileName)
-workSheetTar=workBookTar[targetSheetName]
+def OpenTableSheet(oriXlsxFile,tarXlsxFile,targetSheetFocusName):
+    workBookOri=load_workbook(oriXlsxFile+".xlsx")#打开源文件
+    # workBookOri=load_workbook(oriXlsxFileName)#打开源文件
+    global workSheetOri
+    workSheetOri=workBookOri.active
 
-nameCol=0
-scoreCol=0
+    #workBookTar=load_workbook(targetFileName)#打开目标文件
+    global workBookTar
+    workBookTar=load_workbook(tarXlsxFile)#打开目标文件
+    global workSheetTar
+    workSheetTar=workBookTar[targetSheetName]#打开成绩主表
 
-for i in range(1, workSheetOri.max_column+1):
-    data=workSheetOri.cell(row=1, column=i)
-    if data.value=="姓名":
-        nameCol=data.column
-    if data.value=="成绩":
-        scoreCol=data.column
+    global workFocusSheetTar
+    workFocusSheetTar=workBookTar[targetSheetFocusName]#打开占比表
 
-score=[]
+nameCol=0 #标记姓名列
+scoreCol=0#标记成绩列
 
-for i in range(2, workSheetOri.max_row+1):
-    nameData=workSheetOri.cell(row=i, column=nameCol)
-    scoreData=workSheetOri.cell(row=i, column=scoreCol)
-    score.append( [str(nameData.value),str(scoreData.value)])
-    print(nameData.value)
+score=[]#成绩列表
 
-tarCol=workSheetTar.max_column
-tarRow=workSheetTar.max_row
+def GetOriSCore(): 
+    global nameCol
+    global scoreCol
+    global score
+    for i in range(1, workSheetOri.max_column+1):
+        data=workSheetOri.cell(row=1, column=i)
+        if data.value=="姓名":
+            nameCol=data.column
+        if data.value=="成绩":
+            scoreCol=data.column
 
-date=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+    for i in range(2, workSheetOri.max_row+1):
+        nameData=workSheetOri.cell(row=i, column=nameCol)
+        scoreData=workSheetOri.cell(row=i, column=scoreCol)
+        score.append( [str(nameData.value),str(scoreData.value)])
+        #print(nameData.value)
 
-alignment_center = Alignment(horizontal='center', vertical='center')
+tarCol=None
+tarRow=None
+tarCol_focus=None
+tarRow_focus=None
+date=None
+dateList=[]
 
-workSheetTar.cell(row=1, column=tarCol+1).value=date
-workSheetTar.cell(row=1, column=tarCol+1).alignment=alignment_center
-workSheetTar.merge_cells(start_row=1, end_row=1, start_column=tarCol+1, end_column=tarCol+3)
+def MarkIndex():
+    global tarCol 
+    global tarRow 
+    global tarCol_focus
+    global tarRow_focus
 
-workSheetTar.cell(row=2, column=tarCol+1).value="理论满分"
-workSheetTar.cell(row=2, column=tarCol+2).value="原始成绩"
-workSheetTar.cell(row=2, column=tarCol+3).value="成绩占比"
+    tarCol=workSheetTar.max_column
+    tarRow=workSheetTar.max_row
 
-alignment_right=Alignment(horizontal='right', vertical='center')
+    tarCol_focus=workFocusSheetTar.max_column
+    tarRow_focus=workFocusSheetTar.max_row
 
-for i in range(3,tarRow+1):
-    workSheetTar.cell(row=i, column=tarCol+1).value=fullScore
-    workSheetTar.cell(row=i, column=tarCol+1).alignment=alignment_right
-    name=workSheetTar.cell(row=i, column=2).value    
-    for j in range(0,len(score)-1):
-        student = score[j]        
-        if student[0]==name:            
-            workSheetTar.cell(row=i, column=tarCol+2).value=int(student[1])
-            workSheetTar.cell(row=i, column=tarCol+2).alignment=alignment_right
-            workSheetTar.cell(row=i, column=tarCol+3).value=int(student[1])/fullScore
-            workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right           
-            del(score[j])
+    # date=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+
+# isDate=input("是否采用系统时间 [y/n]: ")
+
+# if isDate == 'n':
+#     date=input("请输入时间: ")
+
+alignment_center = Alignment(horizontal='center', vertical='center')#定义居中对齐
+alignment_right=Alignment(horizontal='right', vertical='center')#定义右对齐
+
+isCalculate=False
+isReadDate=False
+
+def SetBasicFormat(date):
+    global isReadDate
+    if isReadDate == False:
+        for i in range(1,tarCol+1):
+            dateList.append(workSheetTar.cell(row=1, column=i).value)
+        isReadDate=True;
+    
+    if date in dateList:
+        print("该数据已经处理")
+        global isCalculate
+        isCalculate=True
+        return
+    #设置日期
+    workSheetTar.cell(row=1, column=tarCol+1).value=date
+    workFocusSheetTar.cell(row=1, column=tarCol_focus+1).value=date
+
+    workSheetTar.cell(row=1, column=tarCol+1).alignment=alignment_center
+    workSheetTar.merge_cells(start_row=1, end_row=1, start_column=tarCol+1, end_column=tarCol+3)
+
+    workSheetTar.cell(row=2, column=tarCol+1).value="理论满分"
+    workSheetTar.cell(row=2, column=tarCol+2).value="原始成绩"
+    workSheetTar.cell(row=2, column=tarCol+3).value="成绩占比"
+
+    isCalculate=False
+
+def SetScore():
+    for i in range(3,tarRow+1):
+        workSheetTar.cell(row=i, column=tarCol+1).value=fullScore
+        workSheetTar.cell(row=i, column=tarCol+1).alignment=alignment_right
+        name=workSheetTar.cell(row=i, column=2).value    
+        for j in range(0,len(score)-1):
+            student = score[j]        
+            if student[0]==name:            
+                workSheetTar.cell(row=i, column=tarCol+2).value=int(student[1])
+                workSheetTar.cell(row=i, column=tarCol+2).alignment=alignment_right
+                workSheetTar.cell(row=i, column=tarCol+3).value=int(student[1])/fullScore
+                workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right 
+
+                for x in range(2,tarRow_focus+1):               
+                    if workFocusSheetTar.cell(row=x, column=1).value==name:
+                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore
+                        pass
+
+                del(score[j])
+                pass
+
+# 打印出所有文件名 日期_[次数]_分数_班级
+for f in files:    
+        
+    changeXlsToXlsx(f)
+    
+    oriFileName = f.split('.')[0]
+    fileNameCompositionList=re.findall('\d+', f)
+    length=len(fileNameCompositionList)    
+    
+    if(fileNameCompositionList[length-1]=="143"):
+        targetFileName="Exam143Score.xlsx"
+    if(fileNameCompositionList[length-1]=="145"):
+        targetFileName="Exam145Score.xlsx"
+
+    if(int(fileNameCompositionList[length-2])>60):
+        fullScore=int(fileNameCompositionList[length-2])
+        targetSheetFocusName="100"
+    else:
+        fullScore=int(fileNameCompositionList[length-2])
+        targetSheetFocusName="40"
+
+    date = fileNameCompositionList[0]
+    date = "2023/"+date[0:2]+"/"+date[2:4]  
+    # date = "2023."+date[0:2]+"."+date[2:4]  
+
+    if length==4:
+        date+="_"+fileNameCompositionList[1]
+    print("当前文件："+oriFileName+" 目标文件："+targetFileName+" 目标占比表："+targetSheetFocusName)
+
+    OpenTableSheet(oriFileName,targetFileName,targetSheetFocusName)
+
+    GetOriSCore()
+
+    MarkIndex()
+    
+    SetBasicFormat(date)
+
+    if isCalculate:
+        continue
+    
+    SetScore()
+
+    #print(re.findall('\d+', f))
+
+    workBookTar.save(targetFileName)
 
 
 
 
-#理论满分	原始成绩	成绩占比
-#print(time.strftime('%Y-%m-%d',time.localtime(time.time())))
+# print(workSheetTar.cell(row=workSheetTar.max_row, column=workSheetTar.max_column).value)
 
-
-
-workBookTar.save(targetFileName)
-
-print(workSheetTar.cell(row=workSheetTar.max_row, column=workSheetTar.max_column).value)
-#print(score)
-#print(workSheetOri.cell(row=workSheetOri.max_row, column=workSheetOri.max_column).value)
-print("最大行数："+str(workSheetTar.max_row)+"最大列数："+str(workSheetTar.max_column))
+# print("当前行数："+str(workSheetTar.max_row)+"当前列数："+str(workSheetTar.max_column))
