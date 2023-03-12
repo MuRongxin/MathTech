@@ -156,6 +156,11 @@ def SetScore():
 
                 del(score[j])
                 pass
+    print("当前成绩列表剩余: ")
+    for i in score:
+        print(i)
+   
+              
 
 # 打印出所有文件名 日期_[次数]_分数_班级
 for f in files:    
