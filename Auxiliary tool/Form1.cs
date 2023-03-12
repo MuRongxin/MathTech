@@ -76,6 +76,13 @@ namespace Auxiliary_tool
 
             rushTimer.Start();
 
+            label2.Text = dataFilePath[2].Substring(4, 3) + " Data Length";
+            label7.Text = dataFilePath[3].Substring(4, 3) + " Data Length";
+
+            select43Button.Text = "Select the current class as " + dataFilePath[2].Substring(4, 3);
+            select45Button.Text = "Select the current class as " + dataFilePath[2].Substring(4, 3);
+
+
             SetChartFormat();
 
             GetAverage(Auxiliarymethods.Instance.studentDatas_1, averageScoreDic_1);

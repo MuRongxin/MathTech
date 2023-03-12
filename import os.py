@@ -2,6 +2,7 @@ import os
 import re
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
+from tqdm import tqdm
 
 
 # 获取当前脚本所在的目录
@@ -24,12 +25,14 @@ root = doc.createElement("root")
 
 doc.appendChild(root)
 
-
+# 获取文本文件的行数
+with open('data.txt', 'r',encoding="utf-8") as f:
+    num_lines = sum(1 for _ in f)
 
 dataList=[]
 
 with open('data.txt', 'r',encoding='utf-8') as f:
-    for line in f:
+    for line in tqdm(f, total=num_lines,desc='XML文件创建中: ',unit="lines"):
         data=line.strip().split()
         
         child_1=doc.createElement("student")              
@@ -55,6 +58,4 @@ xml_pretty_str = doc.toprettyxml(indent='  ', encoding='utf-8').decode('utf-8')
 # 将格式化后的字符串写入文件
 with open('data.xml', 'w', encoding='UTF-8') as f:
     f.write(xml_pretty_str)
-
-
 

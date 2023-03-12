@@ -5,6 +5,7 @@ import win32com.client as win32
 from datetime import datetime
 import time
 import re
+from tqdm import tqdm
 
 # xmlFileName=input("原始成绩文件名: ")
 # targetFileName=input("目标文件名：")
