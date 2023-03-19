@@ -1,44 +1,81 @@
 import os
 import shutil
-import datetime
+import time
+import win32api
+# import win32file as win32api
+# import pywin32
+
+# 创建文件夹的根目录
+root_dir = "./"
 
 # 获取当前时间
-now = datetime.datetime.now()
+def get_current_time():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-# 设置复制文件类型和存储位置
-file_types = ['.jpg', '.jpeg', '.png', '.bmp']
-save_folder = os.path.join(os.path.expanduser('~'), 'Desktop')
+# 复制文件到指定目录
+def copy_file_to_dir(file_path, dest_dir):
+    try:
+        shutil.copy(file_path, dest_dir)
+        print("[{}] Successfully copied file: {} to directory: {}".format(get_current_time(), file_path, dest_dir))
+    except Exception as e:
+        print("[{}] Failed to copy file: {} to directory: {}. Error message: {}".format(get_current_time(), file_path, dest_dir, e))
 
-def copy_files(source_folder):
-    # 获取当前插入的U盘的盘符和名称
-    drive_letter = os.path.splitdrive(source_folder)[0]
-    drive_name = os.path.splitdrive(source_folder)[1].strip(os.path.sep)
+# 复制所有文件到指定目录
+def copy_all_files_to_dir(files, dest_dir):
+    for file in files:
+        # 如果目标文件夹中已存在相同文件，则跳过该文件
+        if os.path.exists(os.path.join(dest_dir, os.path.basename(file))):
+            print("[{}] Skipping file: {}. File already exists in directory: {}".format(get_current_time(), file, dest_dir))
+        # 否则复制该文件到目标文件夹
+        else:
+            copy_file_to_dir(file, dest_dir)
 
-    # 创建本地存储文件夹
-    folder_name = drive_letter + drive_name
-    local_folder = os.path.join(save_folder, folder_name)
-    if not os.path.exists(local_folder):
-        os.makedirs(local_folder)
+# 检测U盘是否已插入
+def check_usb_drive_connected():
+    drives = win32api.GetLogicalDriveStrings()
+    drives = drives.split('\000')[:-1]
+    for drive in drives:
+        if win32api.GetDriveType(drive) == win32api.DRIVE_REMOVABLE:
+            return True
+    return False
 
-    # 开始复制文件
-    for root, dirs, files in os.walk(source_folder):
-        for file in files:
-            if file.lower().endswith(tuple(file_types)):
-                source_file = os.path.join(root, file)
-                dest_file = os.path.join(local_folder, file)
-                # 如果文件已经存在则跳过
-                if not os.path.exists(dest_file):
-                    shutil.copy2(source_file, dest_file)
+# 获取U盘盘符及名称
+def get_usb_drive_info():
+    drives = win32api.GetLogicalDriveStrings()
+    drives = drives.split('\000')[:-1]
+    usb_drives = []
+    for drive in drives:
+        if win32api.GetDriveType(drive) == win32api.DRIVE_REMOVABLE:
+            drive_name = win32api.GetVolumeNameForVolumeMountPoint(drive)
+            usb_drives.append((drive, drive_name))
+    return usb_drives
 
-    print(f'[{now}] Copied files from {source_folder} to {local_folder}')
+# 创建目标文件夹
+def create_dest_dir(dest_dir):
+    try:
+        os.makedirs(dest_dir)
+        print("[{}] Successfully created directory: {}".format(get_current_time(), dest_dir))
+    except Exception as e:
+        print("[{}] Failed to create directory: {}. Error message: {}".format(get_current_time(), dest_dir, e))
+
+# 主函数
+def main():
+    while True:
+        # 检测U盘是否已插入
+        while not check_usb_drive_connected():
+            time.sleep(5)
+
+        # 获取U盘盘符及名称
+        usb_drives = get_usb_drive_info()
+
+        # 复制文件到目标文件夹
+        for usb_drive in usb_drives:
+            usb_drive_letter = usb_drive[0]
+            usb_drive_name = usb_drive[1]
+            dest_dir = os.path.join(root_dir, usb_drive_letter[0] + '_' + usb_drive_name)
+            create_dest_dir(dest_dir)
+            files = [os.path.join(usb_drive_letter, f) for f in os.listdir(usb_drive_letter) if os.path.isfile(os.path.join(usb_drive_letter, f))]
+            copy_all_files_to_dir(files, dest_dir)
 
 if __name__ == '__main__':
-    drives_before = set(os.listdir('/media'))
-    while True:
-        drives_now = set(os.listdir('/media'))
-        # 获取新插入的U盘
-        drives_inserted = drives_now - drives_before
-        for drive in drives_inserted:
-            source_folder = os.path.join('/media', drive)
-            copy_files(source_folder)
-        drives_before = drives_now
+    main()
