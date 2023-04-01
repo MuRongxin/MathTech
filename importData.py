@@ -2,10 +2,11 @@ from openpyxl import*
 from openpyxl.styles import*
 import os
 import win32com.client as win32
+from openpyxl.utils import get_column_letter
 from datetime import datetime
 import time
 import re
-from tqdm import tqdm
+# from tqdm import tqdm
 
 # xmlFileName=input("原始成绩文件名: ")
 # targetFileName=input("目标文件名：")
@@ -25,6 +26,9 @@ targetSheetFocusName=None
 fullScore=None
 
 def changeXlsToXlsx(fileName):    
+    if os.path.isfile(fileName.split('.')[0]+".xlsx"):
+        print("文件存在")
+        return
     fileName = os.getcwd()+"\\"+fileName
     Excelapp = win32.gencache.EnsureDispatch('Excel.Application')
     workbook = Excelapp.Workbooks.Open(fileName)
@@ -33,6 +37,9 @@ def changeXlsToXlsx(fileName):
     workbook.SaveAs(fileName.replace('xls', 'xlsx'), FileFormat=51)
     workbook.Close()
     Excelapp.Application.Quit()
+
+
+
 
 #changeXlsToXlsx(xmlFileName)
 
@@ -51,6 +58,7 @@ def OpenTableSheet(oriXlsxFile,tarXlsxFile,targetSheetFocusName):
 
     #workBookTar=load_workbook(targetFileName)#打开目标文件
     global workBookTar
+    
     workBookTar=load_workbook(tarXlsxFile)#打开目标文件
     global workSheetTar
     workSheetTar=workBookTar[targetSheetName]#打开成绩主表
@@ -67,6 +75,7 @@ def GetOriSCore():
     global nameCol
     global scoreCol
     global score
+    score.clear()   
     for i in range(1, workSheetOri.max_column+1):
         data=workSheetOri.cell(row=1, column=i)
         if data.value=="姓名":
@@ -150,16 +159,24 @@ def SetScore():
                 workSheetTar.cell(row=i, column=tarCol+3).value=int(student[1])/fullScore
                 workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right 
 
-                for x in range(2,tarRow_focus+1):               
+                for x in range(2,tarRow_focus+1):  
+                    if workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value==None:
+                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=0             
                     if workFocusSheetTar.cell(row=x, column=1).value==name:
-                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore
-                        pass
+                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore                        
+                    # else:
+                    #     workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(0)/fullScore
 
                 del(score[j])
                 pass
-    print("当前成绩列表剩余: ")
-    for i in score:
-        print(i)
+            # else:
+            #     workSheetTar.cell(row=i, column=tarCol+2).value=int(0)
+            #     workSheetTar.cell(row=i, column=tarCol+2).alignment=alignment_right
+            #     workSheetTar.cell(row=i, column=tarCol+3).value=int(0)/fullScore
+            #     workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right 
+    # print("当前成绩列表剩余: ")
+    # for i in score:
+    #     print(i)
    
               
 
@@ -172,8 +189,8 @@ for f in files:
     fileNameCompositionList=re.findall('\d+', f)
     length=len(fileNameCompositionList)    
     
-    if(fileNameCompositionList[length-1]=="143"):
-        targetFileName="Exam143Score.xlsx"
+    if(fileNameCompositionList[length-1]=="142"):
+        targetFileName="Exam142Score.xlsx"
     if(fileNameCompositionList[length-1]=="145"):
         targetFileName="Exam145Score.xlsx"
 
@@ -191,7 +208,7 @@ for f in files:
     if length==4:
         date+="_"+fileNameCompositionList[1]
     print("当前文件："+oriFileName+" 目标文件："+targetFileName+" 目标占比表："+targetSheetFocusName)
-
+       
     OpenTableSheet(oriFileName,targetFileName,targetSheetFocusName)
 
     GetOriSCore()

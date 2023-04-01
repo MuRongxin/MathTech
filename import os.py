@@ -56,15 +56,15 @@ alignment = Alignment(horizontal='left')
 # ws1.alignment = alignment
 
 cellRowIndex=3
-
+# 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
 # 获取文本文件的行数
 with open('data.txt', 'r',encoding="utf-8") as f:
     num_lines = sum(1 for _ in f)
 
-
-with open('data.txt', 'r',encoding='utf-8') as f:
+fileName="145"
+with open('data'+fileName+'.txt', 'r',encoding='utf-8') as f:
     for line in tqdm(f, total=num_lines,desc='XML文件创建中: ',unit="lines"):
-        data=line.strip().split()
+        data=line.strip().split('	')
         
         child_1=doc.createElement("student")              
         child_1.setAttribute("id",data[0])  
@@ -89,14 +89,14 @@ with open('data.txt', 'r',encoding='utf-8') as f:
 
         cellRowIndex+=1
         
-
+# fileName="142"
 
 # 格式化 XML 字符串
 xml_pretty_str = doc.toprettyxml(indent='  ', encoding='utf-8').decode('utf-8')
 
 # 将格式化后的字符串写入文件
-with open('data.xml', 'w', encoding='UTF-8') as f:
+with open('data'+fileName+'.xml', 'w', encoding='UTF-8') as f:
     f.write(xml_pretty_str)
 
-wb.save("ExamScore.xlsx")
+wb.save("Exam"+fileName+"Score.xlsx")
 
