@@ -185,7 +185,7 @@ def standardize_scores(data):
 def SetScore():
 
     GetScores()
-    breakpoint()
+    
     calculate_mean_and_variance(scores)    
 
     for i in range(3,tarRow+1):
