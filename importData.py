@@ -2,10 +2,8 @@ from openpyxl import*
 from openpyxl.styles import*
 import os
 import win32com.client as win32
-from openpyxl.utils import get_column_letter
-from datetime import datetime
-import time
 import re
+import math
 # from tqdm import tqdm
 
 # xmlFileName=input("原始成绩文件名: ")
@@ -86,8 +84,11 @@ def GetOriSCore():
     for i in range(2, workSheetOri.max_row+1):
         nameData=workSheetOri.cell(row=i, column=nameCol)
         scoreData=workSheetOri.cell(row=i, column=scoreCol)
+        if nameData.value=="最高分" or nameData.value=="最低分" or nameData.value=="平均分" or nameData.value=="及格率" or nameData.value=="优秀率" or nameData.value=="低分率":
+            continue
         score.append( [str(nameData.value),str(scoreData.value)])
         #print(nameData.value)
+
 
 tarCol=None
 tarRow=None
@@ -146,7 +147,47 @@ def SetBasicFormat(date):
 
     isCalculate=False
 
+mean=0
+variance=0
+std_dev=0
+
+scores=[]
+
+def calculate_mean_and_variance(data):
+    # 计算平均值
+    global mean
+    mean = sum(data) / len(data)    
+    # 计算方差
+    global variance
+    variance = sum([(x - mean)**2 for x in data]) / len(data)
+    # 计算标准差
+    global std_dev
+    std_dev = math.sqrt(sum([(x - mean)**2 for x in data]) / len(data))    
+   
+def GetScores():
+    scores.clear()
+    for i in score:
+        scores.append(int(i[1]))
+
+
+def standardize_scores(data):
+    # 计算数据集的平均值和标准差
+    # mean = sum(data) / len(data)
+    # std_dev = (sum([(x - mean)**2 for x in data]) / len(data)) ** 0.5    
+    # 对每个分数进行标准化处理
+    # standardized_data = [(x - mean) / std_dev for x in data]
+    
+    z = (data - mean) / std_dev
+
+    return z
+
+
 def SetScore():
+
+    GetScores()
+    breakpoint()
+    calculate_mean_and_variance(scores)    
+
     for i in range(3,tarRow+1):
         workSheetTar.cell(row=i, column=tarCol+1).value=fullScore
         workSheetTar.cell(row=i, column=tarCol+1).alignment=alignment_right
@@ -156,24 +197,24 @@ def SetScore():
             if student[0]==name:            
                 workSheetTar.cell(row=i, column=tarCol+2).value=int(student[1])
                 workSheetTar.cell(row=i, column=tarCol+2).alignment=alignment_right
-                workSheetTar.cell(row=i, column=tarCol+3).value=int(student[1])/fullScore
+                # workSheetTar.cell(row=i, column=tarCol+3).value=int(student[1])/fullScore
+                workSheetTar.cell(row=i, column=tarCol+3).value=standardize_scores(int(student[1]))
                 workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right 
 
                 for x in range(2,tarRow_focus+1):  
                     if workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value==None:
                         workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=0             
                     if workFocusSheetTar.cell(row=x, column=1).value==name:
-                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore                        
+                        # workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore                        
+                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=standardize_scores(int(student[1]))
+                        # break
                     # else:
                     #     workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(0)/fullScore
 
                 del(score[j])
+                # break
                 pass
-            # else:
-            #     workSheetTar.cell(row=i, column=tarCol+2).value=int(0)
-            #     workSheetTar.cell(row=i, column=tarCol+2).alignment=alignment_right
-            #     workSheetTar.cell(row=i, column=tarCol+3).value=int(0)/fullScore
-            #     workSheetTar.cell(row=i, column=tarCol+3).alignment=alignment_right 
+            
     # print("当前成绩列表剩余: ")
     # for i in score:
     #     print(i)

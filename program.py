@@ -1,12 +1,23 @@
-from openpyxl import*
-from openpyxl.utils import get_column_letter
 import os
-# import xlrd
 import openpyxl
+# import numpy
+# from openpyxl iemport*
 
-# 获取当前所在的目录
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# 列出当前目录下的所有。xls文件
-files = [f for f in os.listdir(current_dir) if os.path.isfile(os.path.join(current_dir, f))and f.endswith('.xls')]
-filname=files[0]
+#得到目标文件
+sourceExcelFile=openpyxl.load_workbook("ExamScore.xlsx")
+
+resoultExcelFile=openpyxl.Workbook()
+
+
+with open('data43.txt', 'r',encoding='utf-8') as f:
+    lines = f.readlines()
+
+# 提取姓名列表
+names = []
+
+for line in lines:
+    name = line.split(' _ ')[1].strip()  # 使用split()方法分割文本
+    names.append(name)
+
+
 

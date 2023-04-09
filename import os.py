@@ -61,7 +61,8 @@ cellRowIndex=3
 with open('data.txt', 'r',encoding="utf-8") as f:
     num_lines = sum(1 for _ in f)
 
-fileName="145"
+fileName="142"
+
 with open('data'+fileName+'.txt', 'r',encoding='utf-8') as f:
     for line in tqdm(f, total=num_lines,desc='XML文件创建中: ',unit="lines"):
         data=line.strip().split('	')
