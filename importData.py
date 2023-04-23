@@ -258,6 +258,7 @@ for f in files:
     
     SetBasicFormat(date)
 
+    print("目前均值："+ mean)
     if isCalculate:
         continue
     
