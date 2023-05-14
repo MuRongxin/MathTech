@@ -4,8 +4,7 @@ from openpyxl.styles.colors import Color
 from tqdm import tqdm
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font, NamedStyle,PatternFill
-# import numpy
-# from openpyxl iemport*
+
 
 #得到目标文件
 sourceExcelFile=openpyxl.load_workbook("【2023年5月高一月考】所有班级学生小题得分明细.xlsx")
@@ -34,6 +33,17 @@ markRow_all_name=0
 markRow_all_math=0
 markRow_all_allScore=0
 
+merged_ranges = sourceAllWorkSheet.merged_cells
+
+# 将目标表合并
+for merged_range in merged_ranges:
+    if merged_range.max_row>100:
+        merged_ranges.remove(merged_range)    
+for merged_range in merged_ranges:    
+    resoultAllSheet.merge_cells(str(merged_range))
+
+
+# resoultAllSheet.delete_rows(3, resoultAllSheet.max_row - 3)
 
 #写入表头
 for i in range(1,max_column+1):
@@ -52,7 +62,7 @@ for i in range(1,max_column_all+1):
         markRow_all_name=i
     if sourceAllWorkSheet.cell(row=2,column=i).value=="数学":
         markRow_all_math=i
-    if sourceAllWorkSheet.cell(row=2,column=i).value=="总分":
+    if sourceAllWorkSheet.cell(row=3,column=i).value=="得分":
         markRow_all_allScore=i
 
 with open("data"+className+".txt", 'r',encoding='utf-8') as f:
@@ -74,36 +84,35 @@ for i in tqdm(range(2,max_row+1),desc='数学数据处理中: ',unit="lines"):
                 resoultSheet.cell(row=resoultSheetrow,column=z,value=sourceWorkSheet.cell(row=i,column=z).value)
           
 for i in tqdm(range(3,max_row_all+1),desc='全科数据处理中: ',unit="lines"):
-    resoultAllSheetRow=resoultAllSheet.max_row+1
+    resoultAllSheetRow=resoultAllSheet.max_row+1   
     for j in range(0,len(names)):
-        if(sourceAllWorkSheet.cell(row=i,column=markRow_all_name).value==names[j]):           
-            for z in range(1,max_column_all+1):                
+        if(sourceAllWorkSheet.cell(row=i,column=markRow_all_name).value==names[j]):            
+            for z in range(1,max_column_all+1):                             
                 resoultAllSheet.cell(row=resoultAllSheetRow,column=z,value=sourceAllWorkSheet.cell(row=i,column=z).value)
-
+                # print(sourceAllWorkSheet.cell(row=i,column=z).value, end=" ") 
+                # print(resoultAllSheet.cell(row=resoultAllSheetRow,column=z).value, end=" ")  
+                
+# breakpoint()
 lastRow=resoultAllSheet.max_row
 for i in range(lastRow,0,-1):
-    if isinstance(resoultAllSheet.cell(row=i,column=markRow_all_math).value,str) or resoultAllSheet.cell(row=i,column=markRow_all_math).value==None:
+    if isinstance(resoultAllSheet.cell(row=i,column=markRow_all_allScore).value,str) or resoultAllSheet.cell(row=i,column=markRow_all_math).value==None:
         lastRow-=1
     else:
         break
 
+# 对数据按照第x列（"总分"列）进行降序排序
 sorted_data = sorted(resoultAllSheet.iter_rows(min_row=4, max_row=lastRow, min_col=1, max_col=resoultAllSheet.max_column), key=lambda x: x[markRow_all_allScore-1].value, reverse=True)
 
-# # 读取表格中的数据
-# data = list(resoultAllSheet.values)
-# # 对数据按照第9列（"总分"列）进行降序排序
-# sorted_data = sorted(data[2:], key=lambda x: x[7], reverse=True)
-# # 将排序后的数据写入新表格
-# 清除现有数据
-resoultAllSheet.delete_rows(3, resoultAllSheet.max_row)
 
-# resoultAllSheet.append(data[0])
-# resoultAllSheet.append(data[1])
+# 清除现有数据
+resoultAllSheet.delete_rows(4, resoultAllSheet.max_row)
+
+# 将排序后的数据写入新表格
 for row in sorted_data:
     resoultAllSheet.append(row)
 
 resoultAllSheet.merge_cells(start_row=1, end_row=1, start_column=1, end_column=max_column_all)
-
+resoultSheet.merge_cells(start_row=1, end_row=1, start_column=1, end_column=max_column)
 
 
 # 创建一个加粗字体的样式
@@ -130,10 +139,6 @@ for row in resoultAllSheet.iter_rows(min_row=1, max_row=lastRow, min_col=markRow
 resoultAllSheet.cell(row=1,column=1).fill=fill_2
 resoultAllSheet.cell(row=1,column=1).style=bold_style
 resoultAllSheet.cell(row=1,column=1).alignment = Alignment(horizontal='center', vertical='center')
-
-# # 将排序后的数据填充回工作表
-# for row in sorted_data:
-#     resoultAllSheet.append((row[0].offset(column=-1).value, row[0].value))
 
 
 
