@@ -35,7 +35,7 @@ markRow_all_math=0
 markRow_all_allScore=0
 
 
-
+#写入表头
 for i in range(1,max_column+1):
     resoultSheet.cell(row=1,column=i,value=sourceWorkSheet.cell(row=1,column=i).value)
     resoultSheet.cell(row=2,column=i,value=sourceWorkSheet.cell(row=2,column=i).value)
@@ -46,6 +46,8 @@ for i in range(1,max_column+1):
 for i in range(1,max_column_all+1):
     resoultAllSheet.cell(row=1,column=i,value=sourceAllWorkSheet.cell(row=1,column=i).value)
     resoultAllSheet.cell(row=2,column=i,value=sourceAllWorkSheet.cell(row=2,column=i).value)
+    resoultAllSheet.cell(row=3,column=i,value=sourceAllWorkSheet.cell(row=3,column=i).value)
+
     if sourceAllWorkSheet.cell(row=2,column=i).value=="姓名":
         markRow_all_name=i
     if sourceAllWorkSheet.cell(row=2,column=i).value=="数学":
@@ -85,7 +87,7 @@ for i in range(lastRow,0,-1):
     else:
         break
 
-sorted_data = sorted(resoultAllSheet.iter_rows(min_row=3, max_row=lastRow, min_col=1, max_col=resoultAllSheet.max_column), key=lambda x: x[markRow_all_allScore-1].value, reverse=True)
+sorted_data = sorted(resoultAllSheet.iter_rows(min_row=4, max_row=lastRow, min_col=1, max_col=resoultAllSheet.max_column), key=lambda x: x[markRow_all_allScore-1].value, reverse=True)
 
 # # 读取表格中的数据
 # data = list(resoultAllSheet.values)
