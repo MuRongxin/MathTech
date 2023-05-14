@@ -34,6 +34,7 @@ markRow_all_math=0
 markRow_all_allScore=0
 
 merged_ranges = sourceAllWorkSheet.merged_cells
+merged_ranges_math = sourceWorkSheet.merged_cells
 
 # 将目标表合并
 for merged_range in merged_ranges:
@@ -42,8 +43,11 @@ for merged_range in merged_ranges:
 for merged_range in merged_ranges:    
     resoultAllSheet.merge_cells(str(merged_range))
 
-
-# resoultAllSheet.delete_rows(3, resoultAllSheet.max_row - 3)
+# for merged_range in merged_ranges_math:
+#     if merged_range.max_row>100:
+#         merged_ranges_math.remove(merged_range)    
+# for merged_range in merged_ranges_math:    
+#     resoultSheet.merge_cells(str(merged_range))
 
 #写入表头
 for i in range(1,max_column+1):
