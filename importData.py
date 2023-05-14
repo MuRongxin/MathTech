@@ -203,7 +203,7 @@ def SetScore():
 
                 for x in range(2,tarRow_focus+1):  
                     if workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value==None:
-                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=0             
+                        workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=standardize_scores(0)            
                     if workFocusSheetTar.cell(row=x, column=1).value==name:
                         # workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=int(student[1])/fullScore                        
                         workFocusSheetTar.cell(row=x, column=tarCol_focus+1).value=standardize_scores(int(student[1]))

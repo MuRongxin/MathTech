@@ -8,13 +8,13 @@ from openpyxl.styles import Font, NamedStyle,PatternFill
 # from openpyxl iemport*
 
 #得到目标文件
-sourceExcelFile=openpyxl.load_workbook("2023年4月高一下学期期中考试(数学)-考试详情.xlsx")
-sourceAllExcelFile=openpyxl.load_workbook("2023年4月高一下学期期中考试-学生成绩（全部考生）.xlsx")
+sourceExcelFile=openpyxl.load_workbook("【2023年5月高一月考】所有班级学生小题得分明细.xlsx")
+sourceAllExcelFile=openpyxl.load_workbook("【2023年5月高一月考】全部考生成绩汇总.xlsx")
 
 resoultExcelFile=openpyxl.Workbook()
 resoultExcelFile.remove(resoultExcelFile.active)
 
-sourceWorkSheet = sourceExcelFile.active
+sourceWorkSheet = sourceExcelFile["数学"]
 sourceAllWorkSheet = sourceAllExcelFile.active
 
 className = "143"
@@ -38,9 +38,11 @@ markRow_all_allScore=0
 
 for i in range(1,max_column+1):
     resoultSheet.cell(row=1,column=i,value=sourceWorkSheet.cell(row=1,column=i).value)
-    if sourceWorkSheet.cell(row=1,column=i).value=="姓名":
+    resoultSheet.cell(row=2,column=i,value=sourceWorkSheet.cell(row=2,column=i).value)
+    # breakpoint()
+    if sourceWorkSheet.cell(row=2,column=i).value=="姓名":
         markRow_name=i
-    
+# markRow_name=2   
 for i in range(1,max_column_all+1):
     resoultAllSheet.cell(row=1,column=i,value=sourceAllWorkSheet.cell(row=1,column=i).value)
     resoultAllSheet.cell(row=2,column=i,value=sourceAllWorkSheet.cell(row=2,column=i).value)
@@ -61,7 +63,7 @@ for line in lines:
     name = line.split(' _ ')[1].strip()  # 使用split()方法分割文本
     names.append(name)
 
-
+# breakpoint()
 for i in tqdm(range(2,max_row+1),desc='数学数据处理中: ',unit="lines"):
     resoultSheetrow=resoultSheet.max_row+1
     for j in range(0,len(names)):
@@ -83,7 +85,7 @@ for i in range(lastRow,0,-1):
     else:
         break
 
-sorted_data = sorted(resoultAllSheet.iter_rows(min_row=3, max_row=lastRow, min_col=1, max_col=resoultAllSheet.max_column), key=lambda x: x[7].value, reverse=True)
+sorted_data = sorted(resoultAllSheet.iter_rows(min_row=3, max_row=lastRow, min_col=1, max_col=resoultAllSheet.max_column), key=lambda x: x[markRow_all_allScore-1].value, reverse=True)
 
 # # 读取表格中的数据
 # data = list(resoultAllSheet.values)
