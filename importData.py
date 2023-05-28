@@ -248,7 +248,7 @@ for f in files:
 
     if length==4:
         date+="_"+fileNameCompositionList[1]
-    print("当前文件："+oriFileName+" 目标文件："+targetFileName+" 目标占比表："+targetSheetFocusName)
+    print("当前文件："+str(oriFileName)+" 目标文件："+str(targetFileName)+" 目标占比表："+str(targetSheetFocusName))
        
     OpenTableSheet(oriFileName,targetFileName,targetSheetFocusName)
 
@@ -257,12 +257,12 @@ for f in files:
     MarkIndex()
     
     SetBasicFormat(date)
-
-    print("目前均值："+ mean)
+   
     if isCalculate:
         continue
     
     SetScore()
+    print("目前均值："+ str(mean))
 
     #print(re.findall('\d+', f))
 
