@@ -7,8 +7,8 @@ from openpyxl.styles import Font, NamedStyle,PatternFill
 
 
 #得到目标文件
-sourceExcelFile=openpyxl.load_workbook("【2023年5月高一月考】所有班级学生小题得分明细.xlsx")
-sourceAllExcelFile=openpyxl.load_workbook("【2023年5月高一月考】全部考生成绩汇总.xlsx")
+sourceExcelFile=openpyxl.load_workbook("【祥华2023年6月高一月考联考】所有班级学生小题得分明细.xlsx")
+sourceAllExcelFile=openpyxl.load_workbook("祥华2023年6月高一月考联考-学生成绩（全部考生）.xlsx")
 
 resoultExcelFile=openpyxl.Workbook()
 resoultExcelFile.remove(resoultExcelFile.active)
@@ -32,6 +32,7 @@ markRow_name=0
 markRow_all_name=0
 markRow_all_math=0
 markRow_all_allScore=0
+markRow_art=0
 
 merged_ranges = sourceAllWorkSheet.merged_cells
 merged_ranges_math = sourceWorkSheet.merged_cells
@@ -60,14 +61,16 @@ for i in range(1,max_column+1):
 for i in range(1,max_column_all+1):
     resoultAllSheet.cell(row=1,column=i,value=sourceAllWorkSheet.cell(row=1,column=i).value)
     resoultAllSheet.cell(row=2,column=i,value=sourceAllWorkSheet.cell(row=2,column=i).value)
-    resoultAllSheet.cell(row=3,column=i,value=sourceAllWorkSheet.cell(row=3,column=i).value)
+    # resoultAllSheet.cell(row=3,column=i,value=sourceAllWorkSheet.cell(row=3,column=i).value)
 
     if sourceAllWorkSheet.cell(row=2,column=i).value=="姓名":
         markRow_all_name=i
     if sourceAllWorkSheet.cell(row=2,column=i).value=="数学":
         markRow_all_math=i
-    if sourceAllWorkSheet.cell(row=3,column=i).value=="得分":
+    if sourceAllWorkSheet.cell(row=2,column=i).value=="总分": #要注意调整这个东西
         markRow_all_allScore=i
+    if sourceAllWorkSheet.cell(row=2,column=i).value=="地理": #要注意调整这个东西
+        markRow_art=i
 
 with open("data"+className+".txt", 'r',encoding='utf-8') as f:
     lines = f.readlines()
@@ -80,22 +83,22 @@ for line in lines:
     names.append(name)
 
 # breakpoint()
-for i in tqdm(range(2,max_row+1),desc='数学数据处理中: ',unit="lines"):
+for i in tqdm(range(2,max_row+1),desc=str(className)+' 数学数据处理中: ',unit="lines"):
     resoultSheetrow=resoultSheet.max_row+1
     for j in range(0,len(names)):
         if(sourceWorkSheet.cell(row=i,column=markRow_name).value==names[j]):           
             for z in range(1,max_column+1):                
                 resoultSheet.cell(row=resoultSheetrow,column=z,value=sourceWorkSheet.cell(row=i,column=z).value)
           
-for i in tqdm(range(3,max_row_all+1),desc='全科数据处理中: ',unit="lines"):
+for i in tqdm(range(3,max_row_all+1),desc=str(className)+' 全科数据处理中: ',unit="lines"):
     resoultAllSheetRow=resoultAllSheet.max_row+1   
     for j in range(0,len(names)):
         if(sourceAllWorkSheet.cell(row=i,column=markRow_all_name).value==names[j]):            
             for z in range(1,max_column_all+1):                             
-                resoultAllSheet.cell(row=resoultAllSheetRow,column=z,value=sourceAllWorkSheet.cell(row=i,column=z).value)
+                resoultAllSheet.cell(row=resoultAllSheetRow,column=z,value=sourceAllWorkSheet.cell(row=i,column=z).value)                
                 # print(sourceAllWorkSheet.cell(row=i,column=z).value, end=" ") 
                 # print(resoultAllSheet.cell(row=resoultAllSheetRow,column=z).value, end=" ")  
-                
+
 # breakpoint()
 lastRow=resoultAllSheet.max_row
 for i in range(lastRow,0,-1):
@@ -131,6 +134,14 @@ fill = PatternFill(fill_type='solid', start_color=fill_color, end_color=fill_col
 fill_color_2 = Color(rgb='dcdcdc')
 fill_2 = PatternFill(fill_type='solid', start_color=fill_color_2, end_color=fill_color_2)
 
+fill_color_3 = Color(rgb='7fffd4')
+fill_3 = PatternFill(fill_type='solid', start_color=fill_color_3, end_color=fill_color_3)
+
+for row in range(3,resoultAllSheet.max_row+1):
+    if not isinstance(resoultAllSheet.cell(row=row,column=markRow_art).value,str):
+        for cell in resoultAllSheet[row]:
+            cell.fill = fill_3
+            
 for row in resoultAllSheet.iter_rows(min_row=1, max_row=lastRow, min_col=markRow_all_math, max_col=markRow_all_math):
     for cell in row:
         cell.style = bold_style
@@ -144,7 +155,11 @@ resoultAllSheet.cell(row=1,column=1).fill=fill_2
 resoultAllSheet.cell(row=1,column=1).style=bold_style
 resoultAllSheet.cell(row=1,column=1).alignment = Alignment(horizontal='center', vertical='center')
 
+# breakpoint()
 
 
-resoultExcelFile.save("2023年5月考试原"+className+"考试成绩.xlsx")
+
+
+
+resoultExcelFile.save("2023年6月考试 原"+className+"考试成绩.xlsx")
 
