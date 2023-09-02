@@ -223,17 +223,17 @@ def SetScore():
 
 # 打印出所有文件名 日期_[次数]_分数_班级
 for f in files:    
-        
+    
     changeXlsToXlsx(f)
     
     oriFileName = f.split('.')[0]
     fileNameCompositionList=re.findall('\d+', f)
     length=len(fileNameCompositionList)    
     
-    if(fileNameCompositionList[length-1]=="142"):
-        targetFileName="Exam142Score.xlsx"
-    if(fileNameCompositionList[length-1]=="145"):
-        targetFileName="Exam145Score.xlsx"
+    if(fileNameCompositionList[length-1]=="153"):
+        targetFileName="Exam153Score.xlsx"
+    if(fileNameCompositionList[length-1]=="155"):
+        targetFileName="Exam155Score.xlsx"
 
     if(int(fileNameCompositionList[length-2])>60):
         fullScore=int(fileNameCompositionList[length-2])
