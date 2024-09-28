@@ -7,13 +7,15 @@ from openpyxl.styles import Font, NamedStyle,PatternFill
 
 
 #得到目标文件
-sourceExcelFile=openpyxl.load_workbook("【祥华2023年6月高一月考联考】所有班级学生小题得分明细.xlsx")
-sourceAllExcelFile=openpyxl.load_workbook("祥华2023年6月高一月考联考-学生成绩（全部考生）.xlsx")
+sourceExcelFile=openpyxl.load_workbook(r"C:\Users\PC\Downloads\file\[行政班]大理州2023-2024学年上学期高二年级教学质量监测-数学学生小题得分.xlsx")
+sourceAllExcelFile=openpyxl.load_workbook(r"C:\Users\PC\Downloads\file\[行政班]大理州2023-2024学年上学期高二年级教学质量监测-学生成绩（全部考生）.xlsx")
 
 resoultExcelFile=openpyxl.Workbook()
+
 resoultExcelFile.remove(resoultExcelFile.active)
 
-sourceWorkSheet = sourceExcelFile["数学"]
+# sourceWorkSheet = sourceExcelFile["数学"]
+sourceWorkSheet = sourceExcelFile.active
 sourceAllWorkSheet = sourceAllExcelFile.active
 
 className = "143"
@@ -53,7 +55,7 @@ for merged_range in merged_ranges:
 #写入表头
 for i in range(1,max_column+1):
     resoultSheet.cell(row=1,column=i,value=sourceWorkSheet.cell(row=1,column=i).value)
-    resoultSheet.cell(row=2,column=i,value=sourceWorkSheet.cell(row=2,column=i).value)
+    resoultSheet.cell(row=2,column=i,value=sourceWorkSheet.cell(row=2,column=i).value)#要注意调整这个东西
     # breakpoint()
     if sourceWorkSheet.cell(row=2,column=i).value=="姓名":
         markRow_name=i
@@ -61,7 +63,7 @@ for i in range(1,max_column+1):
 for i in range(1,max_column_all+1):
     resoultAllSheet.cell(row=1,column=i,value=sourceAllWorkSheet.cell(row=1,column=i).value)
     resoultAllSheet.cell(row=2,column=i,value=sourceAllWorkSheet.cell(row=2,column=i).value)
-    # resoultAllSheet.cell(row=3,column=i,value=sourceAllWorkSheet.cell(row=3,column=i).value)
+    # resoultAllSheet.cell(row=3,column=i,value=sourceAllWorkSheet.cell(row=3,column=i).value)#要注意调整这个东西
 
     if sourceAllWorkSheet.cell(row=2,column=i).value=="姓名":
         markRow_all_name=i
@@ -161,5 +163,5 @@ resoultAllSheet.cell(row=1,column=1).alignment = Alignment(horizontal='center', 
 
 
 
-resoultExcelFile.save("2023年6月考试 原"+className+"考试成绩.xlsx")
+resoultExcelFile.save("2024年07月考试 原"+className+"考试成绩.xlsx")
 
