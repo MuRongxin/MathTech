@@ -24,18 +24,5 @@ namespace Hello
         {
             InitializeComponent();
         }
-
-        private void Init()
-        {
-
-        }
-
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
-
-
-   
 }
