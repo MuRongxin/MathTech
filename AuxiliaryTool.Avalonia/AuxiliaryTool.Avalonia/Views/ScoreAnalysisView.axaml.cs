@@ -32,7 +32,7 @@ namespace AuxiliaryTool.Avalonia.Views
         {
             _currentList = AuxiliaryMethods.Instance.studentDatas;
             _isLastWeek = false;
-            LastWeekButton.Content = "最近7次";
+            LastWeekButton.Content = "最近7次成绩";
             InitChartFormat();
             InitStudentBox();
             FirstChart();
@@ -52,8 +52,8 @@ namespace AuxiliaryTool.Avalonia.Views
                         ? _dates.Skip(_dates.Count - 7).ToArray()
                         : _dates.ToArray(),
                     Name = "Examination",
-                    LabelsPaint = new SolidColorPaint(SKColors.LightGray),
-                    NamePaint = new SolidColorPaint(SKColors.LightGray),
+                    LabelsPaint = new SolidColorPaint(SKColors.DimGray),
+                    NamePaint = new SolidColorPaint(SKColors.DimGray),
                     TextSize = 12
                 }
             };
@@ -63,14 +63,14 @@ namespace AuxiliaryTool.Avalonia.Views
                 new Axis
                 {
                     Name = "Percentage of Score",
-                    LabelsPaint = new SolidColorPaint(SKColors.LightGray),
-                    NamePaint = new SolidColorPaint(SKColors.LightGray),
+                    LabelsPaint = new SolidColorPaint(SKColors.DimGray),
+                    NamePaint = new SolidColorPaint(SKColors.DimGray),
                     TextSize = 12
                 }
             };
 
-            Chart.LegendTextPaint = new SolidColorPaint(SKColors.LightGray);
-            Chart.Background = new SolidColorBrush(Color.Parse("#FF252525"));
+            Chart.LegendTextPaint = new SolidColorPaint(SKColors.DimGray);
+            Chart.Background = new SolidColorBrush(Color.Parse("#FFFFFFFF"));
         }
 
         private void InitStudentBox()
@@ -127,9 +127,6 @@ namespace AuxiliaryTool.Avalonia.Views
             };
         }
 
-        /// <summary>
-        /// 深克隆一个 LineSeries，避免引用污染
-        /// </summary>
         private ISeries CloneSeries(ISeries source)
         {
             if (source is LineSeries<double> ls && ls.Values is IEnumerable<double> vals)
@@ -189,8 +186,8 @@ namespace AuxiliaryTool.Avalonia.Views
                     {
                         Labels = lastWeekDates.ToArray(),
                         Name = "Examination",
-                        LabelsPaint = new SolidColorPaint(SKColors.LightGray),
-                        NamePaint = new SolidColorPaint(SKColors.LightGray)
+                        LabelsPaint = new SolidColorPaint(SKColors.DimGray),
+                        NamePaint = new SolidColorPaint(SKColors.DimGray)
                     }
                 };
 
@@ -226,12 +223,12 @@ namespace AuxiliaryTool.Avalonia.Views
                     {
                         Labels = _dates.ToArray(),
                         Name = "Examination",
-                        LabelsPaint = new SolidColorPaint(SKColors.LightGray),
-                        NamePaint = new SolidColorPaint(SKColors.LightGray)
+                        LabelsPaint = new SolidColorPaint(SKColors.DimGray),
+                        NamePaint = new SolidColorPaint(SKColors.DimGray)
                     }
                 };
                 Chart.Series = _originalSeries.Select(s => CloneSeries(s)).ToArray();
-                LastWeekButton.Content = "最近7次";
+                LastWeekButton.Content = "最近7次成绩";
             }
         }
 
@@ -257,7 +254,7 @@ namespace AuxiliaryTool.Avalonia.Views
         {
             _displayIndex = 0;
             _isLastWeek = false;
-            LastWeekButton.Content = "最近7次";
+            LastWeekButton.Content = "最近7次成绩";
             _originalSeries.Clear();
             InitChartFormat();
             InitStudentBox();

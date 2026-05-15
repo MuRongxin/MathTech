@@ -7,6 +7,8 @@ using AuxiliaryTool.Avalonia.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace AuxiliaryTool.Avalonia.Views
 {
@@ -14,7 +16,6 @@ namespace AuxiliaryTool.Avalonia.Views
     {
         private DispatcherTimer? _timer;
         private Random _random = new Random();
-        private StudentData? _currentStudent;
         private List<StudentData> _resultList = new List<StudentData>();
         private bool _isRunning = false;
 
@@ -34,7 +35,7 @@ namespace AuxiliaryTool.Avalonia.Views
             ResultLabel.Foreground = new SolidColorBrush(ThemeColor.RandomColor());
         }
 
-        private void StartButton_Click(object? sender, RoutedEventArgs e)
+        private async void StartButton_Click(object? sender, RoutedEventArgs e)
         {
             if (!_isRunning)
             {
@@ -42,58 +43,49 @@ namespace AuxiliaryTool.Avalonia.Views
                 if (datas.Count == 0) return;
 
                 _isRunning = true;
-                StartButton.Content = "停止";
+                StartRandomButton.Content = "Stop";
+                StartRandomButton.Background = new SolidColorBrush(Color.Parse("#FFE74C3C"));
+                StartRandomButton.Foreground = Brushes.White;
                 _timer?.Start();
             }
             else
             {
                 _isRunning = false;
-                StartButton.Content = "开始随机";
+                StartRandomButton.Content = "Start Random";
+                StartRandomButton.Background = new SolidColorBrush(Color.Parse("#FFE8E8E8"));
+                StartRandomButton.Foreground = new SolidColorBrush(Color.Parse("#FF888888"));
                 _timer?.Stop();
 
-                GetRandomResult();
-                if (_currentStudent != null)
-                {
-                    ResultLabel.Text = _currentStudent.Name;
-                    ResultLabel.Foreground = Brushes.White;
-
-                    // 更新 callCount
-                    if (AuxiliaryMethods.Instance.currentClass == 1)
-                        AuxiliaryMethods.Instance.UpdateXmlData(
-                            AuxiliaryMethods.Instance.classFilePath_1,
-                            _currentStudent.ID,
-                            _currentStudent.CallCount + 1);
-                    else
-                        AuxiliaryMethods.Instance.UpdateXmlData(
-                            AuxiliaryMethods.Instance.classFilePath_2,
-                            _currentStudent.ID,
-                            _currentStudent.CallCount + 1);
-
-                    _currentStudent.CallCount++;
-                    AddHistory(_currentStudent.Name, _currentStudent.CallCount);
-                }
+                await DoRandomAsync();
             }
         }
 
-        private void GetRandomResult()
+        private async Task DoRandomAsync()
         {
-            var datas = AuxiliaryMethods.Instance.studentDatas;
-            if (datas.Count == 0) return;
-
-            while (true)
+            try
             {
-                int idx = _random.Next(datas.Count);
-                var stu = datas[idx];
-                if (!_resultList.Contains(stu))
-                {
-                    _currentStudent = stu;
-                    _resultList.Add(stu);
-                    break;
-                }
-                if (_resultList.Count >= datas.Count)
-                {
-                    _resultList.Clear();
-                }
+                var result = await MainWindow.HttpClient.PostAsJsonAsync<object>(
+                    $"api/random/{AuxiliaryMethods.Instance.currentClass}", new { });
+                var data = await result.Content.ReadFromJsonAsync<RandomResultApiDto>();
+                if (data == null) return;
+
+                ResultLabel.Text = data.name;
+                ResultLabel.Foreground = new SolidColorBrush(Color.Parse("#FF333333"));
+
+                // Update local callCount
+                var stu = AuxiliaryMethods.Instance.studentDatas.FirstOrDefault(s => s.ID == data.id);
+                if (stu != null) stu.CallCount = data.callCount;
+                stu = AuxiliaryMethods.Instance.currentClass == 1
+                    ? AuxiliaryMethods.Instance.studentDatas_1.FirstOrDefault(s => s.ID == data.id)
+                    : AuxiliaryMethods.Instance.studentDatas_2.FirstOrDefault(s => s.ID == data.id);
+                if (stu != null) stu.CallCount = data.callCount;
+
+                AddHistory(data.name, data.callCount);
+            }
+            catch (Exception ex)
+            {
+                ResultLabel.Text = "抽人失败:\n" + ex.Message;
+                ResultLabel.Foreground = Brushes.Red;
             }
         }
 
@@ -102,11 +94,18 @@ namespace AuxiliaryTool.Avalonia.Views
             var block = new TextBlock
             {
                 Text = $" {name}  [{callCount}]",
-                FontSize = 16,
+                FontSize = 15,
                 Foreground = new SolidColorBrush(ThemeColor.RandomColor()),
-                Margin = new Thickness(0, 2)
+                Margin = new Thickness(0, 4)
             };
             HistoryPanel.Children.Insert(0, block);
         }
+    }
+
+    public class RandomResultApiDto
+    {
+        public int id { get; set; }
+        public string name { get; set; } = "";
+        public int callCount { get; set; }
     }
 }

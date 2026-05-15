@@ -1,116 +1,149 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using AuxiliaryTool.Avalonia.Models;
 using AuxiliaryTool.Avalonia.Views;
-using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace AuxiliaryTool.Avalonia
 {
+    public class ClassStudentDto
+    {
+        public int id { get; set; }
+        public string name { get; set; } = "";
+        public int callCount { get; set; }
+        public int scoreCount { get; set; }
+    }
+
+    public class ScoresApiDto
+    {
+        public List<string> dates { get; set; } = new();
+        public List<StudentScoreDto> students { get; set; } = new();
+    }
+
+    public class StudentScoreDto
+    {
+        public string name { get; set; } = "";
+        public List<double> scores { get; set; } = new();
+    }
+
+    public class RandomResultDto
+    {
+        public int id { get; set; }
+        public string name { get; set; } = "";
+        public int callCount { get; set; }
+    }
+
     public partial class MainWindow : Window
     {
         private OverviewView? _overviewView;
         private RandomView? _randomView;
         private ScoreAnalysisView? _scoreView;
+        private Button? _activeNavButton;
+
+        public static readonly HttpClient HttpClient = new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:5002/"),
+            Timeout = TimeSpan.FromSeconds(30)
+        };
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        protected override async void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
-            LoadConfig();
+            await LoadDataFromApiAsync();
         }
 
-        private void LoadConfig()
+        private async Task LoadDataFromApiAsync()
         {
-            var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            if (string.IsNullOrEmpty(exeDir)) return;
-
-            var configPath = Path.Combine(exeDir, "Assets", "config.xml");
-            if (!File.Exists(configPath))
+            try
             {
-                configPath = Path.Combine(exeDir, "config.xml");
+                // Load class basic info
+                var class1 = await HttpClient.GetFromJsonAsync<List<ClassStudentDto>>("api/class/1");
+                var class2 = await HttpClient.GetFromJsonAsync<List<ClassStudentDto>>("api/class/2");
+
+                // Load scores (objective)
+                var scores1 = await HttpClient.GetFromJsonAsync<ScoresApiDto>("api/scores/1");
+                var scores2 = await HttpClient.GetFromJsonAsync<ScoresApiDto>("api/scores/2");
+
+                // Load scores (full)
+                var scores1Full = await HttpClient.GetFromJsonAsync<ScoresApiDto>("api/scores/1?fullScore=true");
+                var scores2Full = await HttpClient.GetFromJsonAsync<ScoresApiDto>("api/scores/2?fullScore=true");
+
+                FillStudentData(class1, scores1, AuxiliaryMethods.Instance.studentDatas_1);
+                FillStudentData(class2, scores2, AuxiliaryMethods.Instance.studentDatas_2);
+                FillStudentData(class1, scores1Full, AuxiliaryMethods.Instance.studentDatas_1_2);
+                FillStudentData(class2, scores2Full, AuxiliaryMethods.Instance.studentDatas_2_2);
+
+                AuxiliaryMethods.Instance.currentClass = 1;
+                AuxiliaryMethods.Instance.studentDatas = AuxiliaryMethods.Instance.studentDatas_1;
+
+                SwitchView("overview");
             }
-
-            var paths = AuxiliaryMethods.Instance.ReadConfig(configPath);
-            var basePath = Path.GetDirectoryName(configPath) ?? exeDir;
-
-            AuxiliaryMethods.Instance.classFilePath_1 = Path.Combine(basePath, paths[0]);
-            AuxiliaryMethods.Instance.classFilePath_2 = Path.Combine(basePath, paths[1]);
-
-            var scorePath1 = Path.Combine(basePath, paths[2]);
-            var scorePath2 = Path.Combine(basePath, paths[3]);
-
-            // 预加载两个班级数据
-            LoadClassData(1, AuxiliaryMethods.Instance.classFilePath_1, scorePath1);
-            LoadClassData(2, AuxiliaryMethods.Instance.classFilePath_2, scorePath2);
-
-            // 默认选择 A01 并显示看板
-            AuxiliaryMethods.Instance.currentClass = 1;
-            AuxiliaryMethods.Instance.studentDatas = AuxiliaryMethods.Instance.studentDatas_1;
-            HighlightClassButton(ClassAButton, ClassBButton);
-            SwitchView("overview");
-        }
-
-        private void LoadClassData(int classIndex, string xmlPath, string excelPath)
-        {
-            if (classIndex == 1)
+            catch (Exception ex)
             {
-                AuxiliaryMethods.Instance.studentDatas_1.Clear();
-                AuxiliaryMethods.Instance.studentDatas_1_2.Clear();
-                AuxiliaryMethods.Instance.ReadDataXml(xmlPath, AuxiliaryMethods.Instance.studentDatas_1);
-                AuxiliaryMethods.Instance.ReadDataXml(xmlPath, AuxiliaryMethods.Instance.studentDatas_1_2);
-                AuxiliaryMethods.Instance.ReadExcel(excelPath, AuxiliaryMethods.Instance.studentDatas_1);
-                AuxiliaryMethods.Instance.ReadExcel(excelPath, AuxiliaryMethods.Instance.studentDatas_1_2, 1);
-            }
-            else
-            {
-                AuxiliaryMethods.Instance.studentDatas_2.Clear();
-                AuxiliaryMethods.Instance.studentDatas_2_2.Clear();
-                AuxiliaryMethods.Instance.ReadDataXml(xmlPath, AuxiliaryMethods.Instance.studentDatas_2);
-                AuxiliaryMethods.Instance.ReadDataXml(xmlPath, AuxiliaryMethods.Instance.studentDatas_2_2);
-                AuxiliaryMethods.Instance.ReadExcel(excelPath, AuxiliaryMethods.Instance.studentDatas_2);
-                AuxiliaryMethods.Instance.ReadExcel(excelPath, AuxiliaryMethods.Instance.studentDatas_2_2, 1);
-            }
-        }
-
-        private void ClassButton_Click(object? sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn)
-            {
-                if (btn.Name == "ClassAButton")
+                var dialog = new Window
                 {
-                    AuxiliaryMethods.Instance.currentClass = 1;
-                    AuxiliaryMethods.Instance.studentDatas = AuxiliaryMethods.Instance.studentDatas_1;
-                    HighlightClassButton(ClassAButton, ClassBButton);
-                }
-                else
-                {
-                    AuxiliaryMethods.Instance.currentClass = 2;
-                    AuxiliaryMethods.Instance.studentDatas = AuxiliaryMethods.Instance.studentDatas_2;
-                    HighlightClassButton(ClassBButton, ClassAButton);
-                }
+                    Title = "Error",
+                    Width = 400,
+                    Height = 200,
+                    Content = new TextBlock
+                    {
+                        Text = "无法连接到后端服务:\n" + ex.Message + "\n\n请确保后端服务已启动:\ncd AuxiliaryTool.Web && dotnet run --urls http://localhost:5002",
+                        Margin = new Thickness(20),
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                };
+                dialog.ShowDialog(this);
             }
         }
 
-        private void HighlightClassButton(Button active, Button inactive)
+        private void FillStudentData(List<ClassStudentDto>? classData, ScoresApiDto? scoresData, List<StudentData> target)
         {
-            active.Opacity = 1.0;
-            inactive.Opacity = 0.5;
+            target.Clear();
+            if (classData == null) return;
+
+            foreach (var c in classData)
+            {
+                target.Add(new StudentData(c.id, c.name, c.callCount));
+            }
+
+            if (scoresData?.students != null && scoresData.dates != null)
+            {
+                foreach (var s in scoresData.students)
+                {
+                    var stu = target.FirstOrDefault(x => x.Name == s.name);
+                    if (stu != null)
+                    {
+                        int count = Math.Min(scoresData.dates.Count, s.scores.Count);
+                        for (int i = 0; i < count; i++)
+                        {
+                            stu.scoreArr.Add(new string[] { scoresData.dates[i], s.scores[i].ToString("F2") });
+                            stu.scoreList.Add(new Dictionary<string, string> { { scoresData.dates[i], s.scores[i].ToString("F2") } });
+                        }
+                    }
+                }
+            }
         }
 
         private void NavButton_Click(object? sender, RoutedEventArgs e)
         {
             if (sender is Button btn)
             {
-                ResetNavButtons();
-                btn.Foreground = Brushes.White;
+                _activeNavButton?.Classes.Remove("active");
+                btn.Classes.Add("active");
+                _activeNavButton = btn;
+
                 switch (btn.Name)
                 {
                     case "NavOverview": SwitchView("overview"); break;
@@ -120,19 +153,13 @@ namespace AuxiliaryTool.Avalonia
             }
         }
 
-        private void ResetNavButtons()
-        {
-            NavOverview.Foreground = new SolidColorBrush(Color.Parse("#FFAAAAAA"));
-            NavRandom.Foreground = new SolidColorBrush(Color.Parse("#FFAAAAAA"));
-            NavScore.Foreground = new SolidColorBrush(Color.Parse("#FFAAAAAA"));
-        }
-
         private void SwitchView(string viewName)
         {
             switch (viewName)
             {
                 case "overview":
                     _overviewView ??= new OverviewView();
+                    _overviewView.RefreshData();
                     MainContent.Content = _overviewView;
                     break;
                 case "random":
@@ -144,19 +171,6 @@ namespace AuxiliaryTool.Avalonia
                     MainContent.Content = _scoreView;
                     break;
             }
-        }
-
-        private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                BeginMoveDrag(e);
-            }
-        }
-
-        private void CloseButton_Click(object? sender, RoutedEventArgs e)
-        {
-            Close();
         }
     }
 }

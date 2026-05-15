@@ -2,47 +2,85 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
              x:Class="AuxiliaryTool.Avalonia.Views.ScoreAnalysisView"
-             Background="#FF1E1E1E">
-  <Grid Margin="16">
+             Background="#FFF9F9F9">
+  <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="121"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
 
     <!-- 工具栏 -->
-    <WrapPanel Grid.Row="0" Margin="0,0,0,12">
-      <ComboBox x:Name="DisplayCountBox" Width="100" Margin="0,0,8,0"
-                SelectedIndex="0" SelectionChanged="DisplayCountBox_SelectionChanged">
-        <ComboBoxItem Content="All"/>
-        <ComboBoxItem Content="4"/>
-        <ComboBoxItem Content="5"/>
-        <ComboBoxItem Content="6"/>
-        <ComboBoxItem Content="7"/>
-        <ComboBoxItem Content="8"/>
-        <ComboBoxItem Content="9"/>
-        <ComboBoxItem Content="10"/>
-      </ComboBox>
+    <Border Grid.Row="0" BorderBrush="#FFDDDDDD" BorderThickness="0,0,0,1" Background="#FFFFFFFF">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="360"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-      <ComboBox x:Name="StudentBox" Width="180" Margin="0,0,8,0"
-                PlaceholderText="直接选择学生"/>
+        <!-- 左侧面板 -->
+        <Border Grid.Column="0" BorderBrush="#FFEEEEEE" BorderThickness="0,0,1,0" Padding="15,10,15,10">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Data Filtering" FontSize="18" FontWeight="Bold"
+                       FontFamily="Century Gothic" Foreground="#FF1EAEE7"/>
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <TextBlock Text="单次数据长度:" FontSize="13" FontWeight="Bold"
+                         Foreground="#FF1EAEE7" VerticalAlignment="Center"/>
+              <ComboBox x:Name="DisplayCountBox" Width="112" Height="32"
+                        SelectedIndex="0" SelectionChanged="DisplayCountBox_SelectionChanged">
+                <ComboBoxItem Content="All"/>
+                <ComboBoxItem Content="4"/>
+                <ComboBoxItem Content="5"/>
+                <ComboBoxItem Content="6"/>
+                <ComboBoxItem Content="7"/>
+                <ComboBoxItem Content="8"/>
+                <ComboBoxItem Content="9"/>
+                <ComboBoxItem Content="10"/>
+              </ComboBox>
+            </StackPanel>
+          </StackPanel>
+        </Border>
 
-      <Button Content="下一组" Click="NextGroup_Click"
-              Background="#FF9B59B6" Foreground="White" Margin="0,0,8,0" Padding="12,6"/>
-      <Button Content="清空图表" Click="Clear_Click"
-              Background="#FF555555" Foreground="White" Margin="0,0,8,0" Padding="12,6"/>
-      <Button x:Name="LastWeekButton" Content="最近7次" Click="LastWeek_Click"
-              Background="#FF00C0C0" Foreground="White" Margin="0,0,8,0" Padding="12,6"/>
-      <Button Content="客观分" Click="HalfScore_Click"
-              Background="#FF39C5BB" Foreground="White" Margin="0,0,8,0" Padding="12,6"/>
-      <Button Content="全部分" Click="AllScore_Click"
-              Background="#FF3A9BDC" Foreground="White" Padding="12,6"/>
-    </WrapPanel>
+        <!-- 右侧面板 -->
+        <Border Grid.Column="1" Padding="10,6,10,6">
+          <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
 
-    <!-- 图表区 -->
-    <Border Grid.Row="1" Background="#FF252525" CornerRadius="8" Padding="8">
+          <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="直接选择：" FontSize="13" FontWeight="Bold"
+                       Foreground="#FF1EAEE7" VerticalAlignment="Center"/>
+            <ComboBox x:Name="StudentBox" Width="200" Height="32"
+                      PlaceholderText="选择学生"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+            <Button x:Name="RedrawButton" Content="下一组数据" Click="NextGroup_Click"
+                    Background="#FF9B59B6" Foreground="#FFFFFFFF" Padding="10,4" CornerRadius="4" FontSize="12"/>
+            <Button Content="清空图表" Click="Clear_Click"
+                    Background="#FF777777" Foreground="#FFFFFFFF" Padding="10,4" CornerRadius="4" FontSize="12"/>
+            <Button x:Name="LastWeekButton" Content="最近7次成绩" Click="LastWeek_Click"
+                    Background="#FF00C0C0" Foreground="#FFFFFFFF" Padding="10,4" CornerRadius="4" FontSize="12"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+            <Button Content="非全分[客观分]" Click="HalfScore_Click"
+                    Background="#FF39C5BB" Foreground="#FFFFFFFF" Padding="10,4" CornerRadius="4" FontSize="12"/>
+            <Button Content="全分[主客观分]" Click="AllScore_Click"
+                    Background="#FF3A9BDC" Foreground="#FFFFFFFF" Padding="10,4" CornerRadius="4" FontSize="12"/>
+          </StackPanel>
+        </Grid>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- 图表区域 -->
+    <Border Grid.Row="1" Background="#FFF9F9F9" Padding="0">
       <lvc:CartesianChart x:Name="Chart"
                           LegendPosition="Right"
-                          Background="#FF252525"/>
+                          Background="#FFFFFFFF"/>
     </Border>
   </Grid>
 </UserControl>

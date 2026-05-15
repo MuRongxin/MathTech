@@ -82,7 +82,7 @@
   </student>
   <student id="100021">
     <name>神田空太</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100022">
     <name>椎名真白</name>
@@ -262,7 +262,7 @@
   </student>
   <student id="100066">
     <name>友利奈绪</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100067">
     <name>高城丈士朗</name>
@@ -306,7 +306,7 @@
   </student>
   <student id="100077">
     <name>石田将也</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100078">
     <name>西宫硝子</name>
@@ -394,7 +394,7 @@
   </student>
   <student id="100099">
     <name>野崎梅太郎</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100100">
     <name>佐仓千代</name>

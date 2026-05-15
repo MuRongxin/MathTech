@@ -1,39 +1,58 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
              x:Class="AuxiliaryTool.Avalonia.Views.OverviewView"
-             Background="#FF1E1E1E">
-  <Grid Margin="20">
+             Background="#FFF9F9F9">
+  <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
 
-    <TextBlock Grid.Row="0" Text="数据看板" FontSize="24" FontWeight="Bold"
-               Foreground="White" Margin="0,0,0,20"/>
+    <!-- 数据面板 -->
+    <Border Grid.Row="0" BorderBrush="#FFCCCCCC" BorderThickness="1" Background="#FFFFFFFF" Padding="15,15,15,10">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-    <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,0,0,20">
-      <Border Grid.Column="0" Background="#FF2D5F8B" CornerRadius="8" Padding="20" Margin="0,0,10,0">
-        <StackPanel>
-          <TextBlock Text="A01 班级" FontSize="14" Foreground="#FFAAAAAA"/>
-          <TextBlock x:Name="A01Count" Text="0" FontSize="36" FontWeight="Bold" Foreground="White"/>
-          <TextBlock x:Name="A01Avg" Text="平均分: --" FontSize="14" Foreground="#FFDDDDDD" Margin="0,4,0,0"/>
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="1" Background="#FF2D8B7A" CornerRadius="8" Padding="20" Margin="10,0,0,0">
-        <StackPanel>
-          <TextBlock Text="A02 班级" FontSize="14" Foreground="#FFAAAAAA"/>
-          <TextBlock x:Name="A02Count" Text="0" FontSize="36" FontWeight="Bold" Foreground="White"/>
-          <TextBlock x:Name="A02Avg" Text="平均分: --" FontSize="14" Foreground="#FFDDDDDD" Margin="0,4,0,0"/>
-        </StackPanel>
-      </Border>
-    </Grid>
+        <TextBlock Grid.Row="0" Text="Data overview" FontSize="18" FontFamily="Century Gothic" Foreground="#FF333333" Margin="0,0,0,4"/>
+        <TextBlock Grid.Row="1" x:Name="DateLabel" Text="--" FontSize="14" FontFamily="Century Gothic" Foreground="#FF666666" Margin="0,0,0,12"/>
 
-    <Border Grid.Row="2" Background="#FF252525" CornerRadius="8" Padding="16">
-      <StackPanel>
-        <TextBlock Text="最近考试日期" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-        <TextBlock x:Name="RecentDates" Text="--" FontSize="14" Foreground="#FFCCCCCC"/>
-      </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
+          <Button x:Name="SelectA01Btn" Content="Select the current class as A01" Click="ClassButton_Click"
+                  Background="#FF39C5BB" Foreground="#FFFFFFFF" Padding="16,6" CornerRadius="4" FontSize="12"/>
+          <Button x:Name="SelectA02Btn" Content="Select the current class as A02" Click="ClassButton_Click"
+                  Background="#FF1EAEE7" Foreground="#FFFFFFFF" Padding="16,6" CornerRadius="4" FontSize="12"/>
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,*" Margin="0,0,0,5">
+          <Border Grid.Column="0" Background="#FF1EAEE7" CornerRadius="5" Padding="20" Margin="0,0,20,0" Height="209">
+            <Grid>
+              <TextBlock Text="A01 Data Length" FontSize="15" FontWeight="Bold" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Top"/>
+              <TextBlock x:Name="DataLengthLabel1" Text="--" FontSize="36" FontWeight="Bold" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Center" Margin="0,-20,0,0"/>
+              <TextBlock x:Name="SubLabel1" Text="--" FontSize="14" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Bottom" Opacity="0.9"/>
+              <TextBlock Text="&#128200;" FontSize="28" Foreground="#FFFFFFFF" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.7"/>
+            </Grid>
+          </Border>
+          <Border Grid.Column="1" Background="#FF39C5BB" CornerRadius="5" Padding="20" Margin="20,0,0,0" Height="209">
+            <Grid>
+              <TextBlock Text="A02 Data Length" FontSize="15" FontWeight="Bold" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Top"/>
+              <TextBlock x:Name="DataLengthLabel2" Text="--" FontSize="36" FontWeight="Bold" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Center" Margin="0,-20,0,0"/>
+              <TextBlock x:Name="SubLabel2" Text="--" FontSize="14" FontFamily="Century Gothic" Foreground="#FFFFFFFF" VerticalAlignment="Bottom" Opacity="0.9"/>
+              <TextBlock Text="&#128200;" FontSize="28" Foreground="#FFFFFFFF" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0.7"/>
+            </Grid>
+          </Border>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <!-- 图表区域 -->
+    <Border Grid.Row="1" Background="#FFF9F9F9" Padding="20">
+      <lvc:CartesianChart x:Name="AverageChart" Background="#FFFFFFFF"/>
     </Border>
   </Grid>
 </UserControl>
