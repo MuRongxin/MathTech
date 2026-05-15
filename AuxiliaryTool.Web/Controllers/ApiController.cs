@@ -36,11 +36,31 @@ namespace AuxiliaryTool.Web.Controllers
                 avg2 = scores.Average();
             }
 
+            // 计算每个日期的班级平均分（用于看板下方图表）
+            List<double> averages1 = new List<double>();
+            List<double> averages2 = new List<double>();
+            if (a1.Count > 0 && dates.Count > 0)
+            {
+                for (int d = 0; d < dates.Count; d++)
+                {
+                    double sum1 = 0, sum2 = 0;
+                    int c1 = 0, c2 = 0;
+                    foreach (var s in a1)
+                        if (d < s.scoreArr.Count && double.TryParse(s.scoreArr[d][1], out double v1)) { sum1 += v1; c1++; }
+                    foreach (var s in a2)
+                        if (d < s.scoreArr.Count && double.TryParse(s.scoreArr[d][1], out double v2)) { sum2 += v2; c2++; }
+                    averages1.Add(c1 > 0 ? Math.Round(sum1 / c1, 2) : 0);
+                    averages2.Add(c2 > 0 ? Math.Round(sum2 / c2, 2) : 0);
+                }
+            }
+
             return Ok(new
             {
                 a01 = new { count = a1.Count, avg = Math.Round(avg1, 2) },
                 a02 = new { count = a2.Count, avg = Math.Round(avg2, 2) },
-                dates = dates
+                dates = dates,
+                averages1 = averages1,
+                averages2 = averages2
             });
         }
 

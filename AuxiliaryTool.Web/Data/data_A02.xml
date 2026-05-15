@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <root>
   <student id="100101">
     <name>御子柴实琴</name>
@@ -58,7 +58,7 @@
   </student>
   <student id="100115">
     <name>日下部美纱绪</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100116">
     <name>樱庭光</name>
@@ -78,7 +78,7 @@
   </student>
   <student id="100120">
     <name>藤林杏</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100121">
     <name>藤林椋</name>
@@ -98,7 +98,7 @@
   </student>
   <student id="100125">
     <name>伊吹风子</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100126">
     <name>宫泽有纪宁</name>
@@ -110,7 +110,7 @@
   </student>
   <student id="100128">
     <name>桐崎千棘</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100129">
     <name>小野寺小咲</name>
@@ -202,7 +202,7 @@
   </student>
   <student id="100151">
     <name>御坂美琴</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100152">
     <name>白井黑子</name>
@@ -218,7 +218,7 @@
   </student>
   <student id="100155">
     <name>利威尔</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100156">
     <name>艾伦耶格尔</name>
@@ -234,7 +234,7 @@
   </student>
   <student id="100159">
     <name>漩涡鸣人</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100160">
     <name>宇智波佐助</name>
@@ -290,7 +290,7 @@
   </student>
   <student id="100173">
     <name>虎杖悠仁</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100174">
     <name>伏黑惠</name>
@@ -330,7 +330,7 @@
   </student>
   <student id="100183">
     <name>影山律</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100184">
     <name>夜神月</name>
@@ -354,7 +354,7 @@
   </student>
   <student id="100189">
     <name>阿尔冯斯</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100190">
     <name>温莉洛克贝尔</name>
