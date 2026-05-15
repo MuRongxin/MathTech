@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+        x:Class="AuxiliaryTool.Avalonia.MainWindow"
+        Title="Auxiliary Tool"
+        Width="1100" Height="700"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Background="#FF1E1E1E">
+
+  <Border Background="#FF1E1E1E" CornerRadius="8">
+    <Grid RowDefinitions="Auto,*">
+      <!-- 标题栏 -->
+      <Border Grid.Row="0" Background="#FF2D2D2D" Height="48" CornerRadius="8,8,0,0"
+              PointerPressed="TitleBar_PointerPressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Text="Auxiliary Tool" Foreground="White"
+                     VerticalAlignment="Center" Margin="16,0" FontSize="16" FontWeight="Bold"/>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0">
+            <Button Content="A01" x:Name="ClassAButton" Click="ClassButton_Click"
+                    Background="#FF3A9BDC" Foreground="White" Margin="4,0"
+                    Padding="12,4" CornerRadius="4" FontWeight="Bold"/>
+            <Button Content="A02" x:Name="ClassBButton" Click="ClassButton_Click"
+                    Background="#FF39C5BB" Foreground="White" Margin="4,0"
+                    Padding="12,4" CornerRadius="4" FontWeight="Bold"/>
+            <Rectangle Width="1" Fill="#FF555555" Margin="8,8"/>
+            <Button Content="看板" x:Name="NavOverview" Click="NavButton_Click"
+                    Background="Transparent" Foreground="#FFAAAAAA" Margin="4,0"
+                    Padding="12,4" CornerRadius="4"/>
+            <Button Content="抽人" x:Name="NavRandom" Click="NavButton_Click"
+                    Background="Transparent" Foreground="#FFAAAAAA" Margin="4,0"
+                    Padding="12,4" CornerRadius="4"/>
+            <Button Content="成绩" x:Name="NavScore" Click="NavButton_Click"
+                    Background="Transparent" Foreground="#FFAAAAAA" Margin="4,0"
+                    Padding="12,4" CornerRadius="4"/>
+            <Rectangle Width="1" Fill="#FF555555" Margin="8,8"/>
+            <Button Content="×" Click="CloseButton_Click"
+                    Background="Transparent" Foreground="#FFAAAAAA" Margin="4,0"
+                    Padding="8,4" CornerRadius="4" FontSize="16"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- 内容区域 -->
+      <Border Grid.Row="1" Background="#FF1E1E1E" CornerRadius="0,0,8,8">
+        <ContentControl x:Name="MainContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

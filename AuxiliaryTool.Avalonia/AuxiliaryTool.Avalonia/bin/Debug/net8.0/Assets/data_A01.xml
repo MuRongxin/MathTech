@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <student id="101001">
+    <name>高松灯</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101002">
+    <name>千早爱音</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101003">
+    <name>要乐奈</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101004">
+    <name>长崎爽世</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101005">
+    <name>椎名立希</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101006">
+    <name>户山香澄</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101007">
+    <name>市谷有咲</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101008">
+    <name>山吹沙绫</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101009">
+    <name>花园多惠</name>
+    <callCount>0</callCount>
+  </student>
+  <student id="101010">
+    <name>牛込里美</name>
+    <callCount>0</callCount>
+  </student>
+</root>
