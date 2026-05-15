@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+<?xml version="1.0" encoding="utf-8" ?> 
 <config>
-  <classMembers>data153.xml</classMembers>
-  <classMembers>data155.xml</classMembers>
-  <classScore>Exam153Score.xlsx</classScore>
-  <classScore>Exam155Score.xlsx</classScore>
+  <classMembers>data43.xml</classMembers>
+  <classMembers>data45.xml</classMembers>
+  <classScore>Exam143Score.xlsx</classScore>
+  <classScore>Exam145Score.xlsx</classScore>
 </config>
