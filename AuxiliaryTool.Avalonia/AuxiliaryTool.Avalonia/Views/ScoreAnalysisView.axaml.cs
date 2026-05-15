@@ -80,11 +80,13 @@ namespace AuxiliaryTool.Avalonia.Views
 
         private void FirstChart()
         {
+            if (_currentList == null || _currentList.Count == 0) return;
+
             Chart.Series = Array.Empty<ISeries>();
             _displayIndex = 0;
 
             var random = new Random();
-            int count = random.Next(3, 7);
+            int count = Math.Min(random.Next(3, 7), _currentList.Count);
             var used = new HashSet<int>();
 
             var seriesList = new List<ISeries>();
@@ -97,7 +99,7 @@ namespace AuxiliaryTool.Avalonia.Views
             }
 
             Chart.Series = seriesList.ToArray();
-            _displayIndex = used.Max() + 1;
+            _displayIndex = used.Count > 0 ? used.Max() + 1 : 0;
         }
 
         private ISeries CreateSeries(StudentData student)
@@ -234,6 +236,7 @@ namespace AuxiliaryTool.Avalonia.Views
 
         private void DisplayCountBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
+            if (_currentList == null || _currentList.Count == 0) return;
             var item = DisplayCountBox.SelectedItem as ComboBoxItem;
             if (item == null) return;
             var text = item.Content?.ToString();

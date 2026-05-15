@@ -51,7 +51,10 @@ namespace AuxiliaryTool.Avalonia
             LoadClassData(1, AuxiliaryMethods.Instance.classFilePath_1, scorePath1);
             LoadClassData(2, AuxiliaryMethods.Instance.classFilePath_2, scorePath2);
 
-            // 默认显示看板
+            // 默认选择 A01 并显示看板
+            AuxiliaryMethods.Instance.currentClass = 1;
+            AuxiliaryMethods.Instance.studentDatas = AuxiliaryMethods.Instance.studentDatas_1;
+            HighlightClassButton(ClassAButton, ClassBButton);
             SwitchView("overview");
         }
 
