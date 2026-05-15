@@ -1,0 +1,6 @@
+@AuxiliaryTool.Web_HostAddress = http://localhost:5220
+
+GET {{AuxiliaryTool.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

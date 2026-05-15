@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auxiliary Tool Web</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e1e; color: #fff; min-height: 100vh;
+        }
+        .header {
+            background: #2d2d2d; padding: 12px 20px; display: flex;
+            align-items: center; justify-content: space-between; border-bottom: 1px solid #444;
+        }
+        .header h1 { font-size: 18px; }
+        .nav { display: flex; gap: 8px; align-items: center; }
+        .nav button {
+            border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 14px; transition: opacity 0.2s;
+        }
+        .class-btn { font-weight: bold; }
+        .class-btn.a01 { background: #3a9bdc; color: #fff; }
+        .class-btn.a02 { background: #39c5bb; color: #fff; opacity: 0.5; }
+        .tab-btn { background: transparent; color: #aaa; }
+        .tab-btn.active { color: #fff; background: #444; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+        /* Overview */
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .card {
+            background: #2d2d2d; border-radius: 12px; padding: 24px;
+        }
+        .card.a01 { border-left: 4px solid #3a9bdc; }
+        .card.a02 { border-left: 4px solid #39c5bb; }
+        .card-label { color: #aaa; font-size: 14px; margin-bottom: 8px; }
+        .card-value { font-size: 36px; font-weight: bold; }
+        .card-sub { color: #ccc; font-size: 14px; margin-top: 4px; }
+        .dates-box {
+            background: #252525; border-radius: 12px; padding: 20px;
+        }
+        .dates-box h3 { font-size: 16px; margin-bottom: 12px; }
+        .dates-box p { color: #ccc; font-size: 14px; line-height: 1.8; }
+
+        /* Random */
+        .random-wrap { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+        .random-btn {
+            width: 100%; padding: 16px; font-size: 18px; border: none;
+            border-radius: 10px; cursor: pointer; background: #39c5bb; color: #fff;
+            font-weight: bold;
+        }
+        .random-btn.running { background: #e74c3c; }
+        .random-display {
+            background: #252525; border-radius: 12px; min-height: 400px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px; font-weight: bold; text-align: center; flex-direction: column;
+        }
+        .random-display .count { font-size: 18px; color: #aaa; margin-top: 12px; }
+        .history-box {
+            background: #252525; border-radius: 12px; padding: 16px; margin-top: 16px;
+            max-height: 400px; overflow-y: auto;
+        }
+        .history-box h4 { color: #aaa; font-size: 14px; margin-bottom: 10px; }
+        .history-item { padding: 6px 0; font-size: 15px; border-bottom: 1px solid #333; }
+
+        /* Score */
+        .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .toolbar select, .toolbar button {
+            padding: 8px 14px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;
+        }
+        .toolbar select { background: #333; color: #fff; }
+        .toolbar button { color: #fff; }
+        .btn-purple { background: #9b59b6; }
+        .btn-gray { background: #555; }
+        .btn-cyan { background: #00c0c0; }
+        .btn-teal { background: #39c5bb; }
+        .btn-blue { background: #3a9bdc; }
+        .chart-box {
+            background: #252525; border-radius: 12px; padding: 16px;
+            position: relative; height: 500px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Auxiliary Tool</h1>
+        <div class="nav">
+            <button id="btnA01" class="class-btn a01" onclick="switchClass(1)">A01</button>
+            <button id="btnA02" class="class-btn a02" onclick="switchClass(2)">A02</button>
+            <span style="color:#555;margin:0 8px;">|</span>
+            <button class="tab-btn active" onclick="switchTab('overview')">看板</button>
+            <button class="tab-btn" onclick="switchTab('random')">抽人</button>
+            <button class="tab-btn" onclick="switchTab('score')">成绩</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Overview -->
+        <div id="tab-overview">
+            <div class="cards">
+                <div class="card a01">
+                    <div class="card-label">A01 班级</div>
+                    <div class="card-value" id="a01Count">--</div>
+                    <div class="card-sub" id="a01Avg">平均分: --</div>
+                </div>
+                <div class="card a02">
+                    <div class="card-label">A02 班级</div>
+                    <div class="card-value" id="a02Count">--</div>
+                    <div class="card-sub" id="a02Avg">平均分: --</div>
+                </div>
+            </div>
+            <div class="dates-box">
+                <h3>最近考试日期</h3>
+                <p id="recentDates">--</p>
+            </div>
+        </div>
+
+        <!-- Random -->
+        <div id="tab-random" class="hidden">
+            <div class="random-wrap">
+                <div>
+                    <button id="randomBtn" class="random-btn" onclick="toggleRandom()">开始随机</button>
+                    <div class="history-box">
+                        <h4>历史记录</h4>
+                        <div id="historyList"></div>
+                    </div>
+                </div>
+                <div class="random-display" id="randomDisplay">
+                    <div>点击左侧按钮开始随机抽人</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score -->
+        <div id="tab-score" class="hidden">
+            <div class="toolbar">
+                <select id="displayCount" onchange="onDisplayCountChange()">
+                    <option value="0">All</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <select id="studentSelect" onchange="onStudentSelect()">
+                    <option value="">选择学生</option>
+                </select>
+                <button class="btn-purple" onclick="nextGroup()">下一组</button>
+                <button class="btn-gray" onclick="clearChart()">清空图表</button>
+                <button id="lastWeekBtn" class="btn-cyan" onclick="toggleLastWeek()">最近7次</button>
+                <button class="btn-teal" onclick="switchScoreMode(false)">客观分</button>
+                <button class="btn-blue" onclick="switchScoreMode(true)">全部分</button>
+            </div>
+            <div class="chart-box">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentClass = 1;
+        let currentTab = 'overview';
+        let randomTimer = null;
+        let randomRunning = false;
+        let scoreData = { dates: [], students: [] };
+        let chartInstance = null;
+        let isLastWeek = false;
+        let displayLength = 0;
+        let displayIndex = 0;
+        let fullScoreMode = false;
+        let originalDatasets = [];
+
+        // --- Navigation ---
+        function switchClass(id) {
+            currentClass = id;
+            document.getElementById('btnA01').style.opacity = id === 1 ? '1' : '0.5';
+            document.getElementById('btnA02').style.opacity = id === 2 ? '1' : '0.5';
+            refreshCurrentTab();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            ['overview', 'random', 'score'].forEach(t => {
+                document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+            });
+            refreshCurrentTab();
+        }
+
+        function refreshCurrentTab() {
+            if (currentTab === 'overview') loadOverview();
+            if (currentTab === 'random') loadRandom();
+            if (currentTab === 'score') loadScore();
+        }
+
+        // --- Overview ---
+        async function loadOverview() {
+            const res = await fetch('/api/overview');
+            const data = await res.json();
+            document.getElementById('a01Count').textContent = data.a01.count;
+            document.getElementById('a01Avg').textContent = '平均分: ' + data.a01.avg.toFixed(2);
+            document.getElementById('a02Count').textContent = data.a02.count;
+            document.getElementById('a02Avg').textContent = '平均分: ' + data.a02.avg.toFixed(2);
+            document.getElementById('recentDates').textContent = data.dates.join('  |  ');
+        }
+
+        // --- Random ---
+        async function loadRandom() {
+            const res = await fetch('/api/class/' + currentClass);
+            const students = await res.json();
+            const sel = document.getElementById('studentSelect');
+            sel.innerHTML = '<option value="">选择学生</option>';
+            students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        function toggleRandom() {
+            const btn = document.getElementById('randomBtn');
+            const display = document.getElementById('randomDisplay');
+            if (!randomRunning) {
+                randomRunning = true;
+                btn.textContent = '停止';
+                btn.classList.add('running');
+                randomTimer = setInterval(async () => {
+                    const res = await fetch('/api/class/' + currentClass);
+                    const list = await res.json();
+                    if (list.length > 0) {
+                        const idx = Math.floor(Math.random() * list.length);
+                        display.innerHTML = `<div style="color:${randomColor()}">${list[idx].name}</div>`;
+                    }
+                }, 60);
+            } else {
+                randomRunning = false;
+                btn.textContent = '开始随机';
+                btn.classList.remove('running');
+                clearInterval(randomTimer);
+                doRandom();
+            }
+        }
+
+        async function doRandom() {
+            const res = await fetch('/api/random/' + currentClass, { method: 'POST' });
+            const data = await res.json();
+            const display = document.getElementById('randomDisplay');
+            display.innerHTML = `<div>${data.name}</div><div class="count">[${data.callCount}]</div>`;
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.style.color = randomColor();
+            item.textContent = `${data.name}  [${data.callCount}]`;
+            document.getElementById('historyList').insertBefore(item, document.getElementById('historyList').firstChild);
+        }
+
+        function randomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        // --- Score ---
+        async function loadScore() {
+            const res = await fetch('/api/scores/' + currentClass + '?fullScore=' + fullScoreMode);
+            scoreData = await res.json();
+            displayIndex = 0;
+            isLastWeek = false;
+            document.getElementById('lastWeekBtn').textContent = '最近7次';
+
+            // Fill student select
+            const sel = document.getElementById('studentSelect');
+            sel.innerHTML = '<option value="">选择学生</option>';
+            scoreData.students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                opt.textContent = s.name;
+                sel.appendChild(opt);
+            });
+
+            firstChart();
+        }
+
+        function firstChart() {
+            const count = Math.min(Math.floor(Math.random() * 4) + 3, scoreData.students.length);
+            const used = new Set();
+            const datasets = [];
+            while (datasets.length < count) {
+                const idx = Math.floor(Math.random() * scoreData.students.length);
+                if (used.has(idx)) continue;
+                used.add(idx);
+                datasets.push(createDataset(scoreData.students[idx]));
+            }
+            originalDatasets = JSON.parse(JSON.stringify(datasets));
+            displayIndex = Math.max(...Array.from(used)) + 1;
+            renderChart(datasets);
+        }
+
+        function createDataset(student) {
+            const color = randomColor();
+            return {
+                label: student.name,
+                data: student.scores,
+                borderColor: color,
+                backgroundColor: color,
+                pointRadius: 4,
+                tension: 0,
+                fill: false
+            };
+        }
+
+        function renderChart(datasets) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            const labels = isLastWeek && scoreData.dates.length >= 7
+                ? scoreData.dates.slice(-7)
+                : scoreData.dates;
+
+            const displayDatasets = datasets.map(ds => ({
+                ...ds,
+                data: isLastWeek && ds.data.length >= 7 ? ds.data.slice(-7) : ds.data
+            }));
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: displayDatasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#ccc' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#aaa' }, grid: { color: '#333' } },
+                        y: { ticks: { color: '#aaa' }, grid: { color: '#333' }, title: { display: true, text: 'Percentage of Score', color: '#aaa' } }
+                    }
+                }
+            });
+        }
+
+        function nextGroup() {
+            if (displayLength === 0) displayLength = scoreData.students.length;
+            const currentDatasets = chartInstance.data.datasets.map(ds => ({
+                label: ds.label,
+                data: scoreData.students.find(s => s.name === ds.label)?.scores || [],
+                borderColor: ds.borderColor,
+                backgroundColor: ds.backgroundColor,
+                pointRadius: 4,
+                tension: 0,
+                fill: false
+            }));
+
+            for (let i = displayIndex; i < displayIndex + displayLength; i++) {
+                if (i >= scoreData.students.length) break;
+                const stu = scoreData.students[i];
+                if (currentDatasets.find(ds => ds.label === stu.name)) continue;
+                currentDatasets.push(createDataset(stu));
+            }
+            displayIndex += displayLength;
+            if (displayIndex >= scoreData.students.length) displayIndex = 0;
+            originalDatasets = JSON.parse(JSON.stringify(currentDatasets));
+            renderChart(currentDatasets);
+        }
+
+        function clearChart() {
+            if (chartInstance) {
+                chartInstance.data.datasets = [];
+                chartInstance.update();
+            }
+            originalDatasets = [];
+            document.getElementById('studentSelect').value = '';
+        }
+
+        function toggleLastWeek() {
+            isLastWeek = !isLastWeek;
+            document.getElementById('lastWeekBtn').textContent = isLastWeek ? '全部' : '最近7次';
+            renderChart(originalDatasets);
+        }
+
+        function onDisplayCountChange() {
+            const val = document.getElementById('displayCount').value;
+            displayLength = val === '0' ? scoreData.students.length : parseInt(val);
+            displayIndex = 0;
+        }
+
+        function onStudentSelect() {
+            const name = document.getElementById('studentSelect').value;
+            if (!name) return;
+            const current = chartInstance.data.datasets;
+            if (current.find(ds => ds.label === name)) return;
+            const stu = scoreData.students.find(s => s.name === name);
+            if (!stu) return;
+            const newDatasets = [...current.map(ds => ({
+                label: ds.label,
+                data: scoreData.students.find(s => s.name === ds.label)?.scores || [],
+                borderColor: ds.borderColor,
+                backgroundColor: ds.backgroundColor,
+                pointRadius: 4, tension: 0, fill: false
+            })), createDataset(stu)];
+            originalDatasets = JSON.parse(JSON.stringify(newDatasets));
+            renderChart(newDatasets);
+        }
+
+        function switchScoreMode(full) {
+            fullScoreMode = full;
+            loadScore();
+        }
+
+        // Init
+        loadOverview();
+    </script>
+</body>
+</html>
