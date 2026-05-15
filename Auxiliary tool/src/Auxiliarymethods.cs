@@ -32,8 +32,8 @@ namespace Auxiliary_tool
 
         public int currnetClass = 0;
 
-        public string classFilePath_1 = "./data43.xml";
-        public string classFilePath_2 = "./data45.xml";
+        public string classFilePath_1 = "./data_A01.xml";
+        public string classFilePath_2 = "./data_A02.xml";
 
         private static Auxiliarymethods _obj;
         public static Auxiliarymethods Instance
@@ -69,9 +69,9 @@ namespace Auxiliary_tool
 
         public void ReadTxtData()
         {
-            string[] dataArray = File.ReadAllLines("./data43.txt");
+            string[] dataArray = File.ReadAllLines("./data_A01.txt");
             dataList_1 = dataArray.ToList();
-            string[] dataArray2 = File.ReadAllLines("./data45.txt");
+            string[] dataArray2 = File.ReadAllLines("./data_A02.txt");
             dataList_2 = dataArray2.ToList();
         }
 

@@ -394,8 +394,8 @@ namespace Auxiliary_tool
                 averageScoreList_2.Add(item.Value);
             }
 
-            series.Add(new LineSeries() { Title = "143", Values = new ChartValues<double>(averageScoreList_1) });
-            series.Add(new LineSeries() { Title = "145", Values = new ChartValues<double>(averageScoreList_2) });
+            series.Add(new LineSeries() { Title = "A01", Values = new ChartValues<double>(averageScoreList_1) });
+            series.Add(new LineSeries() { Title = "A02", Values = new ChartValues<double>(averageScoreList_2) });
 
             average_CartesianChart.Series = series;
         }

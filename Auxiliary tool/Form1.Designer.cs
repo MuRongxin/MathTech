@@ -415,7 +415,7 @@
             this.select45Button.Name = "select45Button";
             this.select45Button.Size = new System.Drawing.Size(292, 34);
             this.select45Button.TabIndex = 3;
-            this.select45Button.Text = "Select the current class as 145";
+            this.select45Button.Text = "Select the current class as A02";
             this.select45Button.Click += new System.EventHandler(this.select45Button_Click);
             // 
             // select43Button
@@ -431,7 +431,7 @@
             this.select43Button.Name = "select43Button";
             this.select43Button.Size = new System.Drawing.Size(292, 34);
             this.select43Button.TabIndex = 3;
-            this.select43Button.Text = "Select the current class as 143";
+            this.select43Button.Text = "Select the current class as A01";
             this.select43Button.Click += new System.EventHandler(this.select43Button_Click);
             // 
             // class45InfoPanel
@@ -497,7 +497,7 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(209, 29);
             this.label7.TabIndex = 2;
-            this.label7.Text = "145 Data Length";
+            this.label7.Text = "A02 Data Length";
             this.label7.Click += new System.EventHandler(this.label1_Click);
             // 
             // TimeLabel
@@ -584,7 +584,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(209, 29);
             this.label2.TabIndex = 2;
-            this.label2.Text = "143 Data Length";
+            this.label2.Text = "A01 Data Length";
             this.label2.Click += new System.EventHandler(this.label1_Click);
             // 
             // ChartView_Panel
