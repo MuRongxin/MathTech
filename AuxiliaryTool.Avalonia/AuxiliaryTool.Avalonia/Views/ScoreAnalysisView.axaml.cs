@@ -31,6 +31,8 @@ namespace AuxiliaryTool.Avalonia.Views
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
             _currentList = AuxiliaryMethods.Instance.studentDatas;
+            _isLastWeek = false;
+            LastWeekButton.Content = "最近7次";
             InitChartFormat();
             InitStudentBox();
             FirstChart();
@@ -46,7 +48,9 @@ namespace AuxiliaryTool.Avalonia.Views
             {
                 new Axis
                 {
-                    Labels = _dates.ToArray(),
+                    Labels = _isLastWeek && _dates.Count >= 7
+                        ? _dates.Skip(_dates.Count - 7).ToArray()
+                        : _dates.ToArray(),
                     Name = "Examination",
                     LabelsPaint = new SolidColorPaint(SKColors.LightGray),
                     NamePaint = new SolidColorPaint(SKColors.LightGray),
@@ -84,13 +88,14 @@ namespace AuxiliaryTool.Avalonia.Views
 
             Chart.Series = Array.Empty<ISeries>();
             _displayIndex = 0;
+            _originalSeries.Clear();
 
             var random = new Random();
             int count = Math.Min(random.Next(3, 7), _currentList.Count);
             var used = new HashSet<int>();
-
             var seriesList = new List<ISeries>();
-            for (int i = 0; i < count; i++)
+
+            while (seriesList.Count < count)
             {
                 int idx = random.Next(_currentList.Count);
                 if (used.Contains(idx)) continue;
@@ -99,7 +104,8 @@ namespace AuxiliaryTool.Avalonia.Views
             }
 
             Chart.Series = seriesList.ToArray();
-            _displayIndex = used.Count > 0 ? used.Max() + 1 : 0;
+            _originalSeries = seriesList.Select(s => CloneSeries(s)).ToList();
+            _displayIndex = used.Max() + 1;
         }
 
         private ISeries CreateSeries(StudentData student)
@@ -121,6 +127,31 @@ namespace AuxiliaryTool.Avalonia.Views
             };
         }
 
+        /// <summary>
+        /// 深克隆一个 LineSeries，避免引用污染
+        /// </summary>
+        private ISeries CloneSeries(ISeries source)
+        {
+            if (source is LineSeries<double> ls && ls.Values is IEnumerable<double> vals)
+            {
+                return new LineSeries<double>
+                {
+                    Values = vals.ToList(),
+                    Name = ls.Name,
+                    GeometrySize = ls.GeometrySize,
+                    LineSmoothness = ls.LineSmoothness,
+                    Stroke = ls.Stroke,
+                    Fill = ls.Fill
+                };
+            }
+            return source;
+        }
+
+        private bool IsStudentInChart(string name)
+        {
+            return Chart.Series?.Any(s => s.Name == name) ?? false;
+        }
+
         private void NextGroup_Click(object? sender, RoutedEventArgs e)
         {
             if (_displayLength == 0) _displayLength = _currentList.Count;
@@ -129,17 +160,20 @@ namespace AuxiliaryTool.Avalonia.Views
             for (int i = _displayIndex; i < _displayIndex + _displayLength; i++)
             {
                 if (i >= _currentList.Count) break;
+                if (IsStudentInChart(_currentList[i].Name)) continue;
                 seriesList.Add(CreateSeries(_currentList[i]));
             }
             _displayIndex += _displayLength;
             if (_displayIndex >= _currentList.Count) _displayIndex = 0;
 
             Chart.Series = seriesList.ToArray();
+            _originalSeries = seriesList.Select(s => CloneSeries(s)).ToList();
         }
 
         private void Clear_Click(object? sender, RoutedEventArgs e)
         {
             Chart.Series = Array.Empty<ISeries>();
+            _originalSeries.Clear();
             StudentBox.SelectedIndex = -1;
         }
 
@@ -148,8 +182,6 @@ namespace AuxiliaryTool.Avalonia.Views
             if (!_isLastWeek)
             {
                 _isLastWeek = true;
-                _originalSeries = Chart.Series?.ToList() ?? new List<ISeries>();
-
                 var lastWeekDates = _dates.Skip(_dates.Count - 7).ToList();
                 Chart.XAxes = new[]
                 {
@@ -163,15 +195,22 @@ namespace AuxiliaryTool.Avalonia.Views
                 };
 
                 var filtered = new List<ISeries>();
-                foreach (var s in Chart.Series ?? Array.Empty<ISeries>())
+                foreach (var s in _originalSeries)
                 {
                     if (s is LineSeries<double> ls && ls.Values is IEnumerable<double> vals)
                     {
                         var list = vals.ToList();
                         if (list.Count >= 7)
                         {
-                            ls.Values = list.Skip(list.Count - 7).ToList();
-                            filtered.Add(ls);
+                            filtered.Add(new LineSeries<double>
+                            {
+                                Values = list.Skip(list.Count - 7).ToList(),
+                                Name = ls.Name,
+                                GeometrySize = ls.GeometrySize,
+                                LineSmoothness = ls.LineSmoothness,
+                                Stroke = ls.Stroke,
+                                Fill = ls.Fill
+                            });
                         }
                     }
                 }
@@ -191,7 +230,7 @@ namespace AuxiliaryTool.Avalonia.Views
                         NamePaint = new SolidColorPaint(SKColors.LightGray)
                     }
                 };
-                Chart.Series = _originalSeries.ToArray();
+                Chart.Series = _originalSeries.Select(s => CloneSeries(s)).ToArray();
                 LastWeekButton.Content = "最近7次";
             }
         }
@@ -217,6 +256,9 @@ namespace AuxiliaryTool.Avalonia.Views
         private void Refresh()
         {
             _displayIndex = 0;
+            _isLastWeek = false;
+            LastWeekButton.Content = "最近7次";
+            _originalSeries.Clear();
             InitChartFormat();
             InitStudentBox();
             FirstChart();
@@ -226,12 +268,15 @@ namespace AuxiliaryTool.Avalonia.Views
         {
             if (StudentBox.SelectedItem == null) return;
             var name = StudentBox.SelectedItem.ToString();
+            if (IsStudentInChart(name)) return;
+
             var student = _currentList.FirstOrDefault(s => s.Name == name);
             if (student == null) return;
 
             var seriesList = Chart.Series?.ToList() ?? new List<ISeries>();
             seriesList.Add(CreateSeries(student));
             Chart.Series = seriesList.ToArray();
+            _originalSeries = seriesList.Select(s => CloneSeries(s)).ToList();
         }
 
         private void DisplayCountBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
