@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root>
   <student id="100001">
     <name>梓川咲太</name>
@@ -57,7 +57,7 @@
     <callCount>0</callCount>
   </student>
   <student id="100015">
-    <name>阿虚</name>
+    <name>佐佐木</name>
     <callCount>0</callCount>
   </student>
   <student id="100016">
