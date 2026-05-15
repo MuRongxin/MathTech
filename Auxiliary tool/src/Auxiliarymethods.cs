@@ -543,9 +543,9 @@ namespace Auxiliary_tool
                         }
                     }
                 }
-                //移除节点
-                if (id == 1002311)
-                    root.RemoveChild(childNode);
+                //移除节点（示例：可按条件移除指定节点）
+                //if (id == 999999)
+                //    root.RemoveChild(childNode);
             }
 
             xmlDocument.Save(path);
@@ -564,10 +564,10 @@ namespace Auxiliary_tool
 
             //创建一个新的节点
             XmlElement student = xmlDocument.CreateElement("student");
-            student.SetAttribute("id", "112233");
+            student.SetAttribute("id", "999999");
 
             XmlElement name = xmlDocument.CreateElement("name");
-            name.InnerText = "竹下";
+            name.InnerText = "测试";
             XmlElement callCount = xmlDocument.CreateElement("callCount");
             callCount.InnerText = "111";
 

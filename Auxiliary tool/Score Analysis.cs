@@ -95,7 +95,7 @@ namespace Auxiliary_tool
                 //seriesCollection.Add(new LineSeries() { Title = name, Values = new ChartValues<double>(scoreList), DataLabels = false });
             }
             //List<double> scoreList_1 = new List<double>() { 0.11, 0.21, 0.41, 0.21, 0.43, 0.56, 1.76, 0.01, 0.12, 0.45, 1};
-            //seriesCollection.Add(new LineSeries() { Title = "绫小路", Values = new ChartValues<double>(scoreList_1), DataLabels = false });
+            //seriesCollection.Add(new LineSeries() { Title = "测试", Values = new ChartValues<double>(scoreList_1), DataLabels = false });
 
             //cartesianChart.Series = seriesCollection;
         }
