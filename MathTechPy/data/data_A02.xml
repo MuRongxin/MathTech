@@ -14,7 +14,7 @@
   </student>
   <student id="100104">
     <name>城次郎</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100105">
     <name>穆萨</name>
@@ -86,7 +86,7 @@
   </student>
   <student id="100122">
     <name>花本育</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100123">
     <name>野田惠</name>
@@ -106,7 +106,7 @@
   </student>
   <student id="100127">
     <name>日野香穗子</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100128">
     <name>月森莲</name>
@@ -126,11 +126,11 @@
   </student>
   <student id="100132">
     <name>华园光</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100133">
     <name>杂贺八寻</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100134">
     <name>狩野宙</name>
@@ -154,7 +154,7 @@
   </student>
   <student id="100139">
     <name>藤冈春绯</name>
-    <callCount>0</callCount>
+    <callCount>1</callCount>
   </student>
   <student id="100140">
     <name>须王环</name>

@@ -340,8 +340,9 @@ class ScoreTab(QWidget):
         full_marks = 100 if self.dm.use_full_score else 40
         props = [sc / full_marks for sc in scores]
 
-        bins = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
-        labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+        bins = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        labels = ["0-10%", "10-20%", "20-30%", "30-40%", "40-50%",
+                  "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
         counts = [0] * (len(bins) - 1)
         for p in props:
             for i in range(len(bins) - 1):
@@ -349,7 +350,8 @@ class ScoreTab(QWidget):
                     counts[i] += 1
                     break
 
-        colors = ["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#1abc9c"]
+        colors = ["#c0392b", "#e74c3c", "#e67e22", "#d68910", "#f1c40f",
+                  "#7cb342", "#2ecc71", "#1abc9c", "#17a589", "#138d75"]
         bars = ax.bar(labels, counts, color=colors, edgecolor="white", width=0.6)
 
         for bar, cnt in zip(bars, counts):
