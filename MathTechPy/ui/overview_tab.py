@@ -142,6 +142,44 @@ class OverviewTab(QWidget):
         title.setStyleSheet("color: #2c3e50;")
         layout.addWidget(title)
 
+        # 过滤按钮
+        filter_layout = QHBoxLayout()
+        filter_layout.setSpacing(10)
+        self.filter_buttons: list[QPushButton] = []
+
+        btn_all = QPushButton("📋 全部班级")
+        btn_all.setCheckable(True)
+        btn_all.setChecked(True)
+        btn_all.setMinimumHeight(36)
+        btn_all.clicked.connect(lambda: self.set_filter(-1))
+        filter_layout.addWidget(btn_all)
+        self.filter_buttons.append(btn_all)
+
+        for i in range(self.dm.class_count):
+            name = self.dm.class_names[i] if i < len(self.dm.class_names) else f"班级{i+1}"
+            color = get_color(i)
+            btn = QPushButton(f"  {name}")
+            btn.setCheckable(True)
+            btn.setMinimumHeight(36)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid {color};
+                    color: {color};
+                    border-radius: 6px;
+                    padding: 6px 16px;
+                }}
+                QPushButton:checked {{
+                    background-color: {color};
+                    color: white;
+                }}
+            """)
+            btn.clicked.connect(lambda checked, idx=i: self.set_filter(idx))
+            filter_layout.addWidget(btn)
+            self.filter_buttons.append(btn)
+
+        filter_layout.addStretch()
+        layout.addLayout(filter_layout)
+
         # 班级行容器
         self.rows_widget = QWidget()
         self.rows_layout = QVBoxLayout(self.rows_widget)
@@ -167,6 +205,21 @@ class OverviewTab(QWidget):
         layout.addWidget(self.canvas)
 
         self.refresh()
+
+    def set_filter(self, idx: int):
+        self._filter_idx = idx
+        for i, btn in enumerate(self.filter_buttons):
+            btn.setChecked(i == idx + 1)
+
+        # 动画展开/收缩
+        for i, row in enumerate(self.rows):
+            row.set_expanded(idx == -1 or idx == i, animate=True)
+
+        if idx != -1:
+            self.dm.current_class = idx
+            window = self.window()
+            if hasattr(window, 'random_engine'):
+                window.random_engine.reset_history()
 
     def _calc_metrics(self, students, full_marks: int = 100):
         """计算班级指标，基于原始分（满分100）"""
@@ -205,7 +258,7 @@ class OverviewTab(QWidget):
         for i, row in enumerate(self.rows):
             name = self.dm.class_names[i] if i < len(self.dm.class_names) else f"班级{i+1}"
             row.update_data(name, all_metrics[i], get_color(i))
-            row.set_expanded(True, animate=False, force=True)
+            row.set_expanded(self._filter_idx == -1 or self._filter_idx == i, animate=False, force=True)
 
         # 折线图
         self.fig.clear()
