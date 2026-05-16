@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <config>
   <classMembers>data_A01.xml</classMembers>
-  <classMembers>data_A02.xml</classMembers>
-  <classMembers>data_A03.xml</classMembers>
+  <classMembers>data_A02.xml</classMembers> 
   <classScore>ExamA01Score.xlsx</classScore>
   <classScore>ExamA02Score.xlsx</classScore>
-  <classScore>ExamA03Score.xlsx</classScore>
 </config>

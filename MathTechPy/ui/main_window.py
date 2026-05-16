@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         layout.addStretch()
 
         # 模式切换
-        self.mode_label = QLabel("成绩模式: 客观分")
+        self.mode_label = QLabel("成绩模式: 整卷分")
         self.mode_label.setStyleSheet("color: #bdc3c7; padding: 5px 20px;")
         layout.addWidget(self.mode_label)
 

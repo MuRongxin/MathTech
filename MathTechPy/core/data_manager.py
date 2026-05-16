@@ -39,7 +39,7 @@ class DataManager:
         self.class_names: List[str] = []
 
         self.current_class: int = 0  # 当前选中班级的索引
-        self.use_full_score: bool = False
+        self.use_full_score: bool = True  # 默认整卷分
 
         # 考试日期列表（从 Excel 表头读取）
         self.dates: List[str] = []

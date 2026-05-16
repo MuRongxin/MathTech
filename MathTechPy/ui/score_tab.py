@@ -64,15 +64,25 @@ class ScoreTab(QWidget):
 
         toolbar.addSpacing(20)
 
+        # 考试日期选择（成绩分布用）
+        self.lbl_exam = QLabel("考试:")
+        self.combo_exam = QComboBox()
+        self.combo_exam.setMinimumWidth(120)
+        self.combo_exam.currentIndexChanged.connect(self.refresh)
+        toolbar.addWidget(self.lbl_exam)
+        toolbar.addWidget(self.combo_exam)
+
+        toolbar.addSpacing(20)
+
         # 成绩模式切换
-        self.btn_obj = QPushButton("客观分")
+        self.btn_obj = QPushButton("仅客观分")
         self.btn_obj.setCheckable(True)
-        self.btn_obj.setChecked(True)
         self.btn_obj.clicked.connect(lambda: self.switch_score_mode(False))
         toolbar.addWidget(self.btn_obj)
 
-        self.btn_full = QPushButton("满分卷")
+        self.btn_full = QPushButton("整卷分")
         self.btn_full.setCheckable(True)
+        self.btn_full.setChecked(True)
         self.btn_full.clicked.connect(lambda: self.switch_score_mode(True))
         toolbar.addWidget(self.btn_full)
 
@@ -164,6 +174,9 @@ class ScoreTab(QWidget):
         is_dist = self._current_mode == self.MODE_DISTRIBUTION
         is_last7 = self._current_mode == self.MODE_LAST7
 
+        self.lbl_exam.setVisible(is_dist)
+        self.combo_exam.setVisible(is_dist)
+
         self.lbl_student.setVisible(is_personal)
         self.combo_student.setVisible(is_personal)
         self.chk_last7.setVisible(is_personal)
@@ -183,7 +196,23 @@ class ScoreTab(QWidget):
             self._show_empty("当前班级没有学生数据")
             return
 
-        # 只在个人/目标分模式需要时更新学生下拉框
+        # 更新考试日期下拉框（成绩分布模式）
+        if self._current_mode == self.MODE_DISTRIBUTION:
+            current_exam = self.combo_exam.currentText()
+            self.combo_exam.blockSignals(True)
+            self.combo_exam.clear()
+            for d in self.dm.dates:
+                self.combo_exam.addItem(d)
+            if self.combo_exam.count() > 0:
+                # 默认选最近一次
+                if current_exam:
+                    idx = self.combo_exam.findText(current_exam)
+                    self.combo_exam.setCurrentIndex(idx if idx >= 0 else self.combo_exam.count() - 1)
+                else:
+                    self.combo_exam.setCurrentIndex(self.combo_exam.count() - 1)
+            self.combo_exam.blockSignals(False)
+
+        # 只在个人模式需要时更新学生下拉框
         if self._current_mode in (self.MODE_PERSONAL,):
             current_name = self.combo_student.currentText()
             self.combo_student.blockSignals(True)
@@ -272,7 +301,18 @@ class ScoreTab(QWidget):
     # ------------------------------------------------------------------
     def _draw_distribution(self, students):
         """成绩分布直方图"""
-        scores = [sc for _, sc in self._get_scores(students)]
+        exam_idx = self.combo_exam.currentIndex()
+        if exam_idx < 0:
+            exam_idx = len(self.dm.dates) - 1
+
+        scores = []
+        for s in students:
+            arr = s.scores if s.scores else s.scores_full
+            if exam_idx < len(arr):
+                try:
+                    scores.append(float(arr[exam_idx][1]))
+                except (ValueError, IndexError, TypeError):
+                    pass
 
         if not scores:
             self._show_empty("无成绩数据")
@@ -282,7 +322,7 @@ class ScoreTab(QWidget):
 
         # 原始分 → 比例分分段
         full_marks = 100 if self.dm.use_full_score else 40
-        props = [sc / full_marks for _, sc in scores]
+        props = [sc / full_marks for sc in scores]
 
         bins = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
         labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
@@ -303,14 +343,15 @@ class ScoreTab(QWidget):
                         str(cnt), ha="center", va="bottom", fontsize=12, fontweight="bold")
 
         mode_name = "满分卷" if self.dm.use_full_score else "客观分"
+        exam_date = self.dm.dates[exam_idx] if exam_idx < len(self.dm.dates) else "未知"
         ax.set_ylabel("人数", fontsize=12)
         ax.set_xlabel("比例分段", fontsize=12)
-        ax.set_title(f"成绩分布 ({mode_name}, n={len(props)})", fontsize=14, fontweight="bold")
+        ax.set_title(f"成绩分布 ({mode_name}, {exam_date}, n={len(props)})", fontsize=14, fontweight="bold")
         ax.set_ylim(0, max(max(counts) * 1.2, 10))
 
         self.status_label.setText(
-            f"平均Z: {sum(scores)/len(scores):.2f}  |  "
-            f"最高Z: {max(scores):.2f}  |  最低Z: {min(scores):.2f}  |  "
+            f"日期: {exam_date}  |  平均分: {sum(scores)/len(scores):.1f}  |  "
+            f"最高分: {max(scores):.1f}  |  最低分: {min(scores):.1f}  |  "
             f"满分卷: {'是' if self.dm.use_full_score else '否'}"
         )
 
