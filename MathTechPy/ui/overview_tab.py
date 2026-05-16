@@ -55,6 +55,7 @@ class ClassRow(QWidget):
         super().__init__(parent)
         self.class_idx = class_idx
         self._expanded = True
+        self._cached_height = 0
         self._setup_ui()
 
     def _setup_ui(self):
@@ -85,8 +86,21 @@ class ClassRow(QWidget):
             return
         self._expanded = expanded
 
-        target = self.cards_container.sizeHint().height() if expanded else 0
+        if expanded:
+            self.cards_container.setMaximumHeight(16777215)
+            target = self.cards_container.sizeHint().height()
+            if target > 0:
+                self._cached_height = target
+            elif self._cached_height > 0:
+                target = self._cached_height
+            else:
+                target = 100
+        else:
+            target = 0
+
         current = self.cards_container.maximumHeight()
+        if current == 16777215:
+            current = self._cached_height if self._cached_height > 0 else target
 
         if animate:
             self._anim.stop()
@@ -255,10 +269,23 @@ class OverviewTab(QWidget):
             students = self.dm.students[ci][1]  # 固定用满分卷
             all_metrics.append(self._calc_metrics(students, 100))
 
+        needs_finalize = False
         for i, row in enumerate(self.rows):
             name = self.dm.class_names[i] if i < len(self.dm.class_names) else f"班级{i+1}"
             row.update_data(name, all_metrics[i], get_color(i))
-            row.set_expanded(self._filter_idx == -1 or self._filter_idx == i, animate=False, force=True)
+            should_expand = self._filter_idx == -1 or self._filter_idx == i
+            if should_expand:
+                # 先放开限制让卡片可见，延迟再修正高度
+                row.cards_container.setMaximumHeight(16777215)
+                row._expanded = True
+                needs_finalize = True
+            else:
+                row.set_expanded(False, animate=False, force=True)
+
+        # 延迟修正展开行的高度（确保布局已完成）
+        if needs_finalize:
+            from PyQt6.QtCore import QTimer
+            QTimer.singleShot(100, self._finalize_expanded_rows)
 
         # 折线图
         self.fig.clear()
@@ -307,6 +334,12 @@ class OverviewTab(QWidget):
 
         self.fig.tight_layout()
         self.canvas.draw()
+
+    def _finalize_expanded_rows(self):
+        """延迟修正展开行的高度（布局就绪后 sizeHint 才准确）"""
+        for row in self.rows:
+            if row._expanded:
+                row.set_expanded(True, animate=False, force=True)
 
     def _on_hover(self, event):
         if not event.inaxes or not self._hover_lines or not self._hover_dates:
