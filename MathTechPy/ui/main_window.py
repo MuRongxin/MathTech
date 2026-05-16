@@ -1,7 +1,7 @@
 """主窗口 - 左侧导航 + 内容区切换"""
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QPushButton, QStackedWidget, QLabel, QFrame
+    QPushButton, QStackedWidget, QLabel, QFrame, QComboBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -101,9 +101,39 @@ class MainWindow(QMainWindow):
             layout.addWidget(btn)
             self.nav_buttons.append(btn)
 
+        layout.addSpacing(20)
+
+        # 班级选择
+        cls_label = QLabel("班级")
+        cls_label.setStyleSheet("color: #bdc3c7; padding: 0 20px; font-size: 11px;")
+        layout.addWidget(cls_label)
+
+        self.combo_class = QComboBox()
+        self.combo_class.setStyleSheet("""
+            QComboBox {
+                background-color: #34495e;
+                color: white;
+                border: 1px solid #4a6785;
+                border-radius: 4px;
+                padding: 6px 12px;
+                margin: 0 16px;
+                font-size: 13px;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #2c3e50;
+                color: white;
+                selection-background-color: #1abc9c;
+            }
+        """)
+        self.combo_class.currentIndexChanged.connect(self._on_class_changed)
+        layout.addWidget(self.combo_class)
+
         layout.addStretch()
 
-        # 模式切换
         self.mode_label = QLabel("成绩模式: 整卷分")
         self.mode_label.setStyleSheet("color: #bdc3c7; padding: 5px 20px;")
         layout.addWidget(self.mode_label)
@@ -116,9 +146,19 @@ class MainWindow(QMainWindow):
         for i, btn in enumerate(self.nav_buttons):
             btn.setChecked(i == index)
 
+        # 确保班级下拉框已填充
+        if self.combo_class.count() == 0:
+            for name in self.dm.class_names:
+                self.combo_class.addItem(name)
+
         # 通知当前 tab 刷新
         if 0 <= index < len(self._tabs):
             self._tabs[index].refresh()
+
+    def _on_class_changed(self, idx: int):
+        if idx < 0:
+            return
+        self.switch_class(idx)
 
     def switch_class(self, class_id: int):
         """切换班级"""

@@ -16,7 +16,7 @@
 """
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QPushButton, QSpinBox, QLineEdit, QGroupBox
+    QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -38,6 +38,7 @@ class ScoreTab(QWidget):
         super().__init__()
         self.dm = dm
         self._current_mode = self.MODE_DISTRIBUTION
+        self._exam_index = -1
         self._display_count = 15
         self._group_offset = 0
         self._setup_ui()
@@ -66,11 +67,28 @@ class ScoreTab(QWidget):
 
         # 考试日期选择（成绩分布用）
         self.lbl_exam = QLabel("考试:")
-        self.combo_exam = QComboBox()
-        self.combo_exam.setMinimumWidth(120)
-        self.combo_exam.currentIndexChanged.connect(self.refresh)
         toolbar.addWidget(self.lbl_exam)
-        toolbar.addWidget(self.combo_exam)
+
+        self.btn_exam_prev = QPushButton("◀")
+        self.btn_exam_prev.setFixedWidth(36)
+        self.btn_exam_prev.clicked.connect(self._prev_exam)
+        toolbar.addWidget(self.btn_exam_prev)
+
+        self.slider_exam = QSlider(Qt.Orientation.Horizontal)
+        self.slider_exam.setMinimumWidth(160)
+        self.slider_exam.setMaximumWidth(300)
+        self.slider_exam.valueChanged.connect(self._on_slider_changed)
+        toolbar.addWidget(self.slider_exam)
+
+        self.btn_exam_next = QPushButton("▶")
+        self.btn_exam_next.setFixedWidth(36)
+        self.btn_exam_next.clicked.connect(self._next_exam)
+        toolbar.addWidget(self.btn_exam_next)
+
+        self.lbl_exam_date = QLabel("")
+        self.lbl_exam_date.setMinimumWidth(110)
+        self.lbl_exam_date.setStyleSheet("color: #2c3e50; font-weight: bold;")
+        toolbar.addWidget(self.lbl_exam_date)
 
         toolbar.addSpacing(20)
 
@@ -175,7 +193,10 @@ class ScoreTab(QWidget):
         is_last7 = self._current_mode == self.MODE_LAST7
 
         self.lbl_exam.setVisible(is_dist)
-        self.combo_exam.setVisible(is_dist)
+        self.btn_exam_prev.setVisible(is_dist)
+        self.slider_exam.setVisible(is_dist)
+        self.btn_exam_next.setVisible(is_dist)
+        self.lbl_exam_date.setVisible(is_dist)
 
         self.lbl_student.setVisible(is_personal)
         self.combo_student.setVisible(is_personal)
@@ -196,21 +217,16 @@ class ScoreTab(QWidget):
             self._show_empty("当前班级没有学生数据")
             return
 
-        # 更新考试日期下拉框（成绩分布模式）
-        if self._current_mode == self.MODE_DISTRIBUTION:
-            current_exam = self.combo_exam.currentText()
-            self.combo_exam.blockSignals(True)
-            self.combo_exam.clear()
-            for d in self.dm.dates:
-                self.combo_exam.addItem(d)
-            if self.combo_exam.count() > 0:
-                # 默认选最近一次
-                if current_exam:
-                    idx = self.combo_exam.findText(current_exam)
-                    self.combo_exam.setCurrentIndex(idx if idx >= 0 else self.combo_exam.count() - 1)
-                else:
-                    self.combo_exam.setCurrentIndex(self.combo_exam.count() - 1)
-            self.combo_exam.blockSignals(False)
+        # 更新日期滑块范围（成绩分布模式）
+        if self._current_mode == self.MODE_DISTRIBUTION and self.dm.dates:
+            n = len(self.dm.dates)
+            self.slider_exam.blockSignals(True)
+            self.slider_exam.setRange(0, n - 1)
+            if self._exam_index < 0 or self._exam_index >= n:
+                self._exam_index = n - 1
+            self.slider_exam.setValue(self._exam_index)
+            self._update_exam_label()
+            self.slider_exam.blockSignals(False)
 
         # 只在个人模式需要时更新学生下拉框
         if self._current_mode in (self.MODE_PERSONAL,):
@@ -301,7 +317,7 @@ class ScoreTab(QWidget):
     # ------------------------------------------------------------------
     def _draw_distribution(self, students):
         """成绩分布直方图"""
-        exam_idx = self.combo_exam.currentIndex()
+        exam_idx = self.slider_exam.value()
         if exam_idx < 0:
             exam_idx = len(self.dm.dates) - 1
 
@@ -329,7 +345,7 @@ class ScoreTab(QWidget):
         counts = [0] * (len(bins) - 1)
         for p in props:
             for i in range(len(bins) - 1):
-                if bins[i] <= p <= bins[i + 1]:
+                if bins[i] <= p < bins[i + 1] or (i == len(bins) - 2 and p == bins[i + 1]):
                     counts[i] += 1
                     break
 
@@ -580,3 +596,26 @@ class ScoreTab(QWidget):
         total = len(data)
         self._group_offset = (self._group_offset + self._display_count) % total
         self.refresh()
+
+    # ------------------------------------------------------------------
+    # 考试日期导航
+    # ------------------------------------------------------------------
+    def _prev_exam(self):
+        val = self.slider_exam.value()
+        if val > self.slider_exam.minimum():
+            self.slider_exam.setValue(val - 1)
+
+    def _next_exam(self):
+        val = self.slider_exam.value()
+        if val < self.slider_exam.maximum():
+            self.slider_exam.setValue(val + 1)
+
+    def _on_slider_changed(self, val: int):
+        self._exam_index = val
+        self._update_exam_label()
+        self.refresh()
+
+    def _update_exam_label(self):
+        idx = self.slider_exam.value()
+        if 0 <= idx < len(self.dm.dates):
+            self.lbl_exam_date.setText(self.dm.dates[idx])
