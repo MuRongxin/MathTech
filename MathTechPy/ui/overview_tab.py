@@ -82,7 +82,7 @@ class ClassRow(QWidget):
         self._anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
 
     def set_expanded(self, expanded: bool, animate: bool = True, force: bool = False):
-        if expanded == self._expanded and not animate and not force:
+        if expanded == self._expanded and not force:
             return
         self._expanded = expanded
 
@@ -95,12 +95,17 @@ class ClassRow(QWidget):
                 target = self._cached_height
             else:
                 target = 100
+            if animate:
+                # 先缩回 0，动画才能可见地展开
+                self.cards_container.setMaximumHeight(0)
+                current = 0
+            else:
+                current = target
         else:
             target = 0
-
-        current = self.cards_container.maximumHeight()
-        if current == 16777215:
-            current = self._cached_height if self._cached_height > 0 else target
+            current = self.cards_container.maximumHeight()
+            if current == 16777215:
+                current = self._cached_height if self._cached_height > 0 else target
 
         if animate:
             self._anim.stop()
