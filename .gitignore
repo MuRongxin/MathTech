@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# C# build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+
+# Data backups
+*.bak
