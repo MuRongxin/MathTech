@@ -16,9 +16,9 @@
 """
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider
+    QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider, QCompleter
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QStringListModel
 from PyQt6.QtGui import QFont
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -41,6 +41,7 @@ class ScoreTab(QWidget):
         self._exam_index = -1
         self._display_count = 15
         self._group_offset = 0
+        self._hover_annot = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -48,10 +49,11 @@ class ScoreTab(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
 
-        # ---------- 工具栏 ----------
-        toolbar = QHBoxLayout()
+        # ===== 第一行：全局控件 =====
+        row1 = QHBoxLayout()
+        row1.setSpacing(12)
 
-        toolbar.addWidget(QLabel("图表模式:"))
+        row1.addWidget(QLabel("图表模式:"))
         self.combo_mode = QComboBox()
         self.combo_mode.addItems([
             self.MODE_DISTRIBUTION,
@@ -61,100 +63,123 @@ class ScoreTab(QWidget):
             self.MODE_TARGET,
         ])
         self.combo_mode.currentTextChanged.connect(self.on_mode_changed)
-        toolbar.addWidget(self.combo_mode)
+        row1.addWidget(self.combo_mode)
 
-        toolbar.addSpacing(20)
+        row1.addSpacing(16)
 
-        # 考试日期选择（成绩分布用）
-        self.lbl_exam = QLabel("考试:")
-        toolbar.addWidget(self.lbl_exam)
+        row1.addWidget(QLabel("🔍"))
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("搜索学生姓名...")
+        self.search_input.setMinimumWidth(140)
+        self.search_input.setMaximumWidth(200)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                border: 2px solid #dfe6e9; border-radius: 8px;
+                padding: 6px 10px; font-size: 13px;
+            }
+            QLineEdit:focus { border-color: #1abc9c; }
+        """)
+        self.search_completer = QCompleter()
+        self.search_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.search_completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        self.search_input.setCompleter(self.search_completer)
+        self.search_input.returnPressed.connect(self._on_search)
+        self.search_completer.activated.connect(self._on_search)
+        row1.addWidget(self.search_input)
 
-        self.btn_exam_prev = QPushButton("◀")
-        self.btn_exam_prev.setFixedWidth(36)
-        self.btn_exam_prev.clicked.connect(self._prev_exam)
-        toolbar.addWidget(self.btn_exam_prev)
-
-        self.slider_exam = QSlider(Qt.Orientation.Horizontal)
-        self.slider_exam.setMinimumWidth(160)
-        self.slider_exam.setMaximumWidth(300)
-        self.slider_exam.valueChanged.connect(self._on_slider_changed)
-        toolbar.addWidget(self.slider_exam)
-
-        self.btn_exam_next = QPushButton("▶")
-        self.btn_exam_next.setFixedWidth(36)
-        self.btn_exam_next.clicked.connect(self._next_exam)
-        toolbar.addWidget(self.btn_exam_next)
-
-        self.lbl_exam_date = QLabel("")
-        self.lbl_exam_date.setMinimumWidth(110)
-        self.lbl_exam_date.setStyleSheet("color: #2c3e50; font-weight: bold;")
-        toolbar.addWidget(self.lbl_exam_date)
-
-        toolbar.addSpacing(20)
+        row1.addSpacing(16)
 
         # 成绩模式切换
         self.btn_obj = QPushButton("仅客观分")
         self.btn_obj.setCheckable(True)
         self.btn_obj.clicked.connect(lambda: self.switch_score_mode(False))
-        toolbar.addWidget(self.btn_obj)
+        row1.addWidget(self.btn_obj)
 
         self.btn_full = QPushButton("整卷分")
         self.btn_full.setCheckable(True)
         self.btn_full.setChecked(True)
         self.btn_full.clicked.connect(lambda: self.switch_score_mode(True))
-        toolbar.addWidget(self.btn_full)
+        row1.addWidget(self.btn_full)
 
-        toolbar.addSpacing(20)
+        row1.addStretch()
+        layout.addLayout(row1)
 
-        # 学生选择（个人模式用）
+        # ===== 第二行：上下文控件（按模式显示） =====
+        row2 = QHBoxLayout()
+        row2.setSpacing(12)
+
+        # 成绩分布：考试日期
+        self.lbl_exam = QLabel("考试:")
+        row2.addWidget(self.lbl_exam)
+        self.btn_exam_prev = QPushButton("◀")
+        self.btn_exam_prev.setFixedWidth(36)
+        self.btn_exam_prev.clicked.connect(self._prev_exam)
+        row2.addWidget(self.btn_exam_prev)
+        self.slider_exam = QSlider(Qt.Orientation.Horizontal)
+        self.slider_exam.setMinimumWidth(180)
+        self.slider_exam.setMaximumWidth(320)
+        self.slider_exam.valueChanged.connect(self._on_slider_changed)
+        row2.addWidget(self.slider_exam)
+        self.btn_exam_next = QPushButton("▶")
+        self.btn_exam_next.setFixedWidth(36)
+        self.btn_exam_next.clicked.connect(self._next_exam)
+        row2.addWidget(self.btn_exam_next)
+        self.lbl_exam_date = QLabel("")
+        self.lbl_exam_date.setMinimumWidth(100)
+        self.lbl_exam_date.setStyleSheet("color: #2c3e50; font-weight: bold;")
+        row2.addWidget(self.lbl_exam_date)
+        self._dist_ctrls = [self.lbl_exam, self.btn_exam_prev, self.slider_exam,
+                            self.btn_exam_next, self.lbl_exam_date]
+
+        # 个人趋势：学生 + 最近7次
         self.lbl_student = QLabel("学生:")
+        row2.addWidget(self.lbl_student)
         self.combo_student = QComboBox()
-        self.combo_student.setMinimumWidth(150)
+        self.combo_student.setMinimumWidth(130)
         self.combo_student.currentIndexChanged.connect(self.refresh)
-        toolbar.addWidget(self.lbl_student)
-        toolbar.addWidget(self.combo_student)
-
-        # 最近7次开关（个人模式用）
-        self.chk_last7 = QPushButton("📅 只看最近7次")
+        row2.addWidget(self.combo_student)
+        self.chk_last7 = QPushButton("📅 仅最近7次")
         self.chk_last7.setCheckable(True)
         self.chk_last7.setChecked(False)
         self.chk_last7.clicked.connect(self.refresh)
-        toolbar.addWidget(self.chk_last7)
+        row2.addWidget(self.chk_last7)
+        self._personal_ctrls = [self.lbl_student, self.combo_student, self.chk_last7]
 
-        # 目标分输入（目标分对比用）
-        self.lbl_target = QLabel("目标分:")
-        self.edit_target = QLineEdit("0")
-        self.edit_target.setMaximumWidth(80)
-        self.edit_target.textChanged.connect(self.refresh)
-        toolbar.addWidget(self.lbl_target)
-        toolbar.addWidget(self.edit_target)
-
-        toolbar.addSpacing(20)
-
-        # 显示人数（柱状图用）
+        # 最近一次 & 目标对比：显示人数 + 翻页
         self.lbl_count = QLabel("显示人数:")
+        row2.addWidget(self.lbl_count)
         self.spin_count = QSpinBox()
         self.spin_count.setRange(5, 100)
         self.spin_count.setValue(15)
         self.spin_count.valueChanged.connect(self.on_count_changed)
-        toolbar.addWidget(self.lbl_count)
-        toolbar.addWidget(self.spin_count)
-
-        # 翻页按钮
+        row2.addWidget(self.spin_count)
         self.btn_prev = QPushButton("◀ 上一组")
         self.btn_prev.clicked.connect(self.prev_group)
-        toolbar.addWidget(self.btn_prev)
-
+        row2.addWidget(self.btn_prev)
         self.btn_next = QPushButton("下一组 ▶")
         self.btn_next.clicked.connect(self.next_group)
-        toolbar.addWidget(self.btn_next)
+        row2.addWidget(self.btn_next)
+        self._paged_ctrls = [self.lbl_count, self.spin_count, self.btn_prev, self.btn_next]
 
-        toolbar.addStretch()
-        layout.addLayout(toolbar)
+        # 目标分对比：目标分输入
+        self.lbl_target = QLabel("目标Z分:")
+        row2.addWidget(self.lbl_target)
+        self.edit_target = QLineEdit("0")
+        self.edit_target.setMaximumWidth(70)
+        self.edit_target.textChanged.connect(self.refresh)
+        row2.addWidget(self.edit_target)
+        self._target_ctrls = [self.lbl_target, self.edit_target]
+
+        # 最近一次也需要分页控件，所以 _paged_ctrls 已覆盖；目标分需要分页+目标输入
+        # 最近7次不需要 row2 控件
+
+        row2.addStretch()
+        layout.addLayout(row2)
 
         # ---------- 图表区 ----------
-        self.fig = Figure(figsize=(10, 6), dpi=100)
+        self.fig = Figure(figsize=(10, 8.5), dpi=100)
         self.canvas = FigureCanvas(self.fig)
+        self.canvas.mpl_connect("motion_notify_event", self._on_hover)
         layout.addWidget(self.canvas)
 
         # ---------- 状态栏 ----------
@@ -185,30 +210,83 @@ class ScoreTab(QWidget):
         self.refresh()
 
     def _update_toolbar_visibility(self):
-        """根据模式显示/隐藏控件"""
-        is_personal = self._current_mode == self.MODE_PERSONAL
-        is_target = self._current_mode == self.MODE_TARGET
-        is_paged = self._current_mode in (self.MODE_LATEST, self.MODE_TARGET)
+        """根据模式显示/隐藏第二行控件"""
         is_dist = self._current_mode == self.MODE_DISTRIBUTION
-        is_last7 = self._current_mode == self.MODE_LAST7
+        is_personal = self._current_mode == self.MODE_PERSONAL
+        is_paged = self._current_mode in (self.MODE_LATEST, self.MODE_TARGET)
+        is_target = self._current_mode == self.MODE_TARGET
 
-        self.lbl_exam.setVisible(is_dist)
-        self.btn_exam_prev.setVisible(is_dist)
-        self.slider_exam.setVisible(is_dist)
-        self.btn_exam_next.setVisible(is_dist)
-        self.lbl_exam_date.setVisible(is_dist)
+        for c in self._dist_ctrls:
+            c.setVisible(is_dist)
+        for c in self._personal_ctrls:
+            c.setVisible(is_personal)
+        for c in self._paged_ctrls:
+            c.setVisible(is_paged)
+        for c in self._target_ctrls:
+            c.setVisible(is_target)
 
-        self.lbl_student.setVisible(is_personal)
-        self.combo_student.setVisible(is_personal)
-        self.chk_last7.setVisible(is_personal)
+    def _on_hover(self, event):
+        """鼠标悬停显示考试日期和成绩"""
+        if not event.inaxes:
+            if self._hover_annot:
+                self._hover_annot.set_visible(False)
+                self.canvas.draw_idle()
+            return
 
-        self.lbl_target.setVisible(is_target)
-        self.edit_target.setVisible(is_target)
+        ax = event.inaxes
+        dates = getattr(self, "_hover_dates", [])
+        raw = getattr(self, "_hover_raw", [])
+        best_dist = float("inf")
+        best_info = None
+        best_xy = None
 
-        self.lbl_count.setVisible(is_paged)
-        self.spin_count.setVisible(is_paged)
-        self.btn_prev.setVisible(is_paged)
-        self.btn_next.setVisible(is_paged)
+        for line in ax.lines:
+            xdata, ydata = line.get_data()
+            if len(xdata) == 0:
+                continue
+            pts = ax.transData.transform(list(zip(xdata, ydata)))
+            for i, (px, py) in enumerate(pts):
+                dist = ((px - event.x) ** 2 + (py - event.y) ** 2) ** 0.5
+                if dist < best_dist:
+                    best_dist = dist
+                    idx = int(xdata[i])
+                    date_str = dates[idx] if 0 <= idx < len(dates) else f"第{idx+1}次"
+                    label = line.get_label()
+                    info = f"{date_str}  {ydata[i]:.2f}"
+                    if label and not label.startswith("_"):
+                        info = f"{label}\n{info}"
+                    # Z 分图附上原始分
+                    if raw and 0 <= idx < len(raw):
+                        info += f"\n原始分 {raw[idx]:.1f}"
+                    best_info = info
+                    best_xy = (xdata[i], ydata[i])
+
+        if best_dist > 15 or best_xy is None:
+            if self._hover_annot:
+                self._hover_annot.set_visible(False)
+                self.canvas.draw_idle()
+            return
+
+        # 跨子图切换时重建 annot
+        if self._hover_annot and self._hover_annot.axes != ax:
+            self._hover_annot.remove()
+            self._hover_annot = None
+
+        if self._hover_annot is None:
+            self._hover_annot = ax.annotate(
+                "", xy=best_xy, xytext=(14, 14),
+                textcoords="offset points",
+                bbox=dict(boxstyle="round,pad=0.6", facecolor="#2c3e50",
+                          edgecolor="none", alpha=0.92),
+                color="white", fontsize=11,
+                arrowprops=dict(arrowstyle="->", color="#2c3e50", lw=1.2),
+            )
+        else:
+            self._hover_annot.xy = best_xy
+
+        self._hover_annot.set_text(best_info)
+        self._hover_annot.set_visible(True)
+        self.canvas.draw_idle()
 
     def refresh(self):
         """刷新图表"""
@@ -241,6 +319,12 @@ class ScoreTab(QWidget):
                     self.combo_student.setCurrentIndex(idx)
             self.combo_student.blockSignals(False)
 
+        # 始终更新搜索补全的模型
+        names = [s.name for s in students]
+        model = QStringListModel(names)
+        self.search_completer.setModel(model)
+
+        self._hover_annot = None
         self.fig.clear()
         try:
             if self._current_mode == self.MODE_DISTRIBUTION:
@@ -256,7 +340,7 @@ class ScoreTab(QWidget):
         except Exception as e:
             self._show_error(str(e))
 
-        self.fig.tight_layout()
+        self.fig.tight_layout(pad=2.0, h_pad=1.5, w_pad=1.0)
         self.canvas.draw()
 
     def _get_scores(self, students, use_zscore: bool = True):
@@ -367,6 +451,7 @@ class ScoreTab(QWidget):
         ax.set_title(f"成绩分布 ({mode_name}, {exam_date}, n={len(props)})", fontsize=14, fontweight="bold")
         ax.set_ylim(0, max(max(counts) * 1.2, 10))
 
+        self._hover_dates = self.dm.dates
         self.status_label.setText(
             f"日期: {exam_date}  |  平均分: {sum(scores)/len(scores):.1f}  |  "
             f"最高分: {max(scores):.1f}  |  最低分: {min(scores):.1f}  |  "
@@ -374,65 +459,109 @@ class ScoreTab(QWidget):
         )
 
     def _draw_personal(self, students):
-        """个人成绩趋势折线图（标准分）"""
+        """个人成绩趋势 — 标准分(左轴) + 原始分(右轴) 双纵轴"""
         name = self.combo_student.currentText()
         if not name:
             self._show_empty("请从下拉框选择学生")
             return
 
-        # 从标准分数据中找到该学生
+        # Z 分
         zdata = self.dm.get_zscores(self.dm.current_class, self.dm.use_full_score)
         student_z = next(((n, z) for n, z in zdata if n == name), None)
         if student_z is None:
             self._show_empty(f"未找到学生: {name}")
             return
-
         _, z_scores = student_z
-        if not z_scores:
+
+        # 原始分
+        raw_scores = []
+        for s in students:
+            if s.name == name:
+                for item in (s.scores if s.scores else s.scores_full):
+                    try:
+                        raw_scores.append(float(item[1]))
+                    except (ValueError, TypeError):
+                        raw_scores.append(0.0)
+                break
+
+        if not z_scores and not raw_scores:
             self._show_empty(f"{name} 无成绩数据")
             return
 
-        dates = self.dm.dates[:len(z_scores)]
+        dates = self.dm.dates[:max(len(z_scores), len(raw_scores))]
 
-        # 最近7次过滤
         is_last7 = self.chk_last7.isChecked()
         if is_last7:
             n = min(7, len(z_scores))
             dates = dates[-n:]
             z_scores = z_scores[-n:]
+            raw_scores = raw_scores[-n:]
 
-        ax = self.fig.add_subplot(111)
+        n_pts = len(z_scores)
+        step = max(1, n_pts // 8)
+        tick_pos = list(range(0, n_pts, step))
+        x = list(range(n_pts))
 
-        step = max(1, len(dates) // 8)
-        tick_pos = list(range(0, len(dates), step))
+        # ===== 上图：Z 标准分 =====
+        ax1 = self.fig.add_subplot(211)
 
-        x = list(range(len(z_scores)))
-        ax.plot(x, z_scores, marker="o", linewidth=2.5,
-                color="#1EAEE7", label=name, markersize=6)
+        ax1.plot(x, z_scores, marker="o", linewidth=2.5,
+                 color="#1EAEE7", markersize=7, zorder=3)
 
-        avg = sum(z_scores) / len(z_scores) if z_scores else 0
-        ax.axhline(y=avg, color="#e74c3c", linestyle="--",
-                   label=f"平均Z {avg:.2f}")
-        ax.axhline(y=0, color="#999", linestyle="-", linewidth=0.8, alpha=0.5)
+        ax1.axhline(y=0, color="#999", linestyle="-", linewidth=0.8, alpha=0.5)
+        lim_z = max(abs(min(z_scores)), abs(max(z_scores))) * 1.25 + 0.3
+        ax1.set_ylim(-lim_z, lim_z)
+        ax1.set_ylabel("标准分 (Z)", fontsize=11)
+        title = f"{name} — 标准分 (Z)" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
+        ax1.set_title(title, fontsize=13, fontweight="bold")
+        ax1.legend(fontsize=9, loc="upper left")
+        ax1.grid(True, linestyle="--", alpha=0.4)
+        ax1.set_xticks(tick_pos)
+        ax1.set_xticklabels([])  # 上图的 x 标签隐藏
 
-        # 最近7次时标注每次分数
         if is_last7:
             for xi, sc in zip(x, z_scores):
-                ax.text(xi, sc + 0.15, f"{sc:.2f}", ha="center", fontsize=9)
+                ax1.text(xi, sc + 0.12, f"{sc:.2f}", ha="center", fontsize=8, color="#1EAEE7")
 
-        ax.set_ylim(-3, 4)
-        ax.set_ylabel("标准分 (Z)", fontsize=12)
-        ax.set_xlabel("考试日期" if is_last7 else "考试次数", fontsize=12)
-        title = f"{name} 的最近7次成绩" if is_last7 else f"{name} 的成绩趋势 (共{len(z_scores)}次)"
-        ax.set_title(title, fontsize=14, fontweight="bold")
-        ax.legend()
-        ax.grid(True, linestyle="--", alpha=0.5)
-        ax.set_xticks(tick_pos)
-        ax.set_xticklabels([dates[i] for i in tick_pos], rotation=45, ha="right")
+        # ===== 下图：原始分 =====
+        ax2 = self.fig.add_subplot(212)
 
+        ax2.plot(x, raw_scores, marker="s", linewidth=2.5,
+                 color="#8e44ad", markersize=7, zorder=3)
+
+        # 班级平均分
+        class_avg = []
+        for exam_i in range(n_pts):
+            vals = []
+            for s in students:
+                arr = s.scores if s.scores else s.scores_full
+                if exam_i < len(arr):
+                    try:
+                        vals.append(float(arr[exam_i][1]))
+                    except (ValueError, TypeError):
+                        pass
+            class_avg.append(sum(vals) / len(vals) if vals else 0)
+        ax2.plot(x, class_avg, color="#e74c3c", linestyle="--", linewidth=2.2,
+                 label="班级平均分", zorder=4, alpha=0.9)
+
+        r_min, r_max = min(raw_scores), max(raw_scores)
+        r_pad = max((r_max - r_min) * 0.3, 3)
+        ax2.set_ylim(r_min - r_pad, r_max + r_pad)
+        ax2.set_ylabel("原始分", fontsize=11)
+        title2 = f"{name} — 原始分" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
+        ax2.set_title(title2, fontsize=13, fontweight="bold")
+        ax2.legend(fontsize=9, loc="upper left")
+        ax2.grid(True, linestyle="--", alpha=0.4)
+        ax2.set_xticks(tick_pos)
+        ax2.set_xticklabels([dates[i] for i in tick_pos], rotation=45, ha="right")
+        ax2.set_xlabel("考试日期" if is_last7 else "考试次数", fontsize=11)
+
+        self._hover_dates = dates
+        self._hover_raw = raw_scores
         self.status_label.setText(
-            f"{name} | {'最近7次' if is_last7 else f'共{len(z_scores)}次'} | "
-            f"平均Z: {avg:.2f} | 最高Z: {max(z_scores):.2f} | 最低Z: {min(z_scores):.2f}"
+            f"{name} | {'最近7次' if is_last7 else f'共{n_pts}次'} | "
+            f"均分 {sum(raw_scores)/n_pts:.1f} | "
+            f"最高 {max(raw_scores):.1f} | 最低 {min(raw_scores):.1f}"
         )
 
     def _draw_latest(self, students):
@@ -460,9 +589,10 @@ class ScoreTab(QWidget):
         ax.set_yticks(range(len(names)))
         ax.set_yticklabels(names, fontsize=9)
         ax.invert_yaxis()
-        ax.set_xlim(-3, 4)
+        lim = max(abs(min(scores)), abs(max(scores))) * 1.25 + 0.3
+        ax.set_xlim(-lim, lim)
         ax.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
-        ax.set_xlabel("分数", fontsize=12)
+        ax.set_xlabel("标准分 (Z)", fontsize=12)
         total = len(data)
         start = self._group_offset + 1
         end = min(self._group_offset + len(page_data), total)
@@ -504,7 +634,8 @@ class ScoreTab(QWidget):
         for xi, (d, v) in enumerate(zip(dates, avgs)):
             ax.text(xi, v + 0.15, f"{v:.2f}", ha="center", fontsize=9)
 
-        ax.set_ylim(-3, 4)
+        lim = max(abs(min(avgs)), abs(max(avgs))) * 1.25 + 0.3
+        ax.set_ylim(-lim, lim)
         ax.axhline(y=0, color="#999", linestyle="-", linewidth=0.8, alpha=0.5)
         ax.set_ylabel("班级平均标准分", fontsize=12)
         ax.set_xlabel("考试日期", fontsize=12)
@@ -514,6 +645,7 @@ class ScoreTab(QWidget):
         ax.set_xticklabels(dates, rotation=30, ha="right")
 
         mode = "满分卷" if self.dm.use_full_score else "客观分"
+        self._hover_dates = dates
         self.status_label.setText(
             f"最近{n}次平均Z: {sum(avgs)/len(avgs):.2f} | 模式: {mode}"
         )
@@ -597,6 +729,37 @@ class ScoreTab(QWidget):
             return
         total = len(data)
         self._group_offset = (self._group_offset + self._display_count) % total
+        self.refresh()
+
+    # ------------------------------------------------------------------
+    # 学生搜索
+    # ------------------------------------------------------------------
+    def _on_search(self):
+        """搜索框回车或被选择：切到个人趋势模式并选中该学生"""
+        text = self.search_input.text().strip()
+        if not text:
+            return
+
+        # 用补全模型精确匹配（支持部分匹配）
+        model = self.search_completer.model()
+        if model:
+            for row in range(model.rowCount()):
+                idx = model.index(row, 0)
+                name = model.data(idx)
+                if name and text.lower() in name.lower():
+                    text = name
+                    break
+
+        # 切到个人模式
+        if self._current_mode != self.MODE_PERSONAL:
+            self.combo_mode.setCurrentText(self.MODE_PERSONAL)
+            self._current_mode = self.MODE_PERSONAL
+            self._update_toolbar_visibility()
+
+        # 选中学生
+        idx = self.combo_student.findText(text)
+        if idx >= 0:
+            self.combo_student.setCurrentIndex(idx)
         self.refresh()
 
     # ------------------------------------------------------------------
