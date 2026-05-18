@@ -11,6 +11,7 @@ from core.random_engine import RandomEngine
 from .overview_tab import OverviewTab
 from .random_combined_tab import RandomCombinedTab
 from .score_tab import ScoreTab
+from .data_maintenance_tab import DataMaintenanceTab
 
 
 class MainWindow(QMainWindow):
@@ -44,6 +45,7 @@ class MainWindow(QMainWindow):
             OverviewTab(self.dm),
             RandomCombinedTab(self.dm, self.random_engine),
             ScoreTab(self.dm, on_mode_change=self._update_mode_label),
+            DataMaintenanceTab(self.dm),
         ]
         for tab in self._tabs:
             self.stack.addWidget(tab)
@@ -94,6 +96,7 @@ class MainWindow(QMainWindow):
             ("📊 数据概览", 0),
             ("🎲 随机抽人", 1),
             ("📈 成绩分析", 2),
+            ("🛠️ 数据维护", 3),
         ]
         for text, idx in nav_items:
             btn = QPushButton(text)

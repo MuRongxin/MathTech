@@ -41,3 +41,18 @@ class ClassInfo:
     avg_call: float
     avg_score: float
     avg_score_full: float
+
+
+@dataclass
+class KnowledgeTopic:
+    """单个知识点"""
+    category: str   # 一级分类，如 "函数"
+    name: str       # 二级知识点，如 "单调性判断"
+
+
+@dataclass
+class ExamMeta:
+    """考试元数据"""
+    date: str
+    subjective_topics: List[KnowledgeTopic] = field(default_factory=list)  # 客观分知识点
+    objective_topics: List[KnowledgeTopic] = field(default_factory=list)   # 满分卷知识点

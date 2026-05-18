@@ -12,7 +12,7 @@ from typing import List, Dict, Optional
 import re
 import openpyxl
 
-from .models import StudentData, ClassInfo
+from .models import StudentData, ClassInfo, KnowledgeTopic, ExamMeta
 
 
 class DataManager:
@@ -44,7 +44,13 @@ class DataManager:
         # 考试日期列表（从 Excel 表头读取）
         self.dates: List[str] = []
 
+        # 知识点池：一级分类 → [二级知识点列表]
+        self.knowledge_pool: Dict[str, List[str]] = {}
+        # 考试元数据：date_str → ExamMeta
+        self.exam_meta: Dict[str, ExamMeta] = {}
+
         self._load_all()
+        self._init_knowledge()
         self._initialized = True
 
     @property
@@ -352,3 +358,127 @@ class DataManager:
         else:
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = indent_str
+
+    # ------------------------------------------------------------------
+    # 知识点池
+    # ------------------------------------------------------------------
+    DEFAULT_POOL: Dict[str, List[str]] = {
+        "函数": ["定义域", "值域与最值", "单调性判断", "单调性应用", "奇偶性判断",
+                 "奇偶性应用", "二次函数图像与性质", "二次函数最值", "指数运算",
+                 "指数函数", "对数运算", "对数函数", "幂函数", "函数零点与方程根",
+                 "函数模型应用"],
+        "三角函数": ["任意角与弧度", "同角关系", "诱导公式", "三角函数图像",
+                     "三角函数性质", "正弦型函数 y=Asin(ωx+φ)", "和差公式",
+                     "倍角半角公式", "正弦定理及应用", "余弦定理及应用"],
+        "数列": ["数列概念与通项", "等差数列通项与求和", "等差数列性质",
+                "等比数列通项与求和", "等比数列性质", "裂项相消求和", "错位相减求和"],
+        "向量": ["向量概念", "加减与数乘", "数量积", "坐标表示", "平行与垂直", "空间向量"],
+        "立体几何": ["表面积", "体积", "线面平行判定", "线面垂直判定",
+                     "面面平行与垂直", "空间角计算", "空间距离"],
+        "解析几何": ["直线方程", "直线位置关系", "圆的方程", "直线与圆",
+                     "椭圆定义与方程", "椭圆性质", "双曲线定义与方程", "双曲线性质",
+                     "抛物线定义与方程", "抛物线性质", "直线与圆锥曲线综合"],
+        "概率统计": ["随机抽样", "频率分布直方图", "均值中位数众数", "方差与标准差",
+                     "古典概型", "几何概型", "互斥与对立事件", "条件概率",
+                     "离散型随机变量", "二项分布", "正态分布"],
+        "导数": ["导数定义与意义", "基本导数公式", "导数四则运算", "复合函数求导",
+                "导数与单调性", "导数与极值", "导数与最值", "导数综合应用"],
+        "复数": ["复数概念", "代数运算", "几何意义", "三角形式"],
+        "不等式": ["不等式性质", "一元二次不等式", "含绝对值不等式", "均值不等式", "线性规划"],
+        "集合与逻辑": ["集合运算", "充分必要条件", "全称量词", "存在量词"],
+    }
+
+    def _init_knowledge(self) -> None:
+        """初始化知识点池和考试元数据"""
+        pool_path = self.data_dir / "knowledge_pool.xml"
+        meta_path = self.data_dir / "exam_meta.xml"
+
+        if pool_path.exists():
+            self._load_knowledge_pool(pool_path)
+        else:
+            self.knowledge_pool = dict(self.DEFAULT_POOL)
+            self._save_knowledge_pool(pool_path)
+
+        if meta_path.exists():
+            self._load_exam_meta(meta_path)
+        else:
+            self.exam_meta = {}
+
+    def _load_knowledge_pool(self, path: Path) -> None:
+        tree = ET.parse(path)
+        self.knowledge_pool = {}
+        for cat in tree.findall("category"):
+            name = cat.get("name", "")
+            topics = [t.text.strip() for t in cat.findall("topic") if t.text]
+            if name:
+                self.knowledge_pool[name] = topics
+
+    def _save_knowledge_pool(self, path: Path) -> None:
+        root = ET.Element("pool")
+        for cat_name in self.knowledge_pool:
+            cat = ET.SubElement(root, "category", {"name": cat_name})
+            for t in self.knowledge_pool[cat_name]:
+                ET.SubElement(cat, "topic").text = t
+        self._indent_xml(root)
+        ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
+
+    def _load_exam_meta(self, path: Path) -> None:
+        tree = ET.parse(path)
+        self.exam_meta = {}
+        for exam in tree.findall("exam"):
+            dt = exam.get("date", "")
+            if not dt:
+                continue
+
+            def _parse_topics(parent_tag: str) -> List[KnowledgeTopic]:
+                topics = []
+                parent = exam.find(parent_tag)
+                if parent is not None:
+                    for t in parent.findall("topic"):
+                        cat = t.get("category", "")
+                        name = (t.text or "").strip()
+                        if cat and name:
+                            topics.append(KnowledgeTopic(category=cat, name=name))
+                return topics
+
+            sub = _parse_topics("subjective")
+            obj = _parse_topics("objective")
+            self.exam_meta[dt] = ExamMeta(date=dt, subjective_topics=sub, objective_topics=obj)
+
+    def _save_exam_meta(self) -> None:
+        path = self.data_dir / "exam_meta.xml"
+        root = ET.Element("exams")
+        for dt, meta in self.exam_meta.items():
+            exam = ET.SubElement(root, "exam", {"date": dt})
+
+            def _save_topics(parent_tag: str, topics: List[KnowledgeTopic]) -> None:
+                parent = ET.SubElement(exam, parent_tag)
+                for kt in topics:
+                    ET.SubElement(parent, "topic", {"category": kt.category}).text = kt.name
+
+            _save_topics("subjective", meta.subjective_topics)
+            _save_topics("objective", meta.objective_topics)
+        self._indent_xml(root)
+        ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
+
+    def get_exam_meta(self, date: str) -> ExamMeta:
+        """获取某次考试的知识点元数据，不存在则返回空"""
+        if date not in self.exam_meta:
+            self.exam_meta[date] = ExamMeta(date=date)
+        return self.exam_meta[date]
+
+    def update_exam_meta(self, date: str, sub_topics: List[KnowledgeTopic],
+                         obj_topics: List[KnowledgeTopic]) -> None:
+        """更新考试知识点并保存"""
+        self.exam_meta[date] = ExamMeta(date=date,
+                                         subjective_topics=sub_topics,
+                                         objective_topics=obj_topics)
+        self._save_exam_meta()
+
+    def add_knowledge(self, category: str, name: str) -> None:
+        """添加新知识点到池并保存"""
+        if category not in self.knowledge_pool:
+            self.knowledge_pool[category] = []
+        if name not in self.knowledge_pool[category]:
+            self.knowledge_pool[category].append(name)
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
