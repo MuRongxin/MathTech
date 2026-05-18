@@ -9,7 +9,7 @@ from PyQt6.QtGui import QFont
 from core.data_manager import DataManager
 from core.random_engine import RandomEngine
 from .overview_tab import OverviewTab
-from .random_tab import RandomTab
+from .random_combined_tab import RandomCombinedTab
 from .score_tab import ScoreTab
 
 
@@ -42,8 +42,8 @@ class MainWindow(QMainWindow):
         # 初始化各页面（顺序与导航栏一致）
         self._tabs = [
             OverviewTab(self.dm),
-            RandomTab(self.dm, self.random_engine),
-            ScoreTab(self.dm),
+            RandomCombinedTab(self.dm, self.random_engine),
+            ScoreTab(self.dm, on_mode_change=self._update_mode_label),
         ]
         for tab in self._tabs:
             self.stack.addWidget(tab)
@@ -111,6 +111,13 @@ class MainWindow(QMainWindow):
 
         return sidebar
 
+    def _update_mode_label(self):
+        """更新左下角成绩模式标签"""
+        if self.dm.use_full_score:
+            self.mode_label.setText("成绩模式: 整卷分")
+        else:
+            self.mode_label.setText("成绩模式: 仅客观分")
+
     def switch_tab(self, index: int):
         """切换内容页"""
         self.stack.setCurrentIndex(index)
@@ -136,3 +143,4 @@ class MainWindow(QMainWindow):
             if current == 2:
                 self._tabs[2].btn_obj.setChecked(not self.dm.use_full_score)
                 self._tabs[2].btn_full.setChecked(self.dm.use_full_score)
+            self._update_mode_label()

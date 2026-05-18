@@ -34,9 +34,10 @@ class ScoreTab(QWidget):
     MODE_LAST7 = "📈 进退步榜"
     MODE_TARGET = "🎯 目标分对比"
 
-    def __init__(self, dm: DataManager):
+    def __init__(self, dm: DataManager, on_mode_change=None):
         super().__init__()
         self.dm = dm
+        self._on_mode_change = on_mode_change
         self._current_mode = self.MODE_DISTRIBUTION
         self._exam_index = -1
         self._display_count = 15
@@ -207,6 +208,8 @@ class ScoreTab(QWidget):
         self.dm.use_full_score = full
         self.btn_obj.setChecked(not full)
         self.btn_full.setChecked(full)
+        if self._on_mode_change:
+            self._on_mode_change()
         self.refresh()
 
     def _update_toolbar_visibility(self):

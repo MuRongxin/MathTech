@@ -223,10 +223,8 @@ class DataManager:
     def get_zscores(self, class_idx: int, full_score: bool = False) -> list[list]:
         """获取指定班级的标准分数据
         
-        原始分先转比例分（÷满分），再转标准分 Z=(比例分-μ)/σ
-        Sheet "40" 满分=40，Sheet "100" 满分=100
-        """
-        """获取指定班级的标准分数据
+        直接对原始分计算 Z = (原始分 - μ) / σ
+        不受满分值影响，Z 分数对线性缩放不变。
         
         返回: 每个学生每次考试的标准分列表
               [[name, [z1, z2, ...]], ...]
@@ -237,29 +235,28 @@ class DataManager:
         if not students or not self.dates:
             return []
 
-        full_marks = 100 if full_score else 40
         n_exams = len(self.dates)
         result = []
 
-        # 先收集比例分（原始分 ÷ 满分）
+        # 收集原始分
         for s in students:
             arr = s.scores if s.scores else s.scores_full
-            prop_list = []
+            raw_list = []
             for i in range(n_exams):
                 if i < len(arr):
                     try:
-                        prop_list.append(float(arr[i][1]) / full_marks)
+                        raw_list.append(float(arr[i][1]))
                     except:
-                        prop_list.append(0.0)
+                        raw_list.append(0.0)
                 else:
-                    prop_list.append(0.0)
-            result.append([s.name, prop_list])
+                    raw_list.append(0.0)
+            result.append([s.name, raw_list])
 
-        # 对每次考试的比例分计算标准分
+        # 对每次考试计算标准分 Z = (原始分 - μ) / σ
         for exam_i in range(n_exams):
-            props = [r[1][exam_i] for r in result]
-            mean = statistics.mean(props)
-            std = statistics.stdev(props) if len(props) > 1 else 0
+            raw = [r[1][exam_i] for r in result]
+            mean = statistics.mean(raw)
+            std = statistics.stdev(raw) if len(raw) > 1 else 0
             for r in result:
                 if std > 0:
                     r[1][exam_i] = round((r[1][exam_i] - mean) / std, 2)
