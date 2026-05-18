@@ -17,7 +17,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MathTech - Python Edition")
-        self.setMinimumSize(1200, 800)
+        self.setMinimumSize(1200, 675)
+        self.resize(1280, 720)
 
         # 核心业务对象
         self.dm = DataManager()

@@ -31,7 +31,7 @@ class ScoreTab(QWidget):
     MODE_DISTRIBUTION = "📊 成绩分布"
     MODE_PERSONAL = "👤 个人趋势"
     MODE_LATEST = "📋 最近一次"
-    MODE_LAST7 = "📉 最近7次"
+    MODE_LAST7 = "📈 进退步榜"
     MODE_TARGET = "🎯 目标分对比"
 
     def __init__(self, dm: DataManager):
@@ -213,7 +213,7 @@ class ScoreTab(QWidget):
         """根据模式显示/隐藏第二行控件"""
         is_dist = self._current_mode == self.MODE_DISTRIBUTION
         is_personal = self._current_mode == self.MODE_PERSONAL
-        is_paged = self._current_mode in (self.MODE_LATEST, self.MODE_TARGET)
+        is_paged = self._current_mode in (self.MODE_LATEST, self.MODE_TARGET, self.MODE_LAST7)
         is_target = self._current_mode == self.MODE_TARGET
 
         for c in self._dist_ctrls:
@@ -474,6 +474,7 @@ class ScoreTab(QWidget):
         _, z_scores = student_z
 
         # 原始分
+        full_marks = 100 if self.dm.use_full_score else 40
         raw_scores = []
         for s in students:
             if s.name == name:
@@ -506,7 +507,7 @@ class ScoreTab(QWidget):
         ax1 = self.fig.add_subplot(211)
 
         ax1.plot(x, z_scores, marker="o", linewidth=2.5,
-                 color="#1EAEE7", markersize=7, zorder=3)
+                 color="#1EAEE7", label="标准分 Z", markersize=7, zorder=3)
 
         ax1.axhline(y=0, color="#999", linestyle="-", linewidth=0.8, alpha=0.5)
         lim_z = max(abs(min(z_scores)), abs(max(z_scores))) * 1.25 + 0.3
@@ -547,8 +548,9 @@ class ScoreTab(QWidget):
         r_min, r_max = min(raw_scores), max(raw_scores)
         r_pad = max((r_max - r_min) * 0.3, 3)
         ax2.set_ylim(r_min - r_pad, r_max + r_pad)
-        ax2.set_ylabel("原始分", fontsize=11)
-        title2 = f"{name} — 原始分" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
+        mode_name = "仅客观分" if not self.dm.use_full_score else "整卷分"
+        ax2.set_ylabel(f"原始分 (满分{full_marks})", fontsize=11)
+        title2 = f"{name} — {mode_name}" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
         ax2.set_title(title2, fontsize=13, fontweight="bold")
         ax2.legend(fontsize=9, loc="upper left")
         ax2.grid(True, linestyle="--", alpha=0.4)
@@ -608,46 +610,81 @@ class ScoreTab(QWidget):
         )
 
     def _draw_last7(self, students):
-        """最近7次考试班级平均分趋势（标准分）"""
-        if not self.dm.dates:
-            self._show_empty("无日期数据")
-            return
-
+        """进退步榜：最近 N 次考试 Z 分变化排名"""
         zdata = self.dm.get_zscores(self.dm.current_class, self.dm.use_full_score)
         if not zdata:
             self._show_empty("无标准分数据")
             return
 
         n = min(7, len(self.dm.dates))
-        idx_start = len(self.dm.dates) - n
-        dates = self.dm.dates[idx_start:]
+        dates = self.dm.dates[-n:]
 
-        avgs = []
-        for exam_i in range(idx_start, len(self.dm.dates)):
-            vals = [z[exam_i] for _, z in zdata if exam_i < len(z)]
-            avgs.append(round(sum(vals) / len(vals), 2) if vals else 0.0)
+        changes = []
+        for name, z_list in zdata:
+            seg = z_list[-n:]
+            if len(seg) >= 2:
+                k = len(seg)
+                mx = (k - 1) / 2
+                my = sum(seg) / k
+                num = sum((i - mx) * (seg[i] - my) for i in range(k))
+                den = sum((i - mx) ** 2 for i in range(k))
+                slope = num / den if den != 0 else 0
+                diff = slope * (k - 1)  # 趋势线上首尾差值
+                trend_start = my - slope * mx
+                trend_end = my + slope * mx
+                changes.append((name, diff, trend_start, trend_end))
+            else:
+                changes.append((name, 0.0, seg[0] if seg else 0.0,
+                                seg[-1] if seg else 0.0))
+
+        changes.sort(key=lambda x: x[1], reverse=True)
+
+        if not changes:
+            self._show_empty("数据不足")
+            return
+
+        total = len(changes)
+        self._group_offset = self._group_offset % total if total > 0 else 0
+        start = self._group_offset
+        end = min(start + self._display_count, total)
+        page = changes[start:end]
+
+        names = [c[0] for c in page]
+        diffs = [c[1] for c in page]
+        firsts = [c[2] for c in page]
+        lasts = [c[3] for c in page]
 
         ax = self.fig.add_subplot(111)
-        x = list(range(len(avgs)))
-        ax.plot(x, avgs, marker="o", linewidth=2.5, color="#9b59b6", markersize=8)
+        colors = ["#2ecc71" if d >= 0 else "#e74c3c" for d in diffs]
+        bars = ax.barh(range(len(names)), diffs, color=colors, height=0.7, edgecolor="white")
 
-        for xi, (d, v) in enumerate(zip(dates, avgs)):
-            ax.text(xi, v + 0.15, f"{v:.2f}", ha="center", fontsize=9)
+        for i, (bar, d, fv, lv) in enumerate(zip(bars, diffs, firsts, lasts)):
+            sign = "+" if d >= 0 else ""
+            text = f"{sign}{d:.2f}  ({fv:.2f} → {lv:.2f})"
+            offset = max(abs(d) * 0.02, 0.03)
+            x_pos = d + offset if d >= 0 else d - offset
+            ha = "left" if d >= 0 else "right"
+            ax.text(x_pos, i, text, va="center", ha=ha, fontsize=10)
 
-        lim = max(abs(min(avgs)), abs(max(avgs))) * 1.25 + 0.3
-        ax.set_ylim(-lim, lim)
-        ax.axhline(y=0, color="#999", linestyle="-", linewidth=0.8, alpha=0.5)
-        ax.set_ylabel("班级平均标准分", fontsize=12)
-        ax.set_xlabel("考试日期", fontsize=12)
-        ax.set_title(f"最近 {n} 次考试班级平均分趋势", fontsize=14, fontweight="bold")
-        ax.grid(True, linestyle="--", alpha=0.5)
-        ax.set_xticks(x)
-        ax.set_xticklabels(dates, rotation=30, ha="right")
-
+        base = max(abs(min(diffs)), abs(max(diffs)), 0.2)
+        ax.set_xlim(-base * 1.3 - 0.5, base * 1.3 + 0.5)
+        ax.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
+        ax.spines["right"].set_visible(False)
+        ax.set_yticks(range(len(names)))
+        ax.set_yticklabels(names, fontsize=10)
+        ax.invert_yaxis()
+        ax.set_xlabel("Z 分变化", fontsize=12)
         mode = "满分卷" if self.dm.use_full_score else "客观分"
-        self._hover_dates = dates
+        ax.set_title(f"最近 {n} 次考试进退步榜 ({dates[0]} → {dates[-1]}) "
+                     f"第 {start+1}-{end}/{total} 名 | {mode}",
+                     fontsize=13, fontweight="bold")
+
+        up = sum(1 for d in diffs if d >= 0)
+        down = len(diffs) - up
+        self._hover_dates = []
         self.status_label.setText(
-            f"最近{n}次平均Z: {sum(avgs)/len(avgs):.2f} | 模式: {mode}"
+            f"最近{n}次 | 进步 {up} 人 | 退步 {down} 人 | "
+            f"最大进步 {max(diffs):.2f} | 最大退步 {min(diffs):.2f} | {mode}"
         )
 
     def _draw_target(self, students):
