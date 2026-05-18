@@ -387,7 +387,11 @@
     <objective />
   </exam>
   <exam date="2025/05/29">
-    <subjective />
+    <subjective>
+      <topic category="三角函数" weight="0.27">同角关系</topic>
+      <topic category="三角函数" weight="0.09">诱导公式</topic>
+      <topic category="三角函数" weight="0.50">三角函数图像</topic>
+    </subjective>
     <objective />
   </exam>
   <exam date="2025/06/01">
@@ -403,7 +407,10 @@
     <objective />
   </exam>
   <exam date="2025/06/10">
-    <subjective />
+    <subjective>
+      <topic category="三角函数" weight="0.50">任意角与弧度</topic>
+      <topic category="三角函数" weight="0.50">同角关系</topic>
+    </subjective>
     <objective />
   </exam>
   <exam date="2025/06/13">

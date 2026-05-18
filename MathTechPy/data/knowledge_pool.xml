@@ -1,13 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <pool>
-  <category name="数列">
-    <topic>数列概念与通项</topic>
-    <topic>等差数列通项与求和</topic>
-    <topic>等差数列性质</topic>
-    <topic>等比数列通项与求和</topic>
-    <topic>等比数列性质</topic>
-    <topic>裂项相消求和</topic>
-    <topic>错位相减求和</topic>
+  <category name="三角函数">
+    <topic>任意角与弧度</topic>
+    <topic>同角关系</topic>
+    <topic>诱导公式</topic>
+    <topic>三角函数图像</topic>
+    <topic>三角函数性质</topic>
+    <topic>正弦型函数 y=Asin(ωx+φ)</topic>
+    <topic>和差公式</topic>
+    <topic>倍角半角公式</topic>
+    <topic>正弦定理及应用</topic>
+    <topic>余弦定理及应用</topic>
   </category>
   <category name="函数">
     <topic>定义域</topic>
@@ -26,17 +29,14 @@
     <topic>函数零点与方程根</topic>
     <topic>函数模型应用</topic>
   </category>
-  <category name="三角函数">
-    <topic>任意角与弧度</topic>
-    <topic>同角关系</topic>
-    <topic>诱导公式</topic>
-    <topic>三角函数图像</topic>
-    <topic>三角函数性质</topic>
-    <topic>正弦型函数 y=Asin(ωx+φ)</topic>
-    <topic>和差公式</topic>
-    <topic>倍角半角公式</topic>
-    <topic>正弦定理及应用</topic>
-    <topic>余弦定理及应用</topic>
+  <category name="数列">
+    <topic>数列概念与通项</topic>
+    <topic>等差数列通项与求和</topic>
+    <topic>等差数列性质</topic>
+    <topic>等比数列通项与求和</topic>
+    <topic>等比数列性质</topic>
+    <topic>裂项相消求和</topic>
+    <topic>错位相减求和</topic>
   </category>
   <category name="解析几何">
     <topic>直线方程</topic>
@@ -51,14 +51,6 @@
     <topic>抛物线性质</topic>
     <topic>直线与圆锥曲线综合</topic>
   </category>
-  <category name="向量">
-    <topic>向量概念</topic>
-    <topic>加减与数乘</topic>
-    <topic>数量积</topic>
-    <topic>坐标表示</topic>
-    <topic>平行与垂直</topic>
-    <topic>空间向量</topic>
-  </category>
   <category name="立体几何">
     <topic>表面积</topic>
     <topic>体积</topic>
@@ -67,6 +59,14 @@
     <topic>面面平行与垂直</topic>
     <topic>空间角计算</topic>
     <topic>空间距离</topic>
+  </category>
+  <category name="向量">
+    <topic>向量概念</topic>
+    <topic>加减与数乘</topic>
+    <topic>数量积</topic>
+    <topic>坐标表示</topic>
+    <topic>平行与垂直</topic>
+    <topic>空间向量</topic>
   </category>
   <category name="导数">
     <topic>导数定义与意义</topic>

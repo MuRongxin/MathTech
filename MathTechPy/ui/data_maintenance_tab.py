@@ -2,10 +2,11 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QListWidget, QListWidgetItem, QFrame, QMessageBox,
-    QInputDialog, QScrollArea, QButtonGroup, QSlider, QMenu
+    QInputDialog, QScrollArea, QButtonGroup, QSlider, QMenu,
+    QGraphicsOpacityEffect
 )
-from PyQt6.QtCore import Qt, QTimer, QMimeData
-from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent
+from PyQt6.QtCore import Qt, QTimer, QMimeData, QPropertyAnimation, QPoint, QEasingCurve
+from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent, QPainter, QPixmap
 
 from core.data_manager import DataManager
 from core.models import KnowledgeTopic
@@ -307,16 +308,55 @@ class CategoryGroup(QWidget):
         mime.setText(self.cat_name)
         drag.setMimeData(mime)
 
-        # 浮动缩略图（只取标题栏+半透明背景）
         pixmap = self.header_frame.grab()
-        scaled = pixmap.scaled(int(pixmap.width() * 0.92), int(pixmap.height() * 0.92),
-                                Qt.AspectRatioMode.KeepAspectRatio,
-                                Qt.TransformationMode.SmoothTransformation)
+        pad = 14
+        shadow_pm = QPixmap(pixmap.width() + 2 * pad, pixmap.height() + 2 * pad)
+        shadow_pm.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(shadow_pm)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        for i in range(10, 0, -1):
+            alpha = int(35 * (11 - i) / 10)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QColor(0, 0, 0, alpha))
+            painter.drawRoundedRect(pad - i, pad - i + 3,
+                                    pixmap.width() + 2 * i, pixmap.height() + 2 * i,
+                                    8 + i, 8 + i)
+        painter.setOpacity(0.92)
+        painter.drawPixmap(pad, pad, pixmap)
+        painter.end()
+
+        scaled = shadow_pm.scaled(
+            int(shadow_pm.width() * 1.05),
+            int(shadow_pm.height() * 1.05),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
         drag.setPixmap(scaled)
-        drag.setHotSpot(scaled.rect().center())
+        drag.setHotSpot(QPoint(scaled.width() // 2, int(pad * 1.05) + pixmap.height() // 2))
+
+        opacity = QGraphicsOpacityEffect(self.header_frame)
+        opacity.setOpacity(0.35)
+        self.header_frame.setGraphicsEffect(opacity)
 
         self._drag_start = None
-        result = drag.exec(Qt.DropAction.MoveAction)
+        drag.exec(Qt.DropAction.MoveAction)
+
+        old_effect = self.header_frame.graphicsEffect()
+        if old_effect and isinstance(old_effect, QGraphicsOpacityEffect):
+            fade_back = QPropertyAnimation(old_effect, b"opacity")
+            fade_back.setDuration(200)
+            fade_back.setStartValue(0.35)
+            fade_back.setEndValue(1.0)
+            fade_back.setEasingCurve(QEasingCurve.Type.OutCubic)
+            fade_back.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+
+            def _cleanup():
+                if self.header_frame.graphicsEffect() is old_effect:
+                    self.header_frame.setGraphicsEffect(None)
+
+            fade_back.finished.connect(_cleanup)
+        else:
+            self.header_frame.setGraphicsEffect(None)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat(MIME_CATEGORY):
@@ -680,7 +720,6 @@ class DataMaintenanceTab(QWidget):
                     return
 
     def _on_tag_remove(self, name: str):
-        """右击标签 → 移除"""
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
         target.pop(name, None)
         for row in self._all_toggles():
@@ -693,12 +732,6 @@ class DataMaintenanceTab(QWidget):
             count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)
         self._auto_save()
-        """权重滑动条变化时实时更新"""
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        if name in target:
-            target[name] = weight
-            self._refresh_tags()
-            self._auto_save()
 
     def _on_menu_handler(self, action: str, *args):
         """处理右键菜单：重命名/删除"""
@@ -735,12 +768,74 @@ class DataMaintenanceTab(QWidget):
             self._refresh_tags()
 
     def _on_weight_change(self, name: str, weight: float):
-        """权重滑动条变化时实时更新"""
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        if name in target:
-            target[name] = weight
-            self._refresh_tags()
-            self._auto_save()
+        if name not in target:
+            return
+        new_total = sum(v for k, v in target.items() if k != name) + weight
+        if new_total > 1.0:
+            for row in self._all_toggles():
+                if row.name == name:
+                    row.set_weight(target[name])
+                    break
+            self._shake_all_tags()
+            return
+        target[name] = weight
+        self._refresh_tags()
+        self._auto_save()
+
+    def _shake_all_tags(self):
+        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        chips = []
+        for i in range(self.tags_layout.count()):
+            item = self.tags_layout.itemAt(i)
+            chip = item.widget()
+            if isinstance(chip, TagChip) and chip._name in target:
+                chips.append(chip)
+        if not chips:
+            return
+
+        red_style = """
+            QPushButton {
+                background: #e74c3c; color: white; border: 2px solid #c0392b;
+                border-radius: 12px; padding: 4px 10px; font-size: 12px;
+            }
+        """
+        normal_style = """
+            QPushButton {
+                background: #1abc9c; color: white; border: none;
+                border-radius: 12px; padding: 4px 10px; font-size: 12px;
+            }
+            QPushButton:hover { background: #16a085; }
+        """
+
+        for chip in chips:
+            orig = chip.pos()
+            anim = QPropertyAnimation(chip, b"pos")
+            anim.setDuration(350)
+            anim.setLoopCount(2)
+            x, y = orig.x(), orig.y()
+            anim.setKeyValueAt(0.0, orig)
+            anim.setKeyValueAt(0.15, QPoint(x - 8, y))
+            anim.setKeyValueAt(0.3, QPoint(x + 8, y))
+            anim.setKeyValueAt(0.5, QPoint(x - 5, y))
+            anim.setKeyValueAt(0.7, QPoint(x + 5, y))
+            anim.setKeyValueAt(1.0, orig)
+            anim.start(anim.DeletionPolicy.DeleteWhenStopped)
+
+        def flash_on():
+            for c in chips:
+                c.setStyleSheet(red_style)
+
+        def flash_off():
+            for c in chips:
+                c.setStyleSheet(normal_style)
+
+        QTimer.singleShot(0, flash_on)
+        QTimer.singleShot(150, flash_off)
+        QTimer.singleShot(300, flash_on)
+        QTimer.singleShot(450, flash_off)
+        QTimer.singleShot(600, flash_on)
+        QTimer.singleShot(800, flash_off)
 
     def _on_toggle(self, checked: bool):
         row = self.sender().parent()
@@ -748,7 +843,16 @@ class DataMaintenanceTab(QWidget):
             return
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
         if checked:
-            target[row.name] = row.get_weight()
+            new_weight = row.get_weight()
+            new_total = sum(target.values()) + new_weight
+            if new_total > 1.0:
+                row.toggle.blockSignals(True)
+                row.set_checked(False)
+                row.toggle._update_style()
+                row.toggle.blockSignals(False)
+                self._shake_all_tags()
+                return
+            target[row.name] = new_weight
         else:
             target.pop(row.name, None)
         self._refresh_tags()
@@ -867,21 +971,13 @@ class DataMaintenanceTab(QWidget):
     # 自动保存
     # ------------------------------------------------------------------
     def _auto_save(self):
-        """静默自动保存，并校验权重总和 ≤ 100%"""
+        """静默自动保存，超 100% 跳过保存"""
         if not self._current_date:
             return
 
-        # 校验客观题权重和
-        sub_sum = int(sum(self._sub_selected.values()) * 100)
-        if sub_sum > 100:
-            QMessageBox.warning(self, "权重超限",
-                f"客观题涉及知识点的权重总和为 {sub_sum}%，不能超过 100%！\n请调整权重后再试。")
+        if int(sum(self._sub_selected.values()) * 100) > 100:
             return
-        # 校验主观题权重和
-        obj_sum = int(sum(self._obj_selected.values()) * 100)
-        if obj_sum > 100:
-            QMessageBox.warning(self, "权重超限",
-                f"主观题涉及知识点的权重总和为 {obj_sum}%，不能超过 100%！\n请调整权重后再试。")
+        if int(sum(self._obj_selected.values()) * 100) > 100:
             return
         sub_topics = []
         obj_topics = []
