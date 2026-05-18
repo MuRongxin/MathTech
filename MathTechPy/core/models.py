@@ -48,6 +48,7 @@ class KnowledgeTopic:
     """单个知识点"""
     category: str   # 一级分类，如 "函数"
     name: str       # 二级知识点，如 "单调性判断"
+    weight: float = 1.0  # 权重 0.01~1.0，表示该知识点在考试中的占比
 
 
 @dataclass

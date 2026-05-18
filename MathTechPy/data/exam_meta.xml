@@ -2,25 +2,44 @@
 <exams>
   <exam date="2024/09/01">
     <subjective>
-      <topic category="解析几何">双曲线性质</topic>
+      <topic category="立体几何" weight="0.11">线面平行判定</topic>
+      <topic category="立体几何">线面垂直判定</topic>
+      <topic category="函数" weight="0.42">定义域</topic>
+      <topic category="三角函数">三角函数图像</topic>
+      <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+      <topic category="三角函数">倍角半角公式</topic>
+    </subjective>
+    <objective>
+      <topic category="三角函数" weight="0.69">正弦定理及应用</topic>
+      <topic category="导数">导数定义与意义</topic>
+      <topic category="不等式">一元二次不等式</topic>
+    </objective>
+  </exam>
+  <exam date="2024/09/04">
+    <subjective>
+      <topic category="数列">等差数列通项与求和</topic>
+      <topic category="数列">等差数列性质</topic>
+    </subjective>
+    <objective />
+  </exam>
+  <exam date="2024/09/07">
+    <subjective>
+      <topic category="立体几何">线面平行判定</topic>
+      <topic category="立体几何" weight="0.17">线面垂直判定</topic>
+    </subjective>
+    <objective />
+  </exam>
+  <exam date="2024/09/10">
+    <subjective>
+      <topic category="立体几何" weight="0.50">线面平行判定</topic>
       <topic category="解析几何">抛物线定义与方程</topic>
     </subjective>
     <objective />
   </exam>
-  <exam date="2024/09/04">
-    <subjective />
-    <objective />
-  </exam>
-  <exam date="2024/09/07">
-    <subjective />
-    <objective />
-  </exam>
-  <exam date="2024/09/10">
-    <subjective />
-    <objective />
-  </exam>
   <exam date="2024/09/13">
-    <subjective />
+    <subjective>
+      <topic category="导数">基本导数公式</topic>
+    </subjective>
     <objective />
   </exam>
   <exam date="2024/09/16">
@@ -345,7 +364,9 @@
   </exam>
   <exam date="2025/05/14">
     <subjective />
-    <objective />
+    <objective>
+      <topic category="三角函数" weight="0.50">任意角与弧度</topic>
+    </objective>
   </exam>
   <exam date="2025/05/17">
     <subjective />
@@ -356,7 +377,9 @@
     <objective />
   </exam>
   <exam date="2025/05/23">
-    <subjective />
+    <subjective>
+      <topic category="立体几何" weight="0.50">体积</topic>
+    </subjective>
     <objective />
   </exam>
   <exam date="2025/05/26">
@@ -388,19 +411,42 @@
     <objective />
   </exam>
   <exam date="2025/06/16">
-    <subjective />
-    <objective />
+    <subjective>
+      <topic category="数列">等差数列性质</topic>
+      <topic category="立体几何">线面平行判定</topic>
+      <topic category="立体几何">线面垂直判定</topic>
+    </subjective>
+    <objective>
+      <topic category="立体几何" weight="0.90">空间角计算</topic>
+      <topic category="解析几何" weight="0.11">直线与圆</topic>
+    </objective>
   </exam>
   <exam date="2025/06/19">
-    <subjective />
-    <objective />
+    <subjective>
+      <topic category="解析几何" weight="0.21">抛物线性质</topic>
+    </subjective>
+    <objective>
+      <topic category="向量" weight="0.23">坐标表示</topic>
+      <topic category="解析几何">椭圆定义与方程</topic>
+      <topic category="概率统计">频率分布直方图</topic>
+      <topic category="导数" weight="0.12">基本导数公式</topic>
+    </objective>
   </exam>
   <exam date="2025/06/22">
-    <subjective />
-    <objective />
+    <subjective>
+      <topic category="数列">等差数列通项与求和</topic>
+      <topic category="数列">等比数列通项与求和</topic>
+    </subjective>
+    <objective>
+      <topic category="数列">裂项相消求和</topic>
+      <topic category="向量">空间向量</topic>
+    </objective>
   </exam>
   <exam date="2025/06/25">
-    <subjective />
+    <subjective>
+      <topic category="三角函数" weight="0.50">三角函数图像</topic>
+      <topic category="三角函数" weight="0.22">三角函数性质</topic>
+    </subjective>
     <objective />
   </exam>
 </exams>

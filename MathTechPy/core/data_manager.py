@@ -46,6 +46,8 @@ class DataManager:
 
         # 知识点池：一级分类 → [二级知识点列表]
         self.knowledge_pool: Dict[str, List[str]] = {}
+        # 分类显示顺序
+        self.category_order: List[str] = []
         # 考试元数据：date_str → ExamMeta
         self.exam_meta: Dict[str, ExamMeta] = {}
 
@@ -397,6 +399,7 @@ class DataManager:
             self._load_knowledge_pool(pool_path)
         else:
             self.knowledge_pool = dict(self.DEFAULT_POOL)
+            self.category_order = list(self.DEFAULT_POOL.keys())
             self._save_knowledge_pool(pool_path)
 
         if meta_path.exists():
@@ -407,15 +410,20 @@ class DataManager:
     def _load_knowledge_pool(self, path: Path) -> None:
         tree = ET.parse(path)
         self.knowledge_pool = {}
+        self.category_order = []
         for cat in tree.findall("category"):
             name = cat.get("name", "")
             topics = [t.text.strip() for t in cat.findall("topic") if t.text]
             if name:
                 self.knowledge_pool[name] = topics
+                self.category_order.append(name)
 
     def _save_knowledge_pool(self, path: Path) -> None:
         root = ET.Element("pool")
-        for cat_name in self.knowledge_pool:
+        order = self.category_order if self.category_order else list(self.knowledge_pool.keys())
+        for cat_name in order:
+            if cat_name not in self.knowledge_pool:
+                continue
             cat = ET.SubElement(root, "category", {"name": cat_name})
             for t in self.knowledge_pool[cat_name]:
                 ET.SubElement(cat, "topic").text = t
@@ -437,8 +445,9 @@ class DataManager:
                     for t in parent.findall("topic"):
                         cat = t.get("category", "")
                         name = (t.text or "").strip()
+                        weight = float(t.get("weight", "1.0"))
                         if cat and name:
-                            topics.append(KnowledgeTopic(category=cat, name=name))
+                            topics.append(KnowledgeTopic(category=cat, name=name, weight=weight))
                 return topics
 
             sub = _parse_topics("subjective")
@@ -454,7 +463,10 @@ class DataManager:
             def _save_topics(parent_tag: str, topics: List[KnowledgeTopic]) -> None:
                 parent = ET.SubElement(exam, parent_tag)
                 for kt in topics:
-                    ET.SubElement(parent, "topic", {"category": kt.category}).text = kt.name
+                    attrs = {"category": kt.category}
+                    if kt.weight != 1.0:
+                        attrs["weight"] = f"{kt.weight:.2f}"
+                    ET.SubElement(parent, "topic", attrs).text = kt.name
 
             _save_topics("subjective", meta.subjective_topics)
             _save_topics("objective", meta.objective_topics)
@@ -475,10 +487,74 @@ class DataManager:
                                          objective_topics=obj_topics)
         self._save_exam_meta()
 
+    def reorder_category(self, category: str, direction: int) -> None:
+        """调整分类顺序，direction: -1=上移, +1=下移"""
+        if category not in self.category_order:
+            return
+        idx = self.category_order.index(category)
+        new_idx = idx + direction
+        if new_idx < 0 or new_idx >= len(self.category_order):
+            return
+        self.category_order[idx], self.category_order[new_idx] = \
+            self.category_order[new_idx], self.category_order[idx]
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
+    def move_category(self, category: str, target_idx: int) -> None:
+        """将分类移动到指定位置（拖拽用）"""
+        if category not in self.category_order:
+            return
+        src_idx = self.category_order.index(category)
+        if src_idx == target_idx:
+            return
+        if src_idx < target_idx:
+            target_idx -= 1  # 移除自身后索引前移
+        self.category_order.remove(category)
+        self.category_order.insert(target_idx, category)
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
     def add_knowledge(self, category: str, name: str) -> None:
         """添加新知识点到池并保存"""
         if category not in self.knowledge_pool:
             self.knowledge_pool[category] = []
+            self.category_order.append(category)
         if name not in self.knowledge_pool[category]:
             self.knowledge_pool[category].append(name)
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
+    def rename_category(self, old: str, new: str) -> None:
+        """重命名一级分类"""
+        if old == new or old not in self.knowledge_pool:
+            return
+        self.knowledge_pool[new] = self.knowledge_pool.pop(old)
+        if old in self.category_order:
+            idx = self.category_order.index(old)
+            self.category_order[idx] = new
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
+    def delete_category(self, category: str) -> None:
+        """删除一级分类及其所有二级知识点"""
+        if category not in self.knowledge_pool:
+            return
+        del self.knowledge_pool[category]
+        if category in self.category_order:
+            self.category_order.remove(category)
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
+    def rename_topic(self, category: str, old: str, new: str) -> None:
+        """重命名二级知识点"""
+        if category not in self.knowledge_pool or old == new:
+            return
+        topics = self.knowledge_pool[category]
+        if old in topics:
+            idx = topics.index(old)
+            topics[idx] = new
+        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
+
+    def delete_topic(self, category: str, name: str) -> None:
+        """删除二级知识点"""
+        if category not in self.knowledge_pool:
+            return
+        topics = self.knowledge_pool[category]
+        if name in topics:
+            topics.remove(name)
         self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")

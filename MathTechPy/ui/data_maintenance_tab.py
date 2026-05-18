@@ -2,33 +2,51 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QListWidget, QListWidgetItem, QFrame, QMessageBox,
-    QInputDialog, QScrollArea, QButtonGroup
+    QInputDialog, QScrollArea, QButtonGroup, QSlider, QMenu
 )
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt, QTimer, QMimeData
+from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent
 
 from core.data_manager import DataManager
 from core.models import KnowledgeTopic
 
+MIME_CATEGORY = "application/x-category-drag"
+
 
 class TagChip(QPushButton):
-    """可删除的知识点标签"""
+    """知识点标签：单击定位，双击移除"""
 
-    def __init__(self, text: str, on_remove, parent=None):
+    def __init__(self, text: str, on_locate=None, on_remove=None, parent=None):
         super().__init__(f"× {text}", parent)
+        self._name = text.rsplit("(", 1)[0].strip() if "(" in text else text
+        self._on_locate = on_locate
+        self._on_remove = on_remove
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setStyleSheet("""
             QPushButton {
                 background: #1abc9c; color: white; border: none;
                 border-radius: 12px; padding: 4px 10px; font-size: 12px;
             }
-            QPushButton:hover { background: #e74c3c; }
+            QPushButton:hover { background: #16a085; }
         """)
-        self.clicked.connect(lambda: on_remove(text))
+        self._double_clicked = False
+        self.clicked.connect(self._on_click)
+
+    def _on_click(self):
+        if self._double_clicked:
+            self._double_clicked = False
+            return
+        if self._on_locate:
+            self._on_locate(self._name)
+
+    def mouseDoubleClickEvent(self, event):
+        self._double_clicked = True
+        if self._on_remove:
+            self._on_remove(self._name)
 
 
 class TopicToggle(QPushButton):
-    """知识点选择按钮"""
+    """知识点选择按钮（被 ToggleRow 内部使用）"""
 
     def __init__(self, category: str, name: str, parent=None):
         super().__init__(name, parent)
@@ -59,28 +77,199 @@ class TopicToggle(QPushButton):
             self.setText(self.name)
 
 
-class CategoryGroup(QWidget):
-    """一类知识点的折叠组"""
+class ToggleRow(QWidget):
+    """知识点按钮 + 权重滑动条"""
 
-    def __init__(self, cat_name: str, topics: list[str], parent=None):
+    def __init__(self, category: str, name: str, on_weight_change=None, on_menu=None, parent=None):
+        super().__init__(parent)
+        self.category = category
+        self.name = name
+        self._on_weight_change = on_weight_change
+        self._on_menu = on_menu
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_menu)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+
+        self.toggle = TopicToggle(category, name)
+        layout.addWidget(self.toggle)
+
+        # 权重滑块
+        self.slider = QSlider(Qt.Orientation.Horizontal)
+        self.slider.setRange(1, 100)
+        self.slider.setValue(50)
+        self.slider.setFixedWidth(50)
+        self.slider.setVisible(False)
+        self.slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                border: 1px solid #bdc3c7; border-radius: 3px;
+                height: 4px; background: #ecf0f1;
+            }
+            QSlider::handle:horizontal {
+                background: #1abc9c; border: none;
+                width: 12px; height: 12px; margin: -5px 0;
+                border-radius: 6px;
+            }
+            QSlider::sub-page:horizontal { background: #1abc9c; border-radius: 3px; }
+        """)
+        layout.addWidget(self.slider)
+
+        # 权重数字（双击可输入）
+        self.weight_lbl = QLabel()
+        self.weight_lbl.setFixedWidth(34)
+        self.weight_lbl.setVisible(False)
+        self.weight_lbl.setStyleSheet("color: #1abc9c; font-size: 11px; font-weight: bold;")
+        self.weight_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.weight_lbl.setCursor(Qt.CursorShape.IBeamCursor)
+        self.weight_lbl.mouseDoubleClickEvent = self._on_lbl_dblclick
+        layout.addWidget(self.weight_lbl)
+
+        # 同步
+        self.slider.valueChanged.connect(self._on_slider)
+        self.toggle.toggled.connect(self._on_toggled)
+        self._update_label()
+
+    def _on_lbl_dblclick(self, event):
+        pct = self.slider.value()
+        self.weight_lbl.hide()
+        edit = QLineEdit(str(pct))
+        edit.setFixedSize(38, 20)
+        edit.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #1abc9c; border-radius: 4px;
+                padding: 0 2px; font-size: 11px; color: #2c3e50;
+                background: white;
+            }
+        """)
+        edit.selectAll()
+        edit.setFocus()
+        self.layout().replaceWidget(self.weight_lbl, edit)
+
+        def finish():
+            try:
+                val = int(edit.text())
+                val = max(1, min(100, val))
+                self.slider.setValue(val)
+            except ValueError:
+                pass
+            self.layout().replaceWidget(edit, self.weight_lbl)
+            self.weight_lbl.show()
+            edit.hide()
+            edit.deleteLater()
+            self._update_label()
+
+        edit.editingFinished.connect(finish)
+        # 失焦也触发
+        def on_focus_out(e):
+            if e.type() == e.Type.FocusOut:
+                finish()
+            return False
+        edit.installEventFilter(self)
+        self._active_edit = edit
+
+    def _show_menu(self, pos):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #f8f9fa; border: 1px solid #dce3e8;
+                border-radius: 10px; padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px; border-radius: 6px;
+                color: #2c3e50;
+            }
+            QMenu::item:selected { background: #e0f0ea; color: #16a085; }
+        """)
+        act_rename = menu.addAction("✏️ 重命名知识点")
+        act_delete = menu.addAction("🗑️ 删除知识点")
+        act = menu.exec(self.mapToGlobal(pos))
+        if act == act_rename and self._on_menu:
+            self._on_menu("rename_topic", self.category, self.name)
+        elif act == act_delete and self._on_menu:
+            self._on_menu("delete_topic", self.category, self.name)
+
+    def _on_slider(self, val: int):
+        self._update_label()
+        if self._on_weight_change:
+            self._on_weight_change(self.name, self.get_weight())
+
+    def _on_toggled(self, checked: bool):
+        self.slider.setVisible(checked)
+        self.weight_lbl.setVisible(checked)
+        if not checked:
+            self.slider.setValue(50)
+
+    def _update_label(self):
+        self.weight_lbl.setText(f"{self.slider.value():d}%")
+
+    def set_checked(self, checked: bool):
+        self.toggle.setChecked(checked)
+        self.slider.setVisible(checked)
+        self.weight_lbl.setVisible(checked)
+
+    def is_checked(self) -> bool:
+        return self.toggle.isChecked()
+
+    def get_weight(self) -> float:
+        return round(self.slider.value() / 100.0, 2)
+
+    def set_weight(self, w: float):
+        self.slider.blockSignals(True)
+        self.slider.setValue(max(1, min(100, int(w * 100))))
+        self.slider.blockSignals(False)
+        self._update_label()
+
+
+class CategoryGroup(QWidget):
+    """一类知识点的折叠组（支持拖拽排序）"""
+
+    def __init__(self, cat_name: str, topics: list[str], on_weight_change=None, on_menu=None, parent=None):
         super().__init__(parent)
         self.cat_name = cat_name
+        self._drag_start = None
+        self._on_menu = on_menu
+        self.setAcceptDrops(True)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_menu)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
 
-        self.header = QPushButton()
-        self.header.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.header.setStyleSheet("""
+        # 标题行：拖动把手 + 展开按钮（用 QFrame 包住，方便抓取拖拽缩略图）
+        self.header_frame = QFrame()
+        self.header_frame.setStyleSheet("background: #f0f2f5; border-radius: 6px;")
+        header_row = QHBoxLayout(self.header_frame)
+        header_row.setSpacing(4)
+        header_row.setContentsMargins(4, 2, 4, 2)
+
+        # 拖动把手 ≡（视觉提示，整个 header 都可拖）
+        self.grip = QLabel("≡")
+        self.grip.setStyleSheet("""
+            QLabel {
+                color: #bdc3c7; font-size: 20px; font-weight: bold;
+                padding: 0 4px; background: transparent;
+            }
+        """)
+        self.grip.setFixedWidth(24)
+        header_row.addWidget(self.grip)
+
+        self.expand_btn = QPushButton()
+        self.expand_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.expand_btn.setStyleSheet("""
             QPushButton {
                 background: transparent; border: none; text-align: left;
-                padding: 6px 4px; font-size: 13px; font-weight: bold; color: #2c3e50;
+                padding: 4px 4px; font-size: 13px; font-weight: bold; color: #2c3e50;
             }
             QPushButton:hover { color: #1abc9c; }
         """)
-        self.header.clicked.connect(self._toggle)
-        layout.addWidget(self.header)
+        self.expand_btn.clicked.connect(self._toggle)
+        self.expand_btn.setCursor(Qt.CursorShape.OpenHandCursor)
+        header_row.addWidget(self.expand_btn, 1)
+
+        layout.addWidget(self.header_frame)
 
         self.body = QWidget()
         self.body.setStyleSheet("background: transparent;")
@@ -88,19 +277,104 @@ class CategoryGroup(QWidget):
         from ui.random_tab import FlowLayout
         self.body_layout = FlowLayout(self.body, 6)
         self.body_layout.setContentsMargins(8, 2, 8, 2)
-        self.toggles: list[TopicToggle] = []
+        self.toggles: list[ToggleRow] = []
 
         for t in topics:
-            btn = TopicToggle(cat_name, t)
-            self.body_layout.addWidget(btn)
-            self.toggles.append(btn)
+            row = ToggleRow(cat_name, t, on_weight_change=on_weight_change, on_menu=on_menu)
+            self.body_layout.addWidget(row)
+            self.toggles.append(row)
 
         layout.addWidget(self.body)
         self._update_header()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_start = event.position().toPoint()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_start is None:
+            return
+        if not (event.buttons() & Qt.MouseButton.LeftButton):
+            return
+        delta = event.position().toPoint() - self._drag_start
+        if delta.manhattanLength() < 6:
+            return
+
+        drag = QDrag(self)
+        mime = QMimeData()
+        mime.setData(MIME_CATEGORY, self.cat_name.encode("utf-8"))
+        mime.setText(self.cat_name)
+        drag.setMimeData(mime)
+
+        # 浮动缩略图（只取标题栏+半透明背景）
+        pixmap = self.header_frame.grab()
+        scaled = pixmap.scaled(int(pixmap.width() * 0.92), int(pixmap.height() * 0.92),
+                                Qt.AspectRatioMode.KeepAspectRatio,
+                                Qt.TransformationMode.SmoothTransformation)
+        drag.setPixmap(scaled)
+        drag.setHotSpot(scaled.rect().center())
+
+        self._drag_start = None
+        result = drag.exec(Qt.DropAction.MoveAction)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat(MIME_CATEGORY):
+            src = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
+            if src != self.cat_name:
+                self.setStyleSheet(self.styleSheet() + """
+                    CategoryGroup { border: 2px dashed #1abc9c; border-radius: 6px; }
+                """)
+                event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        self.setStyleSheet("")  # 清除非正常样式，但保留原始样式...
+
+    def dropEvent(self, event):
+        if event.mimeData().hasFormat(MIME_CATEGORY):
+            src_name = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
+            # 通过 DropContainer 处理
+            container = self.parent()
+            while container and not isinstance(container, DropContainer):
+                container = container.parent()
+            if isinstance(container, DropContainer) and container._drop_callback:
+                # 找到在 container 中的目标索引
+                children = [container.layout().itemAt(i).widget()
+                            for i in range(container.layout().count())
+                            if container.layout().itemAt(i).widget()]
+                target_idx = len(children)
+                for i, w in enumerate(children):
+                    if w is self:
+                        target_idx = i
+                        break
+                container._drop_callback(src_name, target_idx)
+        event.acceptProposedAction()
+
     def _toggle(self):
         self.body.setVisible(not self.body.isVisible())
         self._update_header()
+
+    def _show_menu(self, pos):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #f8f9fa; border: 1px solid #dce3e8;
+                border-radius: 10px; padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px; border-radius: 6px;
+                color: #2c3e50;
+            }
+            QMenu::item:selected { background: #e0f0ea; color: #16a085; }
+            QMenu::separator { height: 1px; background: #dce3e8; margin: 4px 8px; }
+        """)
+        act_rename = menu.addAction("✏️ 重命名分类")
+        act_delete = menu.addAction("🗑️ 删除分类")
+        act = menu.exec(self.mapToGlobal(pos))
+        if act == act_rename and self._on_menu:
+            self._on_menu("rename_cat", self.cat_name)
+        elif act == act_delete and self._on_menu:
+            self._on_menu("delete_cat", self.cat_name)
 
     def expand(self):
         self.body.setVisible(True)
@@ -110,21 +384,56 @@ class CategoryGroup(QWidget):
         arrow = "▼" if self.body.isVisible() else "▶"
         total = len(self.toggles)
         cnt_str = f"({selected_count}/{total})" if selected_count > 0 else f"({total})"
-        self.header.setText(f"{arrow} {self.cat_name} {cnt_str}")
+        self.expand_btn.setText(f"{arrow} {self.cat_name} {cnt_str}")
 
     def set_selected(self, selected_names: set[str]):
         count = 0
-        for btn in self.toggles:
-            is_sel = btn.name in selected_names
-            btn.setChecked(is_sel)
-            btn._update_style()
+        for row in self.toggles:
+            is_sel = row.name in selected_names
+            row.set_checked(is_sel)
             if is_sel:
                 count += 1
         self._update_header(count)
 
 
+class DropContainer(QWidget):
+    """可接收拖放的容器"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+        self._drop_callback = None
+
+    def set_drop_callback(self, callback):
+        self._drop_callback = callback
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasFormat(MIME_CATEGORY):
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasFormat(MIME_CATEGORY):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event: QDropEvent):
+        if not self._drop_callback:
+            return
+        src_name = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
+        # 计算目标位置
+        children = [self.layout().itemAt(i).widget()
+                    for i in range(self.layout().count())
+                    if self.layout().itemAt(i).widget()]
+        y = event.position().y()
+        target_idx = len(children)
+        for i, w in enumerate(children):
+            if w and y < w.y() + w.height() / 2:
+                target_idx = i
+                break
+        self._drop_callback(src_name, target_idx)
+
+
 class DataMaintenanceTab(QWidget):
-    """数据维护页 — 模式切换选择为主客观部分添加知识点"""
+    """数据维护页 — 拖拽排序 + 模式切换"""
 
     MODE_KEYS = ["subjective_topics", "objective_topics"]
     MODE_LABELS = ["客观题涉及知识点", "主观题涉及知识点"]
@@ -134,11 +443,10 @@ class DataMaintenanceTab(QWidget):
         super().__init__()
         self.dm = dm
         self._current_date = ""
-        self._active_mode = 0  # 0=客观题, 1=主观题
+        self._active_mode = 0
 
-        # 当前考试的两种知识点集合
-        self._sub_selected: set[str] = set()
-        self._obj_selected: set[str] = set()
+        self._sub_selected: dict[str, float] = {}
+        self._obj_selected: dict[str, float] = {}
 
         self._search_timer = QTimer(self)
         self._search_timer.setSingleShot(True)
@@ -185,8 +493,9 @@ class DataMaintenanceTab(QWidget):
             }
             QListWidget::item:selected {
                 background: #1abc9c; color: white; border-radius: 6px;
+                font-weight: bold;
             }
-            QListWidget::item:hover { background: #e8f8f5; }
+            QListWidget::item:selected:hover { background: #16a085; }
         """)
         self.exam_list.currentItemChanged.connect(self._on_exam_selected)
         left_layout.addWidget(self.exam_list)
@@ -209,9 +518,16 @@ class DataMaintenanceTab(QWidget):
         self.lbl_current.setStyleSheet("color: #7f8c8d; padding: 2px 0;")
         right_layout.addWidget(self.lbl_current)
 
-        # ---- 模式切换（居中） ----
+        # 编辑区（未选考试时禁用）
+        self.edit_area = QWidget()
+        self.edit_area.setEnabled(False)
+        edit_layout = QVBoxLayout(self.edit_area)
+        edit_layout.setContentsMargins(0, 0, 0, 0)
+        edit_layout.setSpacing(10)
+
+        # ---- 模式切换 ----
         mode_row = QHBoxLayout()
-        mode_row.addStretch()
+        mode_row.setSpacing(0)
         self.mode_btns = QButtonGroup(self)
         self.mode_btn_widgets = []
         for i, label in enumerate(self.MODE_LABELS):
@@ -219,33 +535,29 @@ class DataMaintenanceTab(QWidget):
             btn.setCheckable(True)
             btn.setChecked(i == 0)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setMinimumHeight(34)
-            btn.setFixedWidth(160)
-            color = self.MODE_COLORS[i]
-            if i == 0:
-                btn.setStyleSheet(f"""
-                    QPushButton {{
-                        background: {color}; color: white;
-                        border: 2px solid {color}; border-right: none;
-                        padding: 6px 16px; font-size: 13px; font-weight: bold;
-                        border-radius: 17px 0 0 17px;
-                    }}
-                """)
-            else:
-                btn.setStyleSheet(f"""
-                    QPushButton {{
-                        background: transparent; color: {color};
-                        border: 2px solid {color};
-                        padding: 6px 16px; font-size: 13px; font-weight: bold;
-                        border-radius: 0 17px 17px 0;
-                    }}
-                """)
+            btn.setMinimumHeight(36)
+            c = self.MODE_COLORS[i]
+            radius_a = "10px 0 0 10px" if i == 0 else "0 10px 10px 0"
+            border_a = "border: 2px solid " + c + ("; border-right: none" if i == 0 else "")
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: transparent; color: {c};
+                    {border_a};
+                    padding: 6px 10px; font-size: 14px; font-weight: bold;
+                    border-radius: {radius_a};
+                }}
+                QPushButton:checked {{
+                    background: {c}; color: white;
+                }}
+                QPushButton:hover {{
+                    background: {c}; color: white;
+                }}
+            """)
             self.mode_btns.addButton(btn, i)
             btn.clicked.connect(lambda checked, idx=i: self._switch_mode(idx))
-            mode_row.addWidget(btn)
+            mode_row.addWidget(btn, 1)
             self.mode_btn_widgets.append(btn)
-        mode_row.addStretch()
-        right_layout.addLayout(mode_row)
+        edit_layout.addLayout(mode_row)
 
         # ---- 已选标签 ----
         tags_frame = QFrame()
@@ -253,9 +565,9 @@ class DataMaintenanceTab(QWidget):
         from ui.random_tab import FlowLayout
         self.tags_layout = FlowLayout(tags_frame, 8)
         self.tags_layout.setContentsMargins(12, 10, 12, 10)
-        right_layout.addWidget(tags_frame)
+        edit_layout.addWidget(tags_frame)
 
-        # ---- 滚动区：知识点选择 ----
+        # ---- 滚动区 ----
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
@@ -266,7 +578,7 @@ class DataMaintenanceTab(QWidget):
         scroll_layout.setSpacing(6)
 
         self.search_topic = QLineEdit()
-        self.search_topic.setPlaceholderText("🔍 搜索知识点（支持模糊匹配）...")
+        self.search_topic.setPlaceholderText("🔍 搜索知识点...")
         self.search_topic.setStyleSheet("""
             QLineEdit {
                 border: 2px solid #dfe6e9; border-radius: 8px;
@@ -277,86 +589,58 @@ class DataMaintenanceTab(QWidget):
         self.search_topic.textChanged.connect(self._on_topic_search)
         scroll_layout.addWidget(self.search_topic)
 
-        # 分类组
+        # 可拖放容器
         self.cat_groups: list[CategoryGroup] = []
-        self.cat_container = QWidget()
+        self.cat_container = DropContainer()
+        self.cat_container.set_drop_callback(self._on_drop)
         self.cat_container.setStyleSheet("background: transparent;")
         self.cat_layout = QVBoxLayout(self.cat_container)
         self.cat_layout.setContentsMargins(0, 0, 0, 0)
         self.cat_layout.setSpacing(2)
 
-        for cat in self.dm.knowledge_pool:
-            topics = self.dm.knowledge_pool[cat]
-            if not topics:
-                continue
-            group = CategoryGroup(cat, topics)
-            self.cat_groups.append(group)
-            self.cat_layout.addWidget(group)
-
-        for g in self.cat_groups:
-            for btn in g.toggles:
-                btn.toggled.connect(self._on_toggle)
+        self._build_cat_groups()
 
         scroll_layout.addWidget(self.cat_container)
+        # ---- 右键菜单（空白区） ----
+        scroll_content.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        scroll_content.customContextMenuRequested.connect(self._on_empty_menu)
+
         scroll_layout.addStretch()
         scroll.setWidget(scroll_content)
-        right_layout.addWidget(scroll, 1)
-
-        # ---- 底部按钮 ----
-        bottom = QHBoxLayout()
-        bottom.addStretch()
-
-        self.btn_add_topic = QPushButton("＋ 新增知识点")
-        self.btn_add_topic.setMinimumSize(130, 38)
-        self.btn_add_topic.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_add_topic.setStyleSheet("""
-            QPushButton {
-                background: #3498db; color: white; border: none;
-                border-radius: 19px; font-size: 13px; font-weight: bold;
-            }
-            QPushButton:hover { background: #2980b9; }
-        """)
-        self.btn_add_topic.clicked.connect(self._add_knowledge)
-        bottom.addWidget(self.btn_add_topic)
-
-        bottom.addSpacing(12)
-
-        self.btn_save = QPushButton("💾 保存")
-        self.btn_save.setMinimumSize(120, 38)
-        self.btn_save.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_save.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1abc9c, stop:1 #16a085);
-                color: white; border: none; border-radius: 19px;
-                font-size: 13px; font-weight: bold;
-            }
-            QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #1dd2af, stop:1 #1abc9c); }
-        """)
-        self.btn_save.clicked.connect(self._save)
-        bottom.addWidget(self.btn_save)
-
-        bottom.addSpacing(12)
-
-        self.btn_clear = QPushButton("🗑️ 清空当前")
-        self.btn_clear.setMinimumSize(100, 38)
-        self.btn_clear.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_clear.setStyleSheet("""
-            QPushButton {
-                background: white; color: #e74c3c; border: 2px solid #e74c3c;
-                border-radius: 19px; font-size: 13px;
-            }
-            QPushButton:hover { background: #e74c3c; color: white; }
-        """)
-        self.btn_clear.clicked.connect(self._clear_mode)
-        bottom.addWidget(self.btn_clear)
-
-        bottom.addStretch()
-        right_layout.addLayout(bottom)
+        edit_layout.addWidget(scroll, 1)
+        right_layout.addWidget(self.edit_area, 1)
         layout.addWidget(right, 1)
 
         self._refresh_exam_list()
+
+    # ------------------------------------------------------------------
+    # 拖拽排序
+    # ------------------------------------------------------------------
+    def _on_empty_menu(self, pos):
+        sender_widget = self.sender()
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #f8f9fa; border: 1px solid #dce3e8;
+                border-radius: 10px; padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px; border-radius: 6px;
+                color: #2c3e50; text-align: left;
+            }
+            QMenu::item:selected { background: #e0f0ea; color: #16a085; }
+        """)
+        menu.addAction("＋ 新增知识点").triggered.connect(self._add_knowledge)
+        menu.addAction("🗑️ 清空当前").triggered.connect(self._clear_mode)
+        menu.exec(sender_widget.mapToGlobal(pos))
+
+    def _on_drop(self, src_name: str, target_idx: int):
+        """处理拖拽放下"""
+        self.dm.move_category(src_name, target_idx)
+        self._rebuild_cat_groups()
+        if self._current_date:
+            self._sync_toggles()
+            self._refresh_tags()
 
     # ------------------------------------------------------------------
     # 模式切换
@@ -364,78 +648,117 @@ class DataMaintenanceTab(QWidget):
     def _switch_mode(self, idx: int):
         if idx == self._active_mode:
             return
-        prev = self._active_mode
+        self._auto_save()
         self._active_mode = idx
-
-        # 更新按钮样式
-        for i, btn in enumerate(self.mode_btn_widgets):
-            c = self.MODE_COLORS[i]
-            if i == idx:
-                # 选中：实心
-                if i == 0:
-                    btn.setStyleSheet(f"""
-                        QPushButton {{
-                            background: {c}; color: white;
-                            border: 2px solid {c}; border-right: none;
-                            padding: 6px 16px; font-size: 13px; font-weight: bold;
-                            border-radius: 17px 0 0 17px;
-                        }}
-                    """)
-                else:
-                    btn.setStyleSheet(f"""
-                        QPushButton {{
-                            background: {c}; color: white;
-                            border: 2px solid {c};
-                            padding: 6px 16px; font-size: 13px; font-weight: bold;
-                            border-radius: 0 17px 17px 0;
-                        }}
-                    """)
-            else:
-                # 未选中：空心
-                if i == 0:
-                    btn.setStyleSheet(f"""
-                        QPushButton {{
-                            background: transparent; color: {c};
-                            border: 2px solid {c}; border-right: none;
-                            padding: 6px 16px; font-size: 13px; font-weight: bold;
-                            border-radius: 17px 0 0 17px;
-                        }}
-                    """)
-                else:
-                    btn.setStyleSheet(f"""
-                        QPushButton {{
-                            background: transparent; color: {c};
-                            border: 2px solid {c};
-                            padding: 6px 16px; font-size: 13px; font-weight: bold;
-                            border-radius: 0 17px 17px 0;
-                        }}
-                    """)
-
         self._sync_toggles()
         self._refresh_tags()
 
     # ------------------------------------------------------------------
     # 知识点切换
     # ------------------------------------------------------------------
-    def _on_toggle(self, checked: bool):
-        btn = self.sender()
-        if not isinstance(btn, TopicToggle):
-            return
+    def _on_tag_locate(self, name: str):
+        """单击标签 → 定位到知识点在列表中的位置"""
+        for g in self.cat_groups:
+            for row in g.toggles:
+                if row.name == name:
+                    g.expand()
+                    # 滚动到可见（向上查找 QScrollArea）
+                    p = self.cat_container.parent()
+                    while p is not None and not isinstance(p, QScrollArea):
+                        p = p.parent()
+                    if p is not None:
+                        p.ensureWidgetVisible(g, 50, 20)
+                    # 高亮闪烁
+                    row.toggle.setStyleSheet("""
+                        QPushButton {
+                            background: #f39c12; color: white; border: 2px solid #e67e22;
+                            border-radius: 12px; padding: 3px 10px; font-size: 12px;
+                        }
+                    """)
+                    from PyQt6.QtCore import QTimer
+                    QTimer.singleShot(600, lambda r=row: r.toggle._update_style())
+                    return
 
+    def _on_tag_remove(self, name: str):
+        """右击标签 → 移除"""
+        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        target.pop(name, None)
+        for row in self._all_toggles():
+            if row.name == name:
+                row.set_checked(False)
+                break
+        self._refresh_tags()
+        for g in self.cat_groups:
+            sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
+            count = sum(1 for r in g.toggles if r.is_checked())
+            g._update_header(count)
+        self._auto_save()
+        """权重滑动条变化时实时更新"""
+        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        if name in target:
+            target[name] = weight
+            self._refresh_tags()
+            self._auto_save()
+
+    def _on_menu_handler(self, action: str, *args):
+        """处理右键菜单：重命名/删除"""
+        if action == "rename_cat":
+            old = args[0]
+            new, ok = QInputDialog.getText(self, "重命名分类", f"输入新名称:", text=old)
+            if ok and new.strip() and new.strip() != old:
+                self.dm.rename_category(old, new.strip())
+                self._rebuild_cat_groups()
+        elif action == "delete_cat":
+            cat = args[0]
+            reply = QMessageBox.question(self, "确认删除",
+                f"确定要删除分类「{cat}」及其所有知识点吗？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply == QMessageBox.StandardButton.Yes:
+                self.dm.delete_category(cat)
+                self._rebuild_cat_groups()
+        elif action == "rename_topic":
+            cat, old = args[0], args[1]
+            new, ok = QInputDialog.getText(self, "重命名知识点", f"输入新名称:", text=old)
+            if ok and new.strip() and new.strip() != old:
+                self.dm.rename_topic(cat, old, new.strip())
+                self._rebuild_cat_groups()
+        elif action == "delete_topic":
+            cat, name = args[0], args[1]
+            reply = QMessageBox.question(self, "确认删除",
+                f"确定要删除知识点「{name}」吗？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply == QMessageBox.StandardButton.Yes:
+                self.dm.delete_topic(cat, name)
+                self._rebuild_cat_groups()
+        if self._current_date:
+            self._sync_toggles()
+            self._refresh_tags()
+
+    def _on_weight_change(self, name: str, weight: float):
+        """权重滑动条变化时实时更新"""
+        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        if name in target:
+            target[name] = weight
+            self._refresh_tags()
+            self._auto_save()
+
+    def _on_toggle(self, checked: bool):
+        row = self.sender().parent()
+        if not isinstance(row, ToggleRow):
+            return
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
         if checked:
-            target.add(btn.name)
+            target[row.name] = row.get_weight()
         else:
-            target.discard(btn.name)
-
+            target.pop(row.name, None)
         self._refresh_tags()
-        # 更新分类标题计数
         for g in self.cat_groups:
-            if g.cat_name == btn.category:
+            if g.cat_name == row.category:
                 sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
-                count = sum(1 for b in g.toggles if b.isChecked())
+                count = sum(1 for r in g.toggles if r.is_checked())
                 g._update_header(count)
                 break
+        self._auto_save()
 
     # ------------------------------------------------------------------
     # 考试列表
@@ -444,7 +767,7 @@ class DataMaintenanceTab(QWidget):
         self.exam_list.blockSignals(True)
         self.exam_list.clear()
         search = self.search_exam.text().strip()
-        for dt in self.dm.dates:
+        for dt in reversed(self.dm.dates):
             if search and search not in dt:
                 continue
             meta = self.dm.get_exam_meta(dt)
@@ -469,30 +792,32 @@ class DataMaintenanceTab(QWidget):
         dt = current.data(Qt.ItemDataRole.UserRole)
         if dt == self._current_date:
             return
+        # 先保存当前考试，再加载新考试
+        self._auto_save()
         self._current_date = dt
+        self.edit_area.setEnabled(True)
         self._load_exam(dt)
 
     def _load_exam(self, dt: str):
         meta = self.dm.get_exam_meta(dt)
         self.lbl_current.setText(f"当前考试: {dt}")
-
-        # 缓存两份知识点名
-        self._sub_selected = {kt.name for kt in meta.subjective_topics}
-        self._obj_selected = {kt.name for kt in meta.objective_topics}
-
+        self._sub_selected = {kt.name: kt.weight for kt in meta.subjective_topics}
+        self._obj_selected = {kt.name: kt.weight for kt in meta.objective_topics}
         self._sync_toggles()
         self._refresh_tags()
 
     def _sync_toggles(self):
         """根据当前模式同步所有 toggle 状态"""
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        for btn in self._all_toggles():
-            is_sel = btn.name in target
-            btn.setChecked(is_sel)
-            btn._update_style()
+        # 先设权重，再设勾选（避免信号读到未设置的默认权重）
+        for row in self._all_toggles():
+            is_sel = row.name in target
+            if is_sel:
+                row.set_weight(target[row.name])
+            row.set_checked(is_sel)
         for g in self.cat_groups:
             sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
-            count = sum(1 for b in g.toggles if b.name in sel)
+            count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)
 
     def _all_toggles(self):
@@ -507,27 +832,14 @@ class DataMaintenanceTab(QWidget):
             item = self.tags_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        mode_name = self.MODE_LABELS[self._active_mode]
 
-        def remove_cb(name: str):
-            target.discard(name)
-            # 同步 toggle
-            for btn in self._all_toggles():
-                if btn.name == name:
-                    btn.setChecked(False)
-                    btn._update_style()
-                    break
-            self._refresh_tags()
-            # 更新分类计数
-            for g in self.cat_groups:
-                sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
-                count = sum(1 for b in g.toggles if b.isChecked())
-                g._update_header(count)
-
-        for name in sorted(target):
-            self.tags_layout.addWidget(TagChip(name, remove_cb))
+        for name in sorted(target.keys()):
+            w = target[name]
+            chip = TagChip(f"{name} ({w:.2f})",
+                          on_locate=self._on_tag_locate,
+                          on_remove=self._on_tag_remove)
+            self.tags_layout.addWidget(chip)
 
     # ------------------------------------------------------------------
     # 搜索
@@ -537,11 +849,10 @@ class DataMaintenanceTab(QWidget):
         for g in self.cat_groups:
             if not search:
                 g.body.setVisible(False)
-                g._update_header(sum(1 for b in g.toggles if b.isChecked()))
+                g._update_header(sum(1 for r in g.toggles if r.is_checked()))
                 for btn in g.toggles:
                     btn.setVisible(True)
                 continue
-
             visible = False
             for btn in g.toggles:
                 match = search.lower() in btn.name.lower() or search.lower() in g.cat_name.lower()
@@ -553,22 +864,35 @@ class DataMaintenanceTab(QWidget):
                 g.expand()
 
     # ------------------------------------------------------------------
-    # 保存 / 清空 / 新增
+    # 自动保存
     # ------------------------------------------------------------------
-    def _save(self):
+    def _auto_save(self):
+        """静默自动保存，并校验权重总和 ≤ 100%"""
         if not self._current_date:
             return
 
-        # 从缓存构建 KnowledgeTopic 列表
+        # 校验客观题权重和
+        sub_sum = int(sum(self._sub_selected.values()) * 100)
+        if sub_sum > 100:
+            QMessageBox.warning(self, "权重超限",
+                f"客观题涉及知识点的权重总和为 {sub_sum}%，不能超过 100%！\n请调整权重后再试。")
+            return
+        # 校验主观题权重和
+        obj_sum = int(sum(self._obj_selected.values()) * 100)
+        if obj_sum > 100:
+            QMessageBox.warning(self, "权重超限",
+                f"主观题涉及知识点的权重总和为 {obj_sum}%，不能超过 100%！\n请调整权重后再试。")
+            return
         sub_topics = []
         obj_topics = []
         for g in self.cat_groups:
-            for btn in g.toggles:
-                if btn.name in self._sub_selected:
-                    sub_topics.append(KnowledgeTopic(btn.category, btn.name))
-                if btn.name in self._obj_selected:
-                    obj_topics.append(KnowledgeTopic(btn.category, btn.name))
-
+            for row in g.toggles:
+                if row.name in self._sub_selected:
+                    sub_topics.append(KnowledgeTopic(
+                        row.category, row.name, self._sub_selected[row.name]))
+                if row.name in self._obj_selected:
+                    obj_topics.append(KnowledgeTopic(
+                        row.category, row.name, self._obj_selected[row.name]))
         self.dm.update_exam_meta(self._current_date, sub_topics, obj_topics)
 
         total = len(sub_topics) + len(obj_topics)
@@ -579,20 +903,20 @@ class DataMaintenanceTab(QWidget):
                 item.setText(f"{self._current_date}  ({total})")
                 self.exam_list.blockSignals(False)
                 break
-        self.lbl_current.setText(f"当前考试: {self._current_date}  ✅ 已保存")
+
+    # ------------------------------------------------------------------
+    # 清空 / 新增
 
     def _clear_mode(self):
         if not self._current_date:
             return
         label = self.MODE_LABELS[self._active_mode]
         reply = QMessageBox.question(
-            self, "确认清空",
-            f"确定要清空当前考试的「{label}」吗？",
+            self, "确认清空", f"确定要清空当前考试的「{label}」吗？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
-
         target = self._sub_selected if self._active_mode == 0 else self._obj_selected
         target.clear()
         self._sync_toggles()
@@ -602,13 +926,21 @@ class DataMaintenanceTab(QWidget):
         cats = list(self.dm.knowledge_pool.keys())
         if not cats:
             return
+        # 可编辑的下拉框，支持新增
         cat, ok = QInputDialog.getItem(
-            self, "新增知识点", "选择一级分类:", cats, 0, False
+            self, "新增知识点",
+            "选择或输入一级分类（可直接输入新分类名）:",
+            cats, 0, True
         )
         if not ok or not cat:
             return
+        cat = cat.strip()
+        if not cat:
+            return
+
         name, ok = QInputDialog.getText(
-            self, "新增知识点", f"输入二级知识点名称 (分类: {cat}):"
+            self, "新增知识点",
+            f"输入二级知识点名称（分类: {cat}）:"
         )
         if not ok or not name.strip():
             return
@@ -618,30 +950,36 @@ class DataMaintenanceTab(QWidget):
             return
 
         self.dm.add_knowledge(cat, name)
-        # 重建分类组
         self._rebuild_cat_groups()
         if self._current_date:
             self._sync_toggles()
             self._refresh_tags()
 
-    def _rebuild_cat_groups(self):
+    def _build_cat_groups(self):
         for i in reversed(range(self.cat_layout.count())):
             w = self.cat_layout.itemAt(i).widget()
             if w:
                 w.deleteLater()
         self.cat_groups = []
-        for cat in self.dm.knowledge_pool:
+        order = self.dm.category_order or list(self.dm.knowledge_pool.keys())
+        for cat in order:
+            if cat not in self.dm.knowledge_pool:
+                continue
             topics = self.dm.knowledge_pool[cat]
             if not topics:
                 continue
-            group = CategoryGroup(cat, topics)
+            group = CategoryGroup(cat, topics, on_weight_change=self._on_weight_change,
+                                  on_menu=self._on_menu_handler)
             self.cat_groups.append(group)
             self.cat_layout.addWidget(group)
-
         for g in self.cat_groups:
-            for btn in g.toggles:
-                btn.toggled.connect(self._on_toggle)
+            for row in g.toggles:
+                row.toggle.toggled.connect(self._on_toggle)
+
+    def _rebuild_cat_groups(self):
+        self._build_cat_groups()
 
     def refresh(self):
+        self._auto_save()
         self._refresh_exam_list()
         self._rebuild_cat_groups()

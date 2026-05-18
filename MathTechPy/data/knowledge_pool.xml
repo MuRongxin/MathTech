@@ -1,5 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <pool>
+  <category name="数列">
+    <topic>数列概念与通项</topic>
+    <topic>等差数列通项与求和</topic>
+    <topic>等差数列性质</topic>
+    <topic>等比数列通项与求和</topic>
+    <topic>等比数列性质</topic>
+    <topic>裂项相消求和</topic>
+    <topic>错位相减求和</topic>
+  </category>
   <category name="函数">
     <topic>定义域</topic>
     <topic>值域与最值</topic>
@@ -29,14 +38,18 @@
     <topic>正弦定理及应用</topic>
     <topic>余弦定理及应用</topic>
   </category>
-  <category name="数列">
-    <topic>数列概念与通项</topic>
-    <topic>等差数列通项与求和</topic>
-    <topic>等差数列性质</topic>
-    <topic>等比数列通项与求和</topic>
-    <topic>等比数列性质</topic>
-    <topic>裂项相消求和</topic>
-    <topic>错位相减求和</topic>
+  <category name="解析几何">
+    <topic>直线方程</topic>
+    <topic>直线位置关系</topic>
+    <topic>圆的方程</topic>
+    <topic>直线与圆</topic>
+    <topic>椭圆定义与方程</topic>
+    <topic>椭圆性质</topic>
+    <topic>双曲线定义与方程</topic>
+    <topic>双曲线性质</topic>
+    <topic>抛物线定义与方程</topic>
+    <topic>抛物线性质</topic>
+    <topic>直线与圆锥曲线综合</topic>
   </category>
   <category name="向量">
     <topic>向量概念</topic>
@@ -55,18 +68,27 @@
     <topic>空间角计算</topic>
     <topic>空间距离</topic>
   </category>
-  <category name="解析几何">
-    <topic>直线方程</topic>
-    <topic>直线位置关系</topic>
-    <topic>圆的方程</topic>
-    <topic>直线与圆</topic>
-    <topic>椭圆定义与方程</topic>
-    <topic>椭圆性质</topic>
-    <topic>双曲线定义与方程</topic>
-    <topic>双曲线性质</topic>
-    <topic>抛物线定义与方程</topic>
-    <topic>抛物线性质</topic>
-    <topic>直线与圆锥曲线综合</topic>
+  <category name="导数">
+    <topic>导数定义与意义</topic>
+    <topic>基本导数公式</topic>
+    <topic>导数四则运算</topic>
+    <topic>复合函数求导</topic>
+    <topic>导数与单调性</topic>
+    <topic>导数与极值</topic>
+    <topic>导数与最值</topic>
+    <topic>导数综合应用</topic>
+  </category>
+  <category name="集合与逻辑">
+    <topic>集合运算</topic>
+    <topic>充分必要条件</topic>
+    <topic>全称量词</topic>
+    <topic>存在量词</topic>
+  </category>
+  <category name="复数">
+    <topic>复数概念</topic>
+    <topic>代数运算</topic>
+    <topic>几何意义</topic>
+    <topic>三角形式</topic>
   </category>
   <category name="概率统计">
     <topic>随机抽样</topic>
@@ -81,33 +103,11 @@
     <topic>二项分布</topic>
     <topic>正态分布</topic>
   </category>
-  <category name="导数">
-    <topic>导数定义与意义</topic>
-    <topic>基本导数公式</topic>
-    <topic>导数四则运算</topic>
-    <topic>复合函数求导</topic>
-    <topic>导数与单调性</topic>
-    <topic>导数与极值</topic>
-    <topic>导数与最值</topic>
-    <topic>导数综合应用</topic>
-  </category>
-  <category name="复数">
-    <topic>复数概念</topic>
-    <topic>代数运算</topic>
-    <topic>几何意义</topic>
-    <topic>三角形式</topic>
-  </category>
   <category name="不等式">
     <topic>不等式性质</topic>
     <topic>一元二次不等式</topic>
     <topic>含绝对值不等式</topic>
     <topic>均值不等式</topic>
     <topic>线性规划</topic>
-  </category>
-  <category name="集合与逻辑">
-    <topic>集合运算</topic>
-    <topic>充分必要条件</topic>
-    <topic>全称量词</topic>
-    <topic>存在量词</topic>
   </category>
 </pool>

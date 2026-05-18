@@ -40,7 +40,7 @@ class ScoreTab(QWidget):
         self._on_mode_change = on_mode_change
         self._current_mode = self.MODE_DISTRIBUTION
         self._exam_index = -1
-        self._display_count = 15
+        self._display_count = 8
         self._group_offset = 0
         self._hover_annot = None
         self._setup_ui()
@@ -163,13 +163,20 @@ class ScoreTab(QWidget):
         self._paged_ctrls = [self.lbl_count, self.spin_count, self.btn_prev, self.btn_next]
 
         # 目标分对比：目标分输入
-        self.lbl_target = QLabel("目标Z分:")
-        row2.addWidget(self.lbl_target)
-        self.edit_target = QLineEdit("0")
-        self.edit_target.setMaximumWidth(70)
-        self.edit_target.textChanged.connect(self.refresh)
-        row2.addWidget(self.edit_target)
-        self._target_ctrls = [self.lbl_target, self.edit_target]
+        self.lbl_target_z = QLabel("目标Z:")
+        row2.addWidget(self.lbl_target_z)
+        self.edit_target_z = QLineEdit("0")
+        self.edit_target_z.setMaximumWidth(55)
+        self.edit_target_z.textChanged.connect(self.refresh)
+        row2.addWidget(self.edit_target_z)
+        self.lbl_target_raw = QLabel("目标分:")
+        row2.addWidget(self.lbl_target_raw)
+        self.edit_target_raw = QLineEdit("0")
+        self.edit_target_raw.setMaximumWidth(55)
+        self.edit_target_raw.textChanged.connect(self.refresh)
+        row2.addWidget(self.edit_target_raw)
+        self._target_ctrls = [self.lbl_target_z, self.edit_target_z,
+                             self.lbl_target_raw, self.edit_target_raw]
 
         # 最近一次也需要分页控件，所以 _paged_ctrls 已覆盖；目标分需要分页+目标输入
         # 最近7次不需要 row2 控件
@@ -570,46 +577,81 @@ class ScoreTab(QWidget):
         )
 
     def _draw_latest(self, students):
-        """最近一次考试柱状图"""
-        data = self._get_scores(students)
-        if not data:
+        """最近一次考试柱状图 — Z分(上) + 原始分(下)"""
+        data_z = self._get_scores(students)
+        if not data_z:
             self._show_empty("无成绩数据")
             return
 
-        data.sort(key=lambda x: x[1], reverse=True)
-        page_data = self._get_paged_data(data)
+        # 也获取原始分
+        data_raw = []
+        for s in students:
+            arr = s.scores if s.scores else s.scores_full
+            if arr:
+                try:
+                    data_raw.append((s.name, float(arr[-1][1])))
+                except (ValueError, TypeError):
+                    pass
 
-        if not page_data:
+        data_z.sort(key=lambda x: x[1], reverse=True)
+        # 原始分按 Z 分同名排序
+        z_dict = dict(data_z)
+        data_raw.sort(key=lambda x: z_dict.get(x[0], 0), reverse=True)
+
+        page_data_z = self._get_paged_data(data_z)
+        page_data_raw = self._get_paged_data(data_raw)
+
+        if not page_data_z:
             self._group_offset = 0
-            page_data = self._get_paged_data(data)
+            page_data_z = self._get_paged_data(data_z)
+            page_data_raw = self._get_paged_data(data_raw)
 
-        ax = self.fig.add_subplot(111)
+        names = [d[0] for d in page_data_z]
+        scores_z = [d[1] for d in page_data_z]
+        scores_raw = [d[1] for d in page_data_raw]
 
-        names = [d[0] for d in page_data]
-        scores = [d[1] for d in page_data]
-
-        colors = ["#1abc9c" if s >= 0 else "#f1c40f" if s >= -0.5 else "#e74c3c"
-                  for s in scores]
-        bars = ax.barh(range(len(names)), scores, color=colors, height=0.6)
-        ax.set_yticks(range(len(names)))
-        ax.set_yticklabels(names, fontsize=9)
-        ax.invert_yaxis()
-        lim = max(abs(min(scores)), abs(max(scores))) * 1.25 + 0.3
-        ax.set_xlim(-lim, lim)
-        ax.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
-        ax.set_xlabel("标准分 (Z)", fontsize=12)
-        total = len(data)
+        total = len(data_z)
         start = self._group_offset + 1
-        end = min(self._group_offset + len(page_data), total)
-        ax.set_title(f"最近一次考试成绩 (第 {start}-{end} / {total} 名)",
-                     fontsize=14, fontweight="bold")
+        end = min(self._group_offset + len(page_data_z), total)
 
-        for i, (bar, sc) in enumerate(zip(bars, scores)):
-            ax.text(sc + 0.02, i, f"{sc:.2f}", va="center", fontsize=8)
+        # ===== 上图：Z 标准分 =====
+        ax1 = self.fig.add_subplot(211)
+        colors_z = ["#1abc9c" if s >= 0 else "#f1c40f" if s >= -0.5 else "#e74c3c"
+                    for s in scores_z]
+        bars = ax1.barh(range(len(names)), scores_z, color=colors_z, height=0.6)
+        ax1.set_yticks(range(len(names)))
+        ax1.set_yticklabels(names, fontsize=9)
+        ax1.invert_yaxis()
+        lim_z = max(abs(min(scores_z)), abs(max(scores_z))) * 1.25 + 0.3
+        ax1.set_xlim(-lim_z, lim_z)
+        ax1.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
+        ax1.set_xlabel("标准分 (Z)", fontsize=11)
+        ax1.set_title(f"最近一次考试 (第 {start}-{end} / {total} 名)", fontsize=13, fontweight="bold")
+        for i, sc in enumerate(scores_z):
+            ax1.text(sc + 0.02, i, f"{sc:.2f}", va="center", fontsize=8)
 
+        # ===== 下图：原始分 =====
+        ax2 = self.fig.add_subplot(212)
+        colors_raw = ["#3498db" for _ in scores_raw]
+        bars2 = ax2.barh(range(len(names)), scores_raw, color=colors_raw, height=0.6)
+        ax2.set_yticks(range(len(names)))
+        ax2.set_yticklabels(names, fontsize=9)
+        ax2.invert_yaxis()
+        full_marks = 100 if self.dm.use_full_score else 40
+        ax2.set_xlim(0, full_marks * 1.1)
+        ax2.set_xlabel(f"原始分 (满分{full_marks})", fontsize=11)
+        # 标注（全班的实际均分，而非仅当前页面）
+        class_avg = sum(v for _, v in data_raw) / len(data_raw) if data_raw else 0
+        ax2.axvline(x=class_avg, color="#e74c3c", linewidth=1.5, linestyle="--",
+                    alpha=0.7)
+        ax2.text(class_avg + 0.5, len(names) - 0.5, f"全班均{class_avg:.1f}",
+                 color="#e74c3c", fontsize=9, fontweight="bold")
+        for i, sc in enumerate(scores_raw):
+            ax2.text(sc + 0.3, i, f"{sc:.1f}", va="center", fontsize=8)
+
+        mode_name = "满分卷" if self.dm.use_full_score else "客观分"
         self.status_label.setText(
-            f"共 {total} 人 | 显示第 {start}-{end} 名 | "
-            f"满分卷: {'是' if self.dm.use_full_score else '否'}"
+            f"共 {total} 人 | 显示第 {start}-{end} 名 | {mode_name}"
         )
 
     def _draw_last7(self, students):
@@ -691,63 +733,104 @@ class ScoreTab(QWidget):
         )
 
     def _draw_target(self, students):
-        """目标分对比"""
-        try:
-            target = float(self.edit_target.text())
-        except ValueError:
-            target = 0
+        """目标分对比 — Z分差距 + 原始分差距，红线标记目标"""
+        full_marks = 100 if self.dm.use_full_score else 40
 
-        data = []
+        # Z 分目标
+        try:
+            target_z = float(self.edit_target_z.text())
+        except ValueError:
+            target_z = 0
+        try:
+            target_raw = float(self.edit_target_raw.text())
+        except ValueError:
+            target_raw = 0
+
+        # Z 分数据
+        zdata = self.dm.get_zscores(self.dm.current_class, self.dm.use_full_score)
+        z_scores = {}
+        for name, z_list in zdata:
+            if z_list:
+                z_scores[name] = z_list[-1]
+
+        # 原始分数据
+        raw_scores = {}
         for s in students:
             arr = s.scores if s.scores else s.scores_full
-            if not arr:
-                continue
-            try:
-                score = float(arr[-1][1])
-                diff = score - target
-                data.append((s.name, score, diff))
-            except (ValueError, TypeError):
-                continue
+            if arr:
+                try:
+                    raw_scores[s.name] = float(arr[-1][1])
+                except (ValueError, TypeError):
+                    pass
 
-        if not data:
+        # 合并
+        data_z = []
+        data_raw = []
+        for name in z_scores:
+            if name in z_scores and name in raw_scores:
+                data_z.append((name, z_scores[name], z_scores[name] - target_z))
+                data_raw.append((name, raw_scores[name], raw_scores[name] - target_raw))
+
+        if not data_z:
             self._show_empty("无成绩数据")
             return
 
-        data.sort(key=lambda x: x[2], reverse=True)
-        page_data = self._get_paged_data(data)
+        data_z.sort(key=lambda x: x[2], reverse=True)
+        # 原始分同步排序
+        z_names = [d[0] for d in data_z]
+        data_raw.sort(key=lambda x: z_names.index(x[0]) if x[0] in z_names else 999)
 
-        if not page_data:
+        page_z = self._get_paged_data(data_z)
+        page_raw = self._get_paged_data(data_raw)
+
+        if not page_z:
             self._group_offset = 0
-            page_data = self._get_paged_data(data)
+            page_z = self._get_paged_data(data_z)
+            page_raw = self._get_paged_data(data_raw)
 
-        ax = self.fig.add_subplot(111)
+        names = [d[0] for d in page_z]
+        diffs_z = [d[2] for d in page_z]
+        diffs_raw = [d[2] for d in page_raw]
 
-        names = [d[0] for d in page_data]
-        diffs = [d[2] for d in page_data]
-
-        colors = ["#2ecc71" if d >= 0 else "#e74c3c" for d in diffs]
-        bars = ax.barh(range(len(names)), diffs, color=colors, height=0.6)
-        ax.set_yticks(range(len(names)))
-        ax.set_yticklabels(names, fontsize=9)
-        ax.invert_yaxis()
-        ax.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
-        ax.set_xlabel(f"与目标Z分 {target:.2f} 的差距", fontsize=12)
-        total = len(data)
+        total = len(data_z)
         start = self._group_offset + 1
-        end = min(self._group_offset + len(page_data), total)
-        ax.set_title(f"目标分对比 (第 {start}-{end} / {total} 名)",
-                     fontsize=14, fontweight="bold")
+        end = min(self._group_offset + len(page_z), total)
 
-        for i, (bar, d) in enumerate(zip(bars, diffs)):
+        # ===== 上图：Z 分差距 + 目标红线 =====
+        ax1 = self.fig.add_subplot(211)
+        colors_z = ["#2ecc71" if d >= 0 else "#e74c3c" for d in diffs_z]
+        ax1.barh(range(len(names)), diffs_z, color=colors_z, height=0.6)
+        ax1.set_yticks(range(len(names)))
+        ax1.set_yticklabels(names, fontsize=9)
+        ax1.invert_yaxis()
+        ax1.axvline(x=0, color="#e74c3c", linewidth=1.5, alpha=0.8, label=f"目标Z={target_z:.2f}")
+        ax1.legend(fontsize=11, loc="lower right")
+        ax1.set_xlabel(f"Z 分差距 (目标={target_z:.2f})", fontsize=11)
+        ax1.set_title(f"目标分对比 (第 {start}-{end} / {total} 名)", fontsize=13, fontweight="bold")
+        for i, d in enumerate(diffs_z):
             sign = "+" if d >= 0 else ""
-            offset = 0.05 if d >= 0 else -0.05
-            ha = "left" if d >= 0 else "right"
-            ax.text(d + offset, i, f"{sign}{d:.2f}", va="center", ha=ha, fontsize=8)
+            ax1.text(d + 0.02, i, f"{sign}{d:.2f}", va="center", fontsize=8)
 
-        above = sum(1 for _, _, d in data if d >= 0)
+        # ===== 下图：原始分差距 + 目标红线 =====
+        ax2 = self.fig.add_subplot(212)
+        colors_raw = ["#2ecc71" if d >= 0 else "#e74c3c" for d in diffs_raw]
+        ax2.barh(range(len(names)), diffs_raw, color=colors_raw, height=0.6)
+        ax2.set_yticks(range(len(names)))
+        ax2.set_yticklabels(names, fontsize=9)
+        ax2.invert_yaxis()
+        ax2.axvline(x=0, color="#e74c3c", linewidth=1.5, alpha=0.8,
+                    label=f"目标分={target_raw:.1f}")
+        ax2.legend(fontsize=11, loc="lower right")
+        ax2.set_xlabel(f"原始分差距 (目标={target_raw:.1f}, 满分{full_marks})", fontsize=11)
+        for i, d in enumerate(diffs_raw):
+            sign = "+" if d >= 0 else ""
+            ax2.text(d + 0.3, i, f"{sign}{d:.1f}", va="center", fontsize=8)
+
+        above_z = sum(1 for d in diffs_z if d >= 0)
         mode = "满分卷" if self.dm.use_full_score else "客观分"
         self.status_label.setText(
-            f"目标Z分: {target:.2f} | 达标: {above}/{total} ({above/total*100:.1f}%) | 模式: {mode}"
+            f"目标Z={target_z:.2f}|达标{above_z}/{len(diffs_z)} | "
+            f"目标分={target_raw:.1f} | {mode}"
         )
 
     # ------------------------------------------------------------------
