@@ -824,11 +824,17 @@ class DataMaintenanceTab(QWidget):
 
         def flash_on():
             for c in chips:
-                c.setStyleSheet(red_style)
+                try:
+                    c.setStyleSheet(red_style)
+                except RuntimeError:
+                    pass
 
         def flash_off():
             for c in chips:
-                c.setStyleSheet(normal_style)
+                try:
+                    c.setStyleSheet(normal_style)
+                except RuntimeError:
+                    pass
 
         QTimer.singleShot(0, flash_on)
         QTimer.singleShot(150, flash_off)
