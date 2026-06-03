@@ -9,7 +9,7 @@ from PyQt6.QtCore import Qt, QTimer, QMimeData, QPropertyAnimation, QPoint, QEas
 from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent, QPainter, QPixmap
 
 from core.data_manager import DataManager
-from core.models import KnowledgeTopic
+from core.models import KnowledgeTopic, Question
 
 MIME_CATEGORY = "application/x-category-drag"
 
@@ -100,7 +100,7 @@ class ToggleRow(QWidget):
         # 权重滑块
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(1, 100)
-        self.slider.setValue(50)
+        self.slider.setValue(100)
         self.slider.setFixedWidth(50)
         self.slider.setVisible(False)
         self.slider.setStyleSheet("""
@@ -200,7 +200,7 @@ class ToggleRow(QWidget):
         self.slider.setVisible(checked)
         self.weight_lbl.setVisible(checked)
         if not checked:
-            self.slider.setValue(50)
+            self.slider.setValue(100)
 
     def _update_label(self):
         self.weight_lbl.setText(f"{self.slider.value():d}%")
@@ -473,20 +473,17 @@ class DropContainer(QWidget):
 
 
 class DataMaintenanceTab(QWidget):
-    """数据维护页 — 拖拽排序 + 模式切换"""
+    """数据维护页 — 逐题知识点绑定"""
 
-    MODE_KEYS = ["subjective_topics", "objective_topics"]
-    MODE_LABELS = ["客观题涉及知识点", "主观题涉及知识点"]
-    MODE_COLORS = ["#3498db", "#e67e22"]
+    TYPE_ABBREV = {"choice": "选", "multi_select": "多", "fill": "填", "answer": "解"}
 
     def __init__(self, dm: DataManager):
         super().__init__()
         self.dm = dm
         self._current_date = ""
-        self._active_mode = 0
-
-        self._sub_selected: dict[str, float] = {}
-        self._obj_selected: dict[str, float] = {}
+        self._current_qid = ""                           # 当前选中的题号
+        self._question_topics: dict[str, dict[str, float]] = {}  # {qid: {topic_name: weight}}
+        self._question_buttons: list[QPushButton] = []
 
         self._search_timer = QTimer(self)
         self._search_timer.setSingleShot(True)
@@ -565,39 +562,13 @@ class DataMaintenanceTab(QWidget):
         edit_layout.setContentsMargins(0, 0, 0, 0)
         edit_layout.setSpacing(10)
 
-        # ---- 模式切换 ----
-        mode_row = QHBoxLayout()
-        mode_row.setSpacing(0)
-        self.mode_btns = QButtonGroup(self)
-        self.mode_btn_widgets = []
-        for i, label in enumerate(self.MODE_LABELS):
-            btn = QPushButton(label)
-            btn.setCheckable(True)
-            btn.setChecked(i == 0)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setMinimumHeight(36)
-            c = self.MODE_COLORS[i]
-            radius_a = "10px 0 0 10px" if i == 0 else "0 10px 10px 0"
-            border_a = "border: 2px solid " + c + ("; border-right: none" if i == 0 else "")
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    background: transparent; color: {c};
-                    {border_a};
-                    padding: 6px 10px; font-size: 14px; font-weight: bold;
-                    border-radius: {radius_a};
-                }}
-                QPushButton:checked {{
-                    background: {c}; color: white;
-                }}
-                QPushButton:hover {{
-                    background: {c}; color: white;
-                }}
-            """)
-            self.mode_btns.addButton(btn, i)
-            btn.clicked.connect(lambda checked, idx=i: self._switch_mode(idx))
-            mode_row.addWidget(btn, 1)
-            self.mode_btn_widgets.append(btn)
-        edit_layout.addLayout(mode_row)
+        # ---- 题目选择器（FlowLayout 按钮排） ----
+        from ui.random_tab import FlowLayout
+        qbtn_frame = QFrame()
+        qbtn_frame.setStyleSheet("background: transparent;")
+        self.qbtn_layout = FlowLayout(qbtn_frame, 4)
+        self.qbtn_layout.setContentsMargins(0, 0, 0, 0)
+        edit_layout.addWidget(qbtn_frame)
 
         # ---- 已选标签 ----
         tags_frame = QFrame()
@@ -648,6 +619,7 @@ class DataMaintenanceTab(QWidget):
         scroll_layout.addStretch()
         scroll.setWidget(scroll_content)
         edit_layout.addWidget(scroll, 1)
+
         right_layout.addWidget(self.edit_area, 1)
         layout.addWidget(right, 1)
 
@@ -671,7 +643,6 @@ class DataMaintenanceTab(QWidget):
             QMenu::item:selected { background: #e0f0ea; color: #16a085; }
         """)
         menu.addAction("＋ 新增知识点").triggered.connect(self._add_knowledge)
-        menu.addAction("🗑️ 清空当前").triggered.connect(self._clear_mode)
         menu.exec(sender_widget.mapToGlobal(pos))
 
     def _on_drop(self, src_name: str, target_idx: int):
@@ -683,15 +654,52 @@ class DataMaintenanceTab(QWidget):
             self._refresh_tags()
 
     # ------------------------------------------------------------------
-    # 模式切换
+    # 题目选择
     # ------------------------------------------------------------------
-    def _switch_mode(self, idx: int):
-        if idx == self._active_mode:
+    def _on_question_selected(self, qid: str):
+        if qid == self._current_qid:
             return
-        self._auto_save()
-        self._active_mode = idx
+        self._save_current_question()
+        self._current_qid = qid
+        self._update_question_buttons()
         self._sync_toggles()
         self._refresh_tags()
+
+    def _save_current_question(self):
+        """保存当前题目的知识点到 _question_topics"""
+        if not self._current_qid:
+            return
+        topics = {}
+        for row in self._all_toggles():
+            if row.is_checked():
+                topics[row.name] = row.get_weight()
+        if topics:
+            self._question_topics[self._current_qid] = topics
+        elif self._current_qid in self._question_topics:
+            del self._question_topics[self._current_qid]
+        self._auto_save()
+
+    def _update_question_buttons(self):
+        """刷新题目按钮的选中态和绑定标记"""
+        for btn in self._question_buttons:
+            qid = btn.property("qid")
+            btn.setChecked(qid == self._current_qid)
+            count = len(self._question_topics.get(qid, {}))
+            if count == 0:
+                indicator = "-"
+            elif count == 1:
+                indicator = "❶"
+            elif count == 2:
+                indicator = "❷"
+            else:
+                indicator = f"❸" if count == 3 else str(count)
+            qtype = btn.property("qtype")
+            abbrev = self.TYPE_ABBREV.get(qtype, "?")
+            btn.setText(f"Q{qid} {abbrev} {indicator}")
+            if count == 0:
+                btn.setStyleSheet(btn.styleSheet().replace("color: white", "color: #95a5a6").replace("border: 2px solid #1abc9c", "border: 2px solid #dfe6e9"))
+            else:
+                btn.setStyleSheet(btn.styleSheet().replace("color: #95a5a6", "color: white").replace("border: 2px solid #dfe6e9", "border: 2px solid #1abc9c"))
 
     # ------------------------------------------------------------------
     # 知识点切换
@@ -720,15 +728,18 @@ class DataMaintenanceTab(QWidget):
                     return
 
     def _on_tag_remove(self, name: str):
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        target.pop(name, None)
+        if self._current_qid not in self._question_topics:
+            return
+        self._question_topics[self._current_qid].pop(name, None)
+        if not self._question_topics[self._current_qid]:
+            del self._question_topics[self._current_qid]
+            self._update_question_buttons()
         for row in self._all_toggles():
             if row.name == name:
                 row.set_checked(False)
                 break
         self._refresh_tags()
         for g in self.cat_groups:
-            sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
             count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)
         self._auto_save()
@@ -768,7 +779,7 @@ class DataMaintenanceTab(QWidget):
             self._refresh_tags()
 
     def _on_weight_change(self, name: str, weight: float):
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        target = self._question_topics.get(self._current_qid, {})
         if name not in target:
             return
         new_total = sum(v for k, v in target.items() if k != name) + weight
@@ -780,11 +791,12 @@ class DataMaintenanceTab(QWidget):
             self._shake_all_tags()
             return
         target[name] = weight
+        self._question_topics[self._current_qid] = target
         self._refresh_tags()
         self._auto_save()
 
     def _shake_all_tags(self):
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        target = self._question_topics.get(self._current_qid, {})
         chips = []
         for i in range(self.tags_layout.count()):
             item = self.tags_layout.itemAt(i)
@@ -847,7 +859,11 @@ class DataMaintenanceTab(QWidget):
         row = self.sender().parent()
         if not isinstance(row, ToggleRow):
             return
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        if not self._current_qid:
+            return
+        if self._current_qid not in self._question_topics:
+            self._question_topics[self._current_qid] = {}
+        target = self._question_topics[self._current_qid]
         if checked:
             new_weight = row.get_weight()
             new_total = sum(target.values()) + new_weight
@@ -861,10 +877,12 @@ class DataMaintenanceTab(QWidget):
             target[row.name] = new_weight
         else:
             target.pop(row.name, None)
+            if not target and self._current_qid in self._question_topics:
+                del self._question_topics[self._current_qid]
+        self._update_question_buttons()
         self._refresh_tags()
         for g in self.cat_groups:
             if g.cat_name == row.category:
-                sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
                 count = sum(1 for r in g.toggles if r.is_checked())
                 g._update_header(count)
                 break
@@ -881,7 +899,10 @@ class DataMaintenanceTab(QWidget):
             if search and search not in dt:
                 continue
             meta = self.dm.get_exam_meta(dt)
-            total = len(meta.subjective_topics) + len(meta.objective_topics)
+            n_topics = sum(1 for q in meta.questions for _ in q.topics)
+            total = f"{len(meta.questions)}题"
+            if n_topics > 0:
+                total += f" {n_topics}个知识点"
             item = QListWidgetItem(f"{dt}  ({total})")
             item.setData(Qt.ItemDataRole.UserRole, dt)
             self.exam_list.addItem(item)
@@ -911,22 +932,61 @@ class DataMaintenanceTab(QWidget):
     def _load_exam(self, dt: str):
         meta = self.dm.get_exam_meta(dt)
         self.lbl_current.setText(f"当前考试: {dt}")
-        self._sub_selected = {kt.name: kt.weight for kt in meta.subjective_topics}
-        self._obj_selected = {kt.name: kt.weight for kt in meta.objective_topics}
+        # 从 exam_meta.questions 加载逐题知识点
+        self._question_topics = {}
+        for q in meta.questions:
+            if q.topics:
+                self._question_topics[q.id] = {kt.name: kt.weight for kt in q.topics}
+        # 构建题目按钮
+        self._build_question_buttons(meta.questions)
+        # 选中第一个题目
+        if meta.questions:
+            self._current_qid = meta.questions[0].id
+        else:
+            self._current_qid = ""
+        self._update_question_buttons()
         self._sync_toggles()
         self._refresh_tags()
 
+    def _build_question_buttons(self, questions: list):
+        """构建题目选择器按钮排"""
+        # 清空旧按钮
+        for btn in self._question_buttons:
+            btn.deleteLater()
+        self._question_buttons = []
+        while self.qbtn_layout.count():
+            self.qbtn_layout.takeAt(0)
+
+        for q in questions:
+            abbrev = self.TYPE_ABBREV.get(q.qtype, "?")
+            btn = QPushButton(f"Q{q.id} {abbrev} -")
+            btn.setProperty("qid", q.id)
+            btn.setProperty("qtype", q.qtype)
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setMinimumHeight(32)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: white; color: #95a5a6;
+                    border: 2px solid #dfe6e9; border-radius: 8px;
+                    padding: 4px 10px; font-size: 12px; font-weight: bold;
+                }
+                QPushButton:hover { border-color: #1abc9c; color: #1abc9c; }
+                QPushButton:checked { background: #1abc9c; color: white; border-color: #16a085; }
+            """)
+            btn.clicked.connect(lambda checked, qid=q.id: self._on_question_selected(qid))
+            self.qbtn_layout.addWidget(btn)
+            self._question_buttons.append(btn)
+
     def _sync_toggles(self):
-        """根据当前模式同步所有 toggle 状态"""
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        # 先设权重，再设勾选（避免信号读到未设置的默认权重）
+        """根据当前选中题目同步所有 toggle 状态"""
+        target = self._question_topics.get(self._current_qid, {})
         for row in self._all_toggles():
             is_sel = row.name in target
             if is_sel:
                 row.set_weight(target[row.name])
             row.set_checked(is_sel)
         for g in self.cat_groups:
-            sel = self._sub_selected if self._active_mode == 0 else self._obj_selected
             count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)
 
@@ -942,7 +1002,7 @@ class DataMaintenanceTab(QWidget):
             item = self.tags_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
+        target = self._question_topics.get(self._current_qid, {})
 
         for name in sorted(target.keys()):
             w = target[name]
@@ -977,53 +1037,51 @@ class DataMaintenanceTab(QWidget):
     # 自动保存
     # ------------------------------------------------------------------
     def _auto_save(self):
-        """静默自动保存，超 100% 跳过保存"""
+        """保存当前考试的题目知识点到 exam_meta.xml"""
         if not self._current_date:
             return
 
-        if int(sum(self._sub_selected.values()) * 100) > 100:
-            return
-        if int(sum(self._obj_selected.values()) * 100) > 100:
-            return
-        sub_topics = []
-        obj_topics = []
-        for g in self.cat_groups:
-            for row in g.toggles:
-                if row.name in self._sub_selected:
-                    sub_topics.append(KnowledgeTopic(
-                        row.category, row.name, self._sub_selected[row.name]))
-                if row.name in self._obj_selected:
-                    obj_topics.append(KnowledgeTopic(
-                        row.category, row.name, self._obj_selected[row.name]))
-        self.dm.update_exam_meta(self._current_date, sub_topics, obj_topics)
+        # 先保存当前正在编辑的题目
+        current_qid = self._current_qid
+        if current_qid:
+            topics = {}
+            for row in self._all_toggles():
+                if row.is_checked():
+                    topics[row.name] = row.get_weight()
+            if topics:
+                self._question_topics[current_qid] = topics
+            elif current_qid in self._question_topics:
+                del self._question_topics[current_qid]
 
-        total = len(sub_topics) + len(obj_topics)
+        # 构建 Question 列表
+        meta = self.dm.get_exam_meta(self._current_date)
+        questions = []
+        for q in meta.questions:
+            topics = self._question_topics.get(q.id, {})
+            kt_list = []
+            for name, weight in topics.items():
+                cat = "未分类"
+                for c, t_list in self.dm.knowledge_pool.items():
+                    if name in t_list:
+                        cat = c
+                        break
+                kt_list.append(KnowledgeTopic(category=cat, name=name, weight=weight))
+            questions.append(Question(id=q.id, qtype=q.qtype, max_score=q.max_score, topics=kt_list))
+        self.dm.update_exam_questions(self._current_date, questions)
+
+        # 更新考试列表中的题目数标记
+        total = len(meta.questions)
         for i in range(self.exam_list.count()):
             item = self.exam_list.item(i)
             if item.data(Qt.ItemDataRole.UserRole) == self._current_date:
                 self.exam_list.blockSignals(True)
-                item.setText(f"{self._current_date}  ({total})")
+                item.setText(f"{self._current_date}  ({total}题)")
                 self.exam_list.blockSignals(False)
                 break
 
     # ------------------------------------------------------------------
-    # 清空 / 新增
-
-    def _clear_mode(self):
-        if not self._current_date:
-            return
-        label = self.MODE_LABELS[self._active_mode]
-        reply = QMessageBox.question(
-            self, "确认清空", f"确定要清空当前考试的「{label}」吗？",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        if reply != QMessageBox.StandardButton.Yes:
-            return
-        target = self._sub_selected if self._active_mode == 0 else self._obj_selected
-        target.clear()
-        self._sync_toggles()
-        self._refresh_tags()
-
+    # 新增知识点
+    # ------------------------------------------------------------------
     def _add_knowledge(self):
         cats = list(self.dm.knowledge_pool.keys())
         if not cats:

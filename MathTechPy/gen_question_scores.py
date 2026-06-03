@@ -29,13 +29,10 @@ EXAM_DATES = [
     "2025_10_26",
 ]
 
-# 分值结构
-EXAM_MAX = [5]*8 + [6]*3 + [5]*3 + [13, 15, 15, 17, 17]  # Q1-Q19
-QUIZ_MAX = [5]*8  # Q1-Q8
+EXAM_MAX = [5]*8 + [6]*3 + [5]*3 + [13, 15, 15, 17, 17]
 
 
 def load_students(cls_name: str) -> list[dict]:
-    """返回 [{"id": "100001", "name": "张三"}, ...]"""
     tree = ET.parse(DATA_DIR / f"data_{cls_name}.xml")
     return [
         {"id": e.get("id", ""), "name": e.findtext("name", "").strip()}
@@ -43,27 +40,61 @@ def load_students(cls_name: str) -> list[dict]:
     ]
 
 
-def gen_quiz_row(ability: float) -> list[int]:
+def gen_quiz_config() -> tuple[int, int]:
+    """生成测验题目配置，返回 (总题数, 多选题数)"""
+    n_total = random.randint(6, 12)
+    n_multi = random.randint(2, min(4, n_total - 2))
+    return n_total, n_multi
+
+
+def gen_quiz_scores(ability: float, n_single: int, n_multi: int) -> list[int]:
+    """生成一个学生的测验得分
+
+    单选: 5分，对/错
+    多选: 6分，全对=6，部分对按比例(如2/3=4)，有错选=0
+    """
     scores = []
-    for _ in range(8):
+    # 单选题
+    for _ in range(n_single):
         scores.append(5 if random.random() < ability else 0)
+    # 多选题
+    for _ in range(n_multi):
+        n_correct = random.randint(2, 3)  # 正确选项数(2或3个)
+        r = random.random()
+        if r < ability * 0.6:
+            # 全对
+            scores.append(6)
+        elif r < ability * 0.85:
+            # 部分对(选中部分正确选项，无错选)
+            n_picked = random.randint(1, n_correct - 1)
+            partial = round(6 * n_picked / n_correct)
+            scores.append(partial)
+        else:
+            # 错选(选了错误选项)
+            scores.append(0)
     return scores
 
 
 def gen_exam_row(ability: float) -> list[int]:
     scores = []
+    # 单选 Q1-Q8: 5分
     for _ in range(8):
         scores.append(5 if random.random() < ability else 0)
+    # 多选 Q9-Q11: 6分
     for _ in range(3):
+        n_correct = random.randint(2, 3)
         r = random.random()
-        if r < ability * 0.7:
+        if r < ability * 0.6:
             scores.append(6)
-        elif r < ability * 0.9:
-            scores.append(3)
+        elif r < ability * 0.85:
+            n_picked = random.randint(1, n_correct - 1)
+            scores.append(round(6 * n_picked / n_correct))
         else:
             scores.append(0)
+    # 填空 Q12-Q14: 5分
     for _ in range(3):
         scores.append(5 if random.random() < ability else 0)
+    # 解答 Q15-Q19: 13,15,15,17,17分
     for mx in [13, 15, 15, 17, 17]:
         ratio = ability * random.uniform(0.5, 1.0)
         score = round(mx * ratio)
@@ -85,18 +116,17 @@ def write_csv(path: Path, header: list[str], rows: list[list]):
 
 
 def fix_perfect(rows: list[list], score_start: int, n_score_cols: int, max_total: int):
-    """修复满分：扣掉最后一道解答题1分"""
     for row in rows:
         scores = row[score_start:score_start + n_score_cols]
         if sum(scores) >= max_total:
             for i in range(len(scores)-1, -1, -1):
-                if scores[i] > 0:
+                if row[score_start + i] > 0:
                     row[score_start + i] -= 1
                     break
 
 
 def wrong_obj_questions(scores: list[int], maxs: list[int], n_obj: int) -> str:
-    """返回客观题错题题号，逗号分隔。n_obj = 客观题数量"""
+    """客观题中得0分的题号"""
     wrong = []
     for i in range(n_obj):
         if scores[i] == 0:
@@ -111,29 +141,37 @@ def generate_for_class(cls_name: str, ability_seed: int):
     quiz_count = 0
     exam_count = 0
 
-    # 测验
+    # 测验：题数不固定，含多选
     for date in QUIZ_DATES:
         random.seed(hash(date + cls_name) % 2**31)
-        header = ["考号", "姓名", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8",
-                  "客观总分", "主观总分", "全卷总分", "客观错题题号"]
+        n_total, n_multi = gen_quiz_config()
+        n_single = n_total - n_multi
+        maxs = [5]*n_single + [6]*n_multi
+        max_total = sum(maxs)
+
+        header = ["考号", "姓名"] + [f"Q{i+1}" for i in range(n_total)] + \
+                 ["客观总分", "主观总分", "全卷总分", "客观错题题号"]
         rows = []
         for stu, abil in zip(students, abilities):
-            scores = gen_quiz_row(abil)
+            scores = gen_quiz_scores(abil, n_single, n_multi)
             obj_total = sum(scores)
-            row = [stu["id"], stu["name"]] + scores + [obj_total, "", obj_total,
-                   wrong_obj_questions(scores, QUIZ_MAX, 8)]
+            row = [stu["id"], stu["name"]] + scores + \
+                  [obj_total, "", obj_total,
+                   wrong_obj_questions(scores, maxs, n_total)]
             rows.append(row)
-        fix_perfect(rows, 2, 8, sum(QUIZ_MAX))
-        # 重新计算修复后的总分
+
+        fix_perfect(rows, 2, n_total, max_total)
+        # 重算总分和错题
         for row in rows:
-            scores = row[2:10]
-            row[10] = sum(scores)
-            row[12] = row[10]
-            row[13] = wrong_obj_questions(scores, QUIZ_MAX, 8)
+            scores = row[2:2+n_total]
+            row[2+n_total] = sum(scores)
+            row[2+n_total+2] = row[2+n_total]
+            row[2+n_total+3] = wrong_obj_questions(scores, maxs, n_total)
+
         write_csv(SCORE_DIR / f"quiz_{date}_{cls_name}.csv", header, rows)
         quiz_count += 1
 
-    # 正式考试
+    # 正式考试：固定19题
     for date in EXAM_DATES:
         random.seed(hash(date + cls_name) % 2**31)
         header = ["考号", "姓名"] + [f"Q{i+1}" for i in range(19)] + \
@@ -143,10 +181,11 @@ def generate_for_class(cls_name: str, ability_seed: int):
             scores = gen_exam_row(abil)
             obj_total = sum(scores[:14])
             sub_total = sum(scores[14:])
-            row = [stu["id"], stu["name"]] + scores + [obj_total, sub_total,
-                   obj_total + sub_total,
+            row = [stu["id"], stu["name"]] + scores + \
+                  [obj_total, sub_total, obj_total + sub_total,
                    wrong_obj_questions(scores, EXAM_MAX, 14)]
             rows.append(row)
+
         fix_perfect(rows, 2, 19, sum(EXAM_MAX))
         for row in rows:
             scores = row[2:21]
@@ -154,6 +193,7 @@ def generate_for_class(cls_name: str, ability_seed: int):
             row[22] = sum(scores[14:])
             row[23] = row[21] + row[22]
             row[24] = wrong_obj_questions(scores, EXAM_MAX, 14)
+
         write_csv(SCORE_DIR / f"exam_{date}_{cls_name}.csv", header, rows)
         exam_count += 1
 

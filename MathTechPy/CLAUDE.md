@@ -70,4 +70,7 @@ openpyxl==3.1.5      # Excel (.xlsx) 读取
 - 应用依赖 matplotlib 的中文字体支持。已配置的字体：Noto Serif CJK SC、WenQuanYi Micro Hei、AR PL UMing CN、SimHei。如果图表显示方块（□），请安装其中一款字体。
 - 数据文件存放在 `data/` 目录下。`config.xml` 列出要加载的 XML+XLSX 文件对。`.bak` 文件是手动备份。
 - `test_student_eval.py` 脚本以独立脚本形式验证学生评估算法——不使用测试框架，仅打印结果。
+- **待实现功能**（详见 `TODO.md`）：
+  - 批量绑定知识点：题目按钮支持 Ctrl/Shift 多选，右键批量绑定知识点到多道题
+  - 缓存优化：mtime 缓存 `data/.question_scores_cache.pkl`，文件未变时跳过重复解析
 - **打包为 exe 时的数据目录问题**（待实施）：当前 `DataManager` 通过 `Path(__file__).parent.parent / "data"` 定位数据，PyInstaller 打包后 `__file__` 指向只读的 `sys._MEIPASS`。需改为：`sys.frozen` 时用 `Path(sys.executable).parent / "data"`，让 data 文件夹外置于 exe 同级目录。数据文件（XML 学生数据、knowledge_pool.xml、exam_meta.xml）需运行时写回，不能打入 exe 内部。

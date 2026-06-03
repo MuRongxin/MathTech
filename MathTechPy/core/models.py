@@ -13,6 +13,8 @@ class StudentData:
     scores: List[List[str]] = field(default_factory=list)
     # 满分卷成绩: [["2024/09/01", "0.44"], ...]
     scores_full: List[List[str]] = field(default_factory=list)
+    # 逐题分: {date: {question_id: score}}
+    question_scores: dict = field(default_factory=dict)
 
     @property
     def score_count(self) -> int:
@@ -52,8 +54,18 @@ class KnowledgeTopic:
 
 
 @dataclass
+class Question:
+    """单道题目"""
+    id: str                                    # 题号，如 "1", "2a"
+    qtype: str = "choice"                      # choice / fill / answer
+    max_score: float = 5.0                     # 满分
+    topics: List[KnowledgeTopic] = field(default_factory=list)  # 考察的知识点
+
+
+@dataclass
 class ExamMeta:
     """考试元数据"""
     date: str
     subjective_topics: List[KnowledgeTopic] = field(default_factory=list)  # 客观分知识点
     objective_topics: List[KnowledgeTopic] = field(default_factory=list)   # 满分卷知识点
+    questions: List[Question] = field(default_factory=list)                # 题目列表（可选）

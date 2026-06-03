@@ -1102,105 +1102,107 @@ class StudentEvalTab(QWidget):
             )
 
     # ------------------------------------------------------------------
-    # 趋势数据: Z-score 计算
+    # 趋势数据: 基于逐题分的真实知识点得分率
     # ------------------------------------------------------------------
+    def _build_question_topic_map(self, topic_name: str, date_filter: set) -> dict:
+        """从 exam_meta.questions 建立 {date: [(qid, qtype, max_score, weight), ...]}"""
+        result: dict[str, list[tuple]] = {}
+        for date, meta in self.dm.exam_meta.items():
+            if date_filter and date not in date_filter:
+                continue
+            if not meta.questions:
+                continue
+            for q in meta.questions:
+                for kt in q.topics:
+                    if kt.name == topic_name:
+                        result.setdefault(date, []).append(
+                            (q.id, q.qtype, q.max_score, kt.weight))
+        return result
+
     def _compute_topic_trend_data(self, topic_name: str, date_filter: set,
                                    trend_type: int):
-        """计算知识点趋势的完整数据
+        """基于逐题分计算知识点趋势
 
-        trend_type: 0=仅客观, 1=仅主观, 2=合并(Z-score)
-        返回: (data_points, class_avg_data) 各为 [(date, signal, weight, n_type), ...]
+        trend_type: 0=仅客观(choice), 1=仅主观(fill/answer), 2=合并
+        返回: (data_points, class_avg_data)
         """
         import statistics
 
-        obj_map = self._build_topic_exam_map(TOPIC_OBJ, date_filter)
-        sub_map = self._build_topic_exam_map(TOPIC_SUB, date_filter)
-
-        # 收集所有出现，按类型过滤
-        raw = []  # [(date, weight, etype)]
-        if trend_type in (0, 2):
-            for date, weight in obj_map.get(topic_name, []):
-                raw.append((date, weight, "obj"))
-        if trend_type in (1, 2):
-            for date, weight in sub_map.get(topic_name, []):
-                raw.append((date, weight, "sub"))
-        raw.sort(key=lambda x: x[0])
-
-        if not raw:
+        # 从 question bindings 收集数据
+        qt_map = self._build_question_topic_map(topic_name, date_filter)
+        if not qt_map:
             return [], []
 
         student = self._current_student
         class_idx = self.dm.current_class
-
-        # --- 一次遍历全班，同时建立 {date: {name: rate}} 查找表 ---
         all_names = [s.name for s in self.dm.students[class_idx][0]]
-        all_obj: dict[str, dict[str, float]] = {}  # {date: {name: rate}}
-        all_sub: dict[str, dict[str, float]] = {}
-        for name in all_names:
-            for date, r in self._get_score_rates(name, "obj").items():
-                all_obj.setdefault(date, {})[name] = r
-            for date, r in self._get_score_rates(name, "sub").items():
-                all_sub.setdefault(date, {})[name] = r
 
-        # 目标学生的得分率（从查找表提取，不再重复调用 _get_score_rates）
-        obj_rates = {date: all_obj[date][student]
-                     for date in all_obj if student in all_obj[date]}
-        sub_rates = {date: all_sub[date][student]
-                     for date in all_sub if student in all_sub[date]}
+        # 按趋势类型过滤题目类型
+        if trend_type == 0:
+            allowed = {"choice", "multi_select"}
+        elif trend_type == 1:
+            allowed = {"fill", "answer"}
+        else:
+            allowed = None  # 合并模式不过滤
 
-        # --- 计算合并模式下的 Z-score（复用 all_obj/all_sub 查找表）---
-        obj_z_by_date: dict[str, dict[str, float]] = {}
-        sub_z_by_date: dict[str, dict[str, float]] = {}
-        for date, name_rate in all_obj.items():
-            rate_list = list(name_rate.values())
-            if len(rate_list) < 2:
-                continue
-            mean = statistics.mean(rate_list)
-            std = statistics.stdev(rate_list)
-            if std == 0:
-                continue
-            obj_z_by_date[date] = {
-                name: (r - mean) / std for name, r in name_rate.items()
-            }
-        for date, name_rate in all_sub.items():
-            rate_list = list(name_rate.values())
-            if len(rate_list) < 2:
-                continue
-            mean = statistics.mean(rate_list)
-            std = statistics.stdev(rate_list)
-            if std == 0:
-                continue
-            sub_z_by_date[date] = {
-                name: (r - mean) / std for name, r in name_rate.items()
-            }
-
-        # --- 构建数据点 ---
         student_points = []
         class_avg_points = []
 
-        for date, weight, etype in raw:
-            z_map = obj_z_by_date if etype == "obj" else sub_z_by_date
-            name_rate = all_obj if etype == "obj" else all_sub
+        for date in sorted(qt_map.keys()):
+            q_infos = qt_map[date]
+            if allowed is not None:
+                q_infos = [qi for qi in q_infos if qi[1] in allowed]
+            if not q_infos:
+                continue
 
-            if trend_type == 2:
-                # 合并模式: 用 Z-score
-                date_z = z_map.get(date, {})
-                s_val = date_z.get(student)
-                if s_val is None:
-                    continue
-                c_avg = statistics.mean(list(date_z.values()))
-            else:
-                # 单独模式: 用得分率
-                rates = obj_rates if etype == "obj" else sub_rates
-                s_val = rates.get(date)
-                if s_val is None:
-                    continue
-                nr = name_rate.get(date, {})
-                c_avg = statistics.mean(list(nr.values())) if nr else 0
+            # 获取该学生和全班的逐题分
+            stu_obj = None
+            for s in self.dm.students[class_idx][0]:
+                if s.name == student:
+                    stu_obj = s
+                    break
+            if not stu_obj or date not in stu_obj.question_scores:
+                continue
+            stu_qs = stu_obj.question_scores[date]
 
-            weighted = round(s_val * weight, 4)
-            student_points.append((date, s_val, weight, weighted, etype))
-            class_avg_points.append((date, c_avg, weight, etype))
+            # 计算该学生在该知识点的得分率
+            stu_score_sum = 0.0
+            stu_max_sum = 0.0
+            for qid, qtype, max_score, weight in q_infos:
+                if qid in stu_qs:
+                    stu_score_sum += stu_qs[qid]
+                stu_max_sum += max_score
+
+            if stu_max_sum == 0:
+                continue
+            s_val = round(stu_score_sum / stu_max_sum, 4)
+
+            # 计算全班平均
+            class_rates = []
+            for name in all_names:
+                name_qs = {}
+                for s in self.dm.students[class_idx][0]:
+                    if s.name == name:
+                        name_qs = s.question_scores.get(date, {})
+                        break
+                if not name_qs:
+                    continue
+                ns_sum = 0.0
+                nm_sum = 0.0
+                for qid, qtype, max_score, weight in q_infos:
+                    if qid in name_qs:
+                        ns_sum += name_qs[qid]
+                    nm_sum += max_score
+                if nm_sum > 0:
+                    class_rates.append(ns_sum / nm_sum)
+            c_avg = round(statistics.mean(class_rates), 4) if class_rates else 0.0
+
+            # 权重取所有相关题目的平均权重
+            avg_weight = round(sum(qi[3] for qi in q_infos) / len(q_infos), 4)
+
+            student_points.append((date, s_val, avg_weight, round(s_val * avg_weight, 4),
+                                  q_infos[0][1]))
+            class_avg_points.append((date, c_avg, avg_weight, q_infos[0][1]))
 
         return student_points, class_avg_points
 
@@ -1219,15 +1221,12 @@ class StudentEvalTab(QWidget):
 
         date_filter = self._get_filtered_dates()
 
-        # 先收集原始出现次数（用于统计）
-        obj_map = self._build_topic_exam_map(TOPIC_OBJ, date_filter)
-        sub_map = self._build_topic_exam_map(TOPIC_SUB, date_filter)
-        n_obj = len(obj_map.get(topic_name, []))
-        n_sub = len(sub_map.get(topic_name, []))
-        total_n = n_obj + n_sub
+        # 统计知识点在题目绑定中的出现次数
+        qt_map = self._build_question_topic_map(topic_name, date_filter)
+        total_n = len(qt_map)
 
         if total_n == 0:
-            self._show_empty(f"知识点「{topic_name}」在当前日期范围内无考试数据")
+            self._show_empty(f"知识点「{topic_name}」在当前日期范围内无考试数据（需先在数据维护页绑定知识点到题目）")
             return
 
         student_points, class_avg_points = self._compute_topic_trend_data(
@@ -1240,11 +1239,11 @@ class StudentEvalTab(QWidget):
 
         # 计算登场类型描述
         if trend_type == 0:
-            type_desc = "仅客观题"
+            type_desc = "仅选择题"
         elif trend_type == 1:
-            type_desc = "仅主观题"
+            type_desc = "仅填空/解答题"
         else:
-            type_desc = "主客观合并"
+            type_desc = "全部题型"
 
         # 低置信度标记
         low_confidence = total_n < 3
@@ -1332,22 +1331,11 @@ class StudentEvalTab(QWidget):
         ax.set_xticklabels(dates_plot, fontsize=8, rotation=35, ha="right")
 
         # Y 轴标签
-        if trend_type == 2:
-            ax.set_ylabel("Z-score", fontsize=11)
-        elif trend_type == 0:
-            ax.set_ylabel("客观得分率", fontsize=11)
-        else:
-            ax.set_ylabel("主观得分率", fontsize=11)
+        ax.set_ylabel("知识点得分率", fontsize=11)
 
-        # Y 轴范围：合并模式不限 0~1
-        if trend_type == 2:
-            all_y = s_vals + c_vals + [0]
-            y_min, y_max = min(all_y) - 0.3, max(all_y) + 0.3
-            ax.set_ylim(y_min, y_max)
-            ax.axhline(y=0, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
-        else:
-            ax.set_ylim(-0.05, 1.05)
-            ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
+        # Y 轴范围：得分率 0~1
+        ax.set_ylim(-0.05, 1.05)
+        ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
 
         ax.legend(fontsize=9, loc="upper left")
         ax.grid(axis="y", alpha=0.3)
@@ -1364,13 +1352,9 @@ class StudentEvalTab(QWidget):
         avg_val = sum(s_vals) / len(s_vals)
         parts = [
             f"「{topic_name}」{type_desc}",
-            f"出现{total_n}次(客观{n_obj}+主观{n_sub})",
             f"有效点{len(dates_plot)}个",
+            f"均得分率={avg_val:.0%}",
         ]
-        if trend_type == 2:
-            parts.append(f"均加权Z={avg_val:+.2f}")
-        else:
-            parts.append(f"均得分率={avg_val:.0%}")
         if low_confidence:
             parts.append(confidence_note.format(total_n))
         self.status_label.setText(" | ".join(parts))
