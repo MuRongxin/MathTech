@@ -229,8 +229,21 @@ class DataManager:
         import csv
         with open(path, "r", encoding="utf-8-sig") as f:
             reader = csv.reader(f)
-            header = next(reader)
-            headers = [h.strip() for h in header]
+            # 跳过标题行，找真正的列头行
+            headers = []
+            for _ in range(5):
+                row = next(reader, None)
+                if row is None:
+                    break
+                candidates = [h.strip() for h in row if h and h.strip()]
+                # 非空单元格中，含数字或属于已知字段的达到 2 个以上 → 列头行
+                valid = sum(1 for h in candidates
+                           if h in KNOWN_META_COLUMNS or any(ch.isdigit() for ch in h))
+                if valid >= 2:
+                    headers = [h.strip() for h in row]  # 保留原始列顺序（含空列头）
+                    break
+            if not headers:
+                return {}, False, False, False
 
         # 识别列：不在元数据字典中 + 列名含数字 → 题目列
         obj_total_idx = sub_total_idx = full_total_idx = None
@@ -307,7 +320,20 @@ class DataManager:
             wb.close()
             return {}, False, False, False
 
-        header = [str(h).strip() if h else "" for h in rows[0]]
+        # 跳过标题行，找真正的列头行
+        header = []
+        header_row_idx = 0
+        for ri, row in enumerate(rows[:5]):
+            candidates = [str(h).strip() for h in row if h is not None and str(h).strip()]
+            valid = sum(1 for h in candidates
+                       if h in KNOWN_META_COLUMNS or any(ch.isdigit() for ch in h))
+            if valid >= 2:
+                header = [str(h).strip() if h else "" for h in row]
+                header_row_idx = ri
+                break
+        if not header:
+            wb.close()
+            return {}, False, False, False
 
         # 识别列：不在元数据字典中 + 列名含数字 → 题目列
         obj_total_idx = sub_total_idx = full_total_idx = None
@@ -324,7 +350,7 @@ class DataManager:
                 q_cols.append((i, h))
 
         q_rows = {}
-        for row in rows[1:]:
+        for row in rows[header_row_idx + 1:]:
             if not row or len(row) < 2:
                 continue
             name = str(row[1]).strip() if len(row) > 1 else ""
