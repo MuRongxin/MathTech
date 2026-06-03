@@ -12,14 +12,15 @@ from .overview_tab import OverviewTab
 from .random_combined_tab import RandomCombinedTab
 from .score_tab import ScoreTab
 from .data_maintenance_tab import DataMaintenanceTab
+from .student_eval_tab import StudentEvalTab
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MathTech - Python Edition")
-        self.setMinimumSize(1200, 675)
-        self.resize(1280, 720)
+        self.setMinimumSize(1360, 765)
+        self.resize(1680, 945)
 
         # 核心业务对象
         self.dm = DataManager()
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
             RandomCombinedTab(self.dm, self.random_engine),
             ScoreTab(self.dm, on_mode_change=self._update_mode_label),
             DataMaintenanceTab(self.dm),
+            StudentEvalTab(self.dm),
         ]
         for tab in self._tabs:
             self.stack.addWidget(tab)
@@ -97,6 +99,7 @@ class MainWindow(QMainWindow):
             ("🎲 随机抽人", 1),
             ("📈 成绩分析", 2),
             ("🛠️ 数据维护", 3),
+            ("🔍 学生评估", 4),
         ]
         for text, idx in nav_items:
             btn = QPushButton(text)

@@ -1,141 +1,138 @@
-# MathTech / Auxiliary tool — AI 代理项目指南
+# MathTech
 
-> 本文件面向 AI 编码代理。项目的主要自然语言为 **中文**（代码注释、UI 文本、文档均以中文为主）。
-
----
-
-## 项目概览
-
-**MathTech** 是一个用于高中数学教学场景的桌面辅助工具，当前仓库中仅保留核心子项目 `Auxiliary tool`。该工具为 Windows 窗体应用程序（WinForms），面向教师用户提供以下功能：
-
-- **随机抽人（RandomPanle）**：从班级学生名单中随机抽取学生，并记录被抽中次数（`callCount`）。
-- **成绩分析（Score Analysis）**：读取 Excel 成绩表，绘制学生成绩折线图，支持按学生筛选、分页浏览、仅查看最近 7 次成绩等。
-- **数据看板（MainOverView / Form1）**：展示班级平均分趋势对比等总览信息。
+Math 教学辅助工具仓库。**当前活跃开发仅 `MathTechPy/`**（Python PyQt6 桌面应用）。其余子项目为历史/实验性质，勿主动修改。
 
 ---
 
-## 技术栈
+## 子项目状态
 
-| 层级 | 技术 |
-|------|------|
-| 运行时 | .NET Framework 4.7.2 |
-| UI 框架 | Windows Forms (Win32) |
-| 项目格式 | 传统 .csproj (MSBuild 15.0) |
-| IDE | Visual Studio 2022 (v17.1) |
-| 图表库 | LiveCharts 0.9.7 + LiveCharts.WinForms + LiveCharts.Wpf |
-| UI 控件库 | Guna.UI2.WinForms 2.0.3.5、HZH_Controls 1.0.14 |
-| Excel 读取 | ExcelDataReader 3.7.0-develop00310 + ExcelDataReader.DataSet |
-| 数据存储 | XML（学生名单）、Excel（成绩）、TXT（原始名单备份） |
+| 目录 | 技术栈 | 状态 |
+|------|--------|------|
+| `MathTechPy/` | Python 3 + PyQt6 + matplotlib + pandas | **活跃开发** |
+| `Auxiliary tool/` | .NET Framework 4.7.2 WinForms | 原始版本，已冻结 |
+| `AuxiliaryTool.Avalonia/` | .NET 8 Avalonia UI | 实验性重写，未完成 |
+| `AuxiliaryTool.Web/` | .NET 10 ASP.NET Core API | 实验性重写，未完成 |
+
+**规则：除非用户明确要求，只在 `MathTechPy/` 下工作。**
 
 ---
 
-## 项目结构
+## MathTechPy 开发
 
-```
-MathTech/
-├── AGENTS.md                          # 本文件
-└── Auxiliary tool/                    # 核心 C# WinForms 项目
-    ├── Auxiliary tool.sln             # Visual Studio 解决方案
-    ├── Auxiliary tool.csproj          # MSBuild 项目文件
-    ├── packages.config                # NuGet 包引用（packages 文件夹已提交）
-    ├── App.config                     # 应用配置（目标 .NET 4.7.2）
-    ├── Program.cs                     # 程序入口，启动 Form1
-    ├── Form1.cs / .Designer.cs / .resx    # 主窗体（无边框自定义标题栏 + 容器面板）
-    ├── MainOverView.cs / .Designer.cs / .resx   # 总览面板 UserControl（当前占位）
-    ├── Score Analysis.cs / .Designer.cs / .resx # 成绩分析面板 UserControl
-    ├── RandomPanle.cs / .Designer.cs / .resx    # 随机抽人面板 UserControl
-    ├── src/
-    │   ├── Auxiliarymethods.cs        # 单例工具类：Excel/XML 读写、颜色/位置/尺寸动画、碰撞移动等
-    │   ├── StudentData.cs             # 学生数据实体类
-    │   └── ThemeColor.cs              # 随机主题色生成
-    └── Properties/                    # 程序集信息、资源、设置
+### 环境与启动
+
+```bash
+# 虚拟环境在仓库根目录，非 MathTechPy 内
+source .venv/bin/activate
+cd MathTechPy
+
+# 运行前先杀残留进程（matplotlib/Qt 在 Linux 上容易残留）
+pkill -f "python.*main.py" || true
+python main.py
 ```
 
-### 关键模块说明
+### 测试
 
-- **`Form1`**：主窗体。包含 `overview_pane` 作为容器，通过按钮切换三个子面板（数据看板、随机抽人、成绩分析）。顶部有两个班级选择按钮（A01 / A02），必须先选择班级才能进入功能面板。
-- **`RandomPanle`**：随机抽人界面。`randomTimer` 快速滚动学生姓名，`startRandomButton` 控制开始/停止；停止后更新被抽中学生的 `callCount` 并写入对应 XML。
-- **`Score_Analysis_Panle`**：成绩分析界面。使用 `LiveCharts.WinForms.CartesianChart` 绘制折线图；支持下拉框直接选择学生、批量翻页、最近 7 天筛选、全部成绩/部分成绩切换。
-- **`Auxiliarymethods`**（单例）：
-  - 读写 `./config.xml` 获取四个数据文件路径（两个班级 XML、两个 Excel）。
-  - 读写 `./data_A01.xml` / `./data_A02.xml` 存储学生名单与 `callCount`。
-  - 读取 Excel 成绩表并将成绩绑定到 `StudentData.scoreArr`。
-  - 提供一系列视觉动画辅助：平滑变色、平滑移动、碰撞边界移动、平滑改变尺寸。
+无测试框架。唯一测试脚本直接运行：
 
----
-
-## 构建与运行
-
-### 环境要求
-
-- Windows 操作系统（依赖 `user32.dll` 实现无边框窗体拖拽）
-- Visual Studio 2019/2022 或 MSBuild（需安装 .NET Framework 4.7.2 目标包）
-- 如使用 `dotnet` CLI：本项目为传统 .csproj，**不支持** `dotnet build`，请使用 MSBuild：
-
-```powershell
-# 在 "Auxiliary tool" 目录下
-msbuild "Auxiliary tool.sln" /p:Configuration=Release
+```bash
+python test_student_eval.py
 ```
 
-### 解决方案配置
+### 数据生成
 
-| 配置 | 平台 | 输出目录 |
-|------|------|----------|
-| Debug | Any CPU | `bin\Debug\` |
-| Release | Any CPU | `bin\Release\` |
+```bash
+python gen_exam_meta.py   # 按教学进度生成考试元数据到 data/exam_meta.xml
+```
 
-### 运行时依赖文件
+### 无 lint/格式化/typecheck
 
-程序运行时需要与可执行文件同目录存在以下数据文件（由 `config.xml` 指定，默认为）：
-
-- `config.xml` — 配置根文件，内含 4 个文件名
-- `data_A01.xml` — A01 班学生名单（`id`, `name`, `callCount`）
-- `data_A02.xml` — A02 班学生名单
-- 两个 Excel 文件（如 `ExamA01Score.xlsx` / `ExamA02Score.xlsx`）— 成绩表
-
-> 若缺失上述文件，程序在 `Form1_Load` 初始化阶段会抛出异常或崩溃。
+项目未配置任何静态分析工具。验证靠运行应用和手动测试。
 
 ---
 
-## 代码风格与约定
+## MathTechPy 架构速查
 
-- **命名风格**：采用 C# 传统 PascalCase / camelCase，但存在部分拼写不一致（如 `resoult` vs `result`、`Panle` vs `Panel`）。修改时应尽量保持与周围代码一致，避免大规模重命名导致设计器文件脱钩。
-- **单例模式**：多个类使用手写懒加载单例（`if (_obj == null) _obj = new ...`），而非 `Lazy<T>`。
-- **注释语言**：代码注释以中文为主，少量英文。
-- **字符串硬编码**：文件路径、UI 文本大量硬编码，修改路径时需同步修改 `config.xml` 及 `Form1.cs` 中的相关逻辑。
-- **UI 控件访问**：UserControl 之间通过 `Auxiliarymethods.Instance` 共享数据，也通过 `Form1.Instance` / `Score_Analysis_Panle.Instance` 直接访问控件。这是一种紧耦合设计，新增功能时应注意避免循环依赖。
+```
+main.py                    # 入口：QApplication + matplotlib 配置
+core/
+  models.py                # @dataclass: StudentData, ClassInfo, KnowledgeTopic, ExamMeta
+  data_manager.py          # 单例。加载 XML(学生)+XLSX(成绩)，管理知识点池和考试元数据
+  random_engine.py         # 加权随机抽人，按 (班级, 模式) 隔离历史
+ui/
+  main_window.py           # 左侧导航栏 + QStackedWidget
+  overview_tab.py          # 班级指标卡片 + 柱状图
+  random_combined_tab.py   # 五种随机抽人模式合一
+  score_tab.py             # 五种图表模式
+  data_maintenance_tab.py  # 知识点池 CRUD + 考试元数据编辑
+  student_eval_tab.py      # 单学生知识点掌握度：雷达图、趋势
+```
+
+**数据流**：`data/` 下 XML+XLSX → `DataManager` 单例 → 注入各 UI 标签页。
+
+### 关键设计
+
+- **DataManager 单例**：用 `__new__` + `_initialized` 标志实现，不是普通 `__init__` 单例。导入 `DataManager()` 始终返回同一实例。
+- **多班级**：`data/config.xml` 列出每班一对 XML+XLSX（`classMembers[i]` 对应 `classScore[i]`）。班级名从文件名自动检测（正则 `r'[A-Za-z]*(\d+)'`），格式化为 `A01`、`A03` 等。
+- **成绩双模式**：`dm.use_full_score` 切换 40 分制（客观）/ 100 分制（整卷）。所有标签页必须遵循。**注意**：`OverviewTab` 硬编码使用 `mode=1`（满分卷），忽略 `use_full_score` 设置。
+- **成绩存储格式**：`StudentData.scores` 和 `scores_full` 均为 `List[List[str]]`，每项为 `[date_str, score_str]`。score_str 以 `f"{float(val):.2f}"` 格式化（始终两位小数）。日期格式为 `"YYYY/MM/DD"`。
+- **标签页刷新契约**：每个标签页暴露 `refresh()` 方法，`MainWindow.switch_tab()` 和 `switch_class()` 调用。
+- **Z-score 归一化**：`dm.get_zscores()` 计算全班每次考试 Z 分（`(原始分 - μ) / σ`），返回 `[[name, [z1, z2, ...]], ...]`。Z-score 对线性缩放不变，故客观分和满分卷的 Z 分相同。
+- **知识点池**：两级结构，持久化到 `data/knowledge_pool.xml`，默认值硬编码在 `DataManager.DEFAULT_POOL`（11 个一级分类，约 90 个二级知识点，覆盖高中数学）。**每次 CRUD 操作立即写回 XML**，非批量保存。
+- **数据定位**：`DataManager` 用 `Path(__file__).parent.parent / "data"` 定位数据。打包 exe 时需改为 `Path(sys.executable).parent / "data"`（尚未实施）。
+
+### 易踩坑点
+
+- **ExamMeta 命名反转**：`models.py:58` 中 `ExamMeta.subjective_topics` 实际存储**客观题**知识点，`ExamMeta.objective_topics` 存储**主观题**知识点。`student_eval_tab.py` 用 `TOPIC_OBJ = "subjective_topics"` 和 `TOPIC_SUB = "objective_topics"` 映射。不要试图"修正"这个命名——整个链路已适配。
+- **Excel sheet 名**：必须有 `"40"` 和 `"100"` 两个 sheet。`"40"` = 客观分（满分 40），`"100"` = 整卷分（满分 100）。第 0 行是考试日期，第 0 列是学生姓名。
+- **权重总和校验**：`data_maintenance_tab.py` 在知识点权重总和 >100% 时拒绝保存，UI 会抖动标签变红提示。添加知识点时需注意总权重不超过 1.0。
+- **FlowLayout 跨文件导入**：`data_maintenance_tab.py` 从 `random_tab.py` 导入 `FlowLayout`（`from ui.random_tab import FlowLayout`）。修改 `random_tab.py` 的 FlowLayout 会影响数据维护页。
+- **OverviewTab 模式硬编码**：`overview_tab.py:274` 固定用 `self.dm.students[ci][1]`（满分卷），不响应 `use_full_score` 切换。
+- **config.xml 缺失会崩溃**：`DataManager.__init__` 在 `_load_all` 中直接 `ET.parse(self.config_path)`，文件不存在则抛异常。同理 Excel 文件缺失也会崩溃。
+
+### 依赖
+
+```
+PyQt6==6.11.0       # GUI
+matplotlib==3.10.9  # 图表（QtAgg 后端，需中文字体支持）
+pandas==3.0.3       # 数据处理
+openpyxl==3.1.5     # .xlsx 读取
+```
+
+中文字体：`Noto Serif CJK SC`, `WenQuanYi Micro Hei`, `AR PL UMing CN`, `SimHei`。图表显示方块时需安装其一。
 
 ---
 
-## 测试说明
+## 其他子项目要点（仅在被要求时参考）
 
-本项目 **没有单元测试项目**，也没有自动化测试框架。验证方式以手工运行（WinForms UI 测试）为主：
+### Auxiliary tool (WinForms)
 
-1. 确保 `config.xml` 及对应数据文件存在于可执行文件同级目录。
-2. 启动程序后，先点击班级选择按钮（A01 或 A02）。
-3. 测试随机抽人：切换到“随机抽人”面板，点击 Start / Stop，观察 `callCount` 是否正确写入 XML。
-4. 测试成绩分析：切换到“成绩分析”面板，检查图表是否正确加载、下拉框筛选、翻页、最近 7 天切换是否正常。
+- .NET Framework 4.7.2，传统 `.csproj`，**不支持** `dotnet build`，需 MSBuild
+- 文件名含空格和拼写错误（`RandomPanle`、`Score Analysis`），勿重命名——会脱钩 Designer 文件
+- 运行时依赖 `config.xml` + 班级 XML + Excel 文件，缺失会崩溃
+- 依赖 `user32.dll`，仅 Windows 可运行
 
----
+### AuxiliaryTool.Web
 
-## 安全与注意事项
+- .NET 10 SDK 风格项目，`dotnet run` 可启动
+- 数据文件在 `Data/` 子目录，`config.xml` 指定路径
+- ExcelDataReader 在 Linux 需 `CodePagesEncodingProvider`
 
-- **数据安全**：项目历史提交中曾包含真实学生姓名与成绩。当前 `master` / `dev` 分支已替换为模拟数据，但 Git 历史记录中仍可能保留敏感信息。如需公开仓库，建议对历史进行清理（如 `git filter-repo` 或重新初始化仓库）。
-- **代码签名**：项目中包含 `Auxiliary tool_TemporaryKey.pfx` 临时密钥文件，仅用于 ClickOnce 或本地测试签名，**不应视为生产密钥**。
-- **依赖库版本**：`ExcelDataReader` 使用的是开发预览版 `3.7.0-develop00310`，升级前需验证 Excel 读取行为是否一致。
-- **跨平台限制**：本项目深度依赖 Win32 API（`user32.dll`）及 WPF 互操作（`WindowsFormsIntegration`），无法直接在 Linux/macOS 上运行。
+### AuxiliaryTool.Avalonia
 
----
-
-## 常见修改场景提示
-
-| 场景 | 建议 |
-|------|------|
-| 新增班级 | 需修改 `config.xml` 结构、`Form1` 的班级按钮逻辑、`Auxiliarymethods` 中的数据列表与文件路径变量。 |
-| 修改图表样式 | 在 `Score_Analysis_Panle` 或 `Form1` 中调整 `LiveCharts` 的 `SeriesCollection`、`Axis` 属性。 |
-| 调整动画效果 | 修改 `Auxiliarymethods` 中的 `SmoothChangeColor`、`SmoothChangeLocation`、`SmoothMoveCollider` 等方法的步长参数。 |
-| 替换数据源格式 | Excel 读取逻辑在 `Auxiliarymethods.ReadExcel`，XML 读写逻辑在 `ReadDataXml` / `CreatXMLFile` / `UpdataXmlData`。 |
+- .NET 8 + Avalonia 11.2 + LiveChartsCore
+- 未完成，仅有基础视图骨架
 
 ---
 
-> 最后更新：基于仓库当前 `dev` 分支状态生成。如发现项目结构或依赖发生显著变化，请同步更新本文件。
+## 数据安全
+
+Git 历史中可能残留真实学生姓名和成绩。当前分支已用模拟数据，但公开仓库前应清理历史。
+
+---
+
+## Git 分支
+
+- `dev` — 当前活跃分支
+- `master` — 稳定版
+- `rebuild` — 重写尝试分支

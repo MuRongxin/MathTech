@@ -19,3 +19,4 @@ obj/
 
 # Data backups
 *.bak
+.aider*
