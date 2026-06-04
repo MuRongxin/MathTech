@@ -118,8 +118,8 @@ class ClassRow(QWidget):
     def update_data(self, name: str, metrics: dict, color: str):
         self.header.setText(
             f"<span style='color:{color};'>📚 {name}</span>  "
-            f"<span style='color:#7f8c8d; font-weight:normal;'>({metrics['count']}人)  "
-            f"高分{metrics['high']} | 及格{metrics['pass_pct']}% | 低分{metrics['low']} | Z={metrics['avg']:.2f}</span>"
+            f"<span style='color:#7f8c8d; font-weight:normal;'>({metrics['count']}人, 最近一次)  "
+            f"高分{metrics['high']} | 及格{metrics['pass_pct']}% | 低分{metrics['low']} | 均分{metrics['avg']:.1f}</span>"
         )
 
         # 清空旧卡片
@@ -129,11 +129,11 @@ class ClassRow(QWidget):
                 item.widget().deleteLater()
 
         data = [
-            ("🌟 高分", f"{metrics['high']}人", f"≥80分  ({metrics['high_pct']}%)", color),
-            ("✅ 及格", f"{metrics['pass_pct']}%", f"≥60分  ({metrics['pass']}人)", "#27ae60"),
-            ("⚠️ 低分", f"{metrics['low']}人", f"<40分  ({metrics['low_pct']}%)", "#e74c3c"),
+            ("🌟 高分", f"{metrics['high']}人", f"得分率≥80%  ({metrics['high_pct']}%)", color),
+            ("✅ 及格", f"{metrics['pass_pct']}%", f"得分率≥60%  ({metrics['pass']}人)", "#27ae60"),
+            ("⚠️ 低分", f"{metrics['low']}人", f"得分率<40%  ({metrics['low_pct']}%)", "#e74c3c"),
             ("📐 离散度", f"σ={metrics['std']}", "标准差", "#9b59b6"),
-            ("📊 平均分", f"{metrics['avg']:.1f}分", "满分100", "#34495e"),
+            ("📊 平均分", f"{metrics['avg']:.1f}分", f"最高{metrics.get('max_score', '-')}分", "#34495e"),
         ]
         for title, value, desc, c in data:
             self.cards_layout.addWidget(MetricCard(c, title, value, desc))
@@ -213,7 +213,7 @@ class OverviewTab(QWidget):
             self.rows.append(row)
 
         # 柱状图
-        chart_title = QLabel("📊 最近一次考试各班平均分对比")
+        chart_title = QLabel("📊 各次考试班级平均分趋势")
         chart_title.setFont(QFont("Microsoft YaHei", 14, QFont.Weight.Bold))
         chart_title.setStyleSheet("color: #2c3e50; margin-top: 8px;")
         layout.addWidget(chart_title)
@@ -240,8 +240,10 @@ class OverviewTab(QWidget):
             if hasattr(window, 'random_engine'):
                 window.random_engine.reset_history()
 
+        self._draw_chart()
+
     def _calc_metrics(self, students, full_marks: int = 100):
-        """计算班级指标，基于原始分（满分100）"""
+        """计算班级指标，用得分率（实际分 / 全班最高分）统一不同分制"""
         scores = []
         for s in students:
             arr = s.scores if s.scores else s.scores_full
@@ -252,12 +254,18 @@ class OverviewTab(QWidget):
                     pass
         if not scores:
             return {"high": 0, "high_pct": 0, "pass": 0, "pass_pct": 0,
-                    "low": 0, "low_pct": 0, "std": 0, "avg": 0, "count": 0}
+                    "low": 0, "low_pct": 0, "std": 0, "avg": 0, "count": 0, "max_score": 0}
 
         import statistics
-        high = sum(1 for sc in scores if sc >= 80)
-        passed = sum(1 for sc in scores if sc >= 60)
-        low = sum(1 for sc in scores if sc < 40)
+        max_score = max(scores)
+        if max_score > 0:
+            rates = [sc / max_score for sc in scores]
+        else:
+            rates = [0.0] * len(scores)
+
+        high = sum(1 for r in rates if r >= 0.80)
+        passed = sum(1 for r in rates if r >= 0.60)
+        low = sum(1 for r in rates if r < 0.40)
         avg = statistics.mean(scores)
         std = statistics.stdev(scores) if len(scores) > 1 else 0
         return {
@@ -265,7 +273,7 @@ class OverviewTab(QWidget):
             "pass": passed, "pass_pct": round(passed / len(scores) * 100, 1),
             "low": low, "low_pct": round(low / len(scores) * 100, 1),
             "std": round(std, 2), "avg": round(avg, 1),
-            "count": len(scores)
+            "count": len(scores), "max_score": round(max_score, 1)
         }
 
     def refresh(self):
@@ -293,18 +301,20 @@ class OverviewTab(QWidget):
             QTimer.singleShot(100, self._finalize_expanded_rows)
 
         # 折线图
+        self._draw_chart()
+
+    def _draw_chart(self):
         self.fig.clear()
         ax = self.fig.add_subplot(111)
         ax.set_facecolor("#fafafa")
 
-        # 绘制折线图：原始分平均分
-        full_marks = 100 if self.dm.use_full_score else 40
         dates = self.dm.dates
         x = list(range(len(dates)))
-
         markers = ["o", "s", "D", "^", "v", "p"]
+        filter_on = self._filter_idx >= 0
+
         for ci in range(self.dm.class_count):
-            students = self.dm.students[ci][1]  # 固定用满分卷
+            students = self.dm.students[ci][1]
             avgs = []
             for exam_i in range(len(dates)):
                 vals = []
@@ -320,11 +330,16 @@ class OverviewTab(QWidget):
             name = self.dm.class_names[ci] if ci < len(self.dm.class_names) else f"班级{ci+1}"
             color = get_color(ci)
             marker = markers[ci % len(markers)]
-            ax.plot(x, avgs, label=name, color=color, linewidth=2.5,
-                    marker=marker, markersize=4, markerfacecolor="white", markeredgewidth=2)
+            if filter_on and ci != self._filter_idx:
+                # 淡化非选中班级
+                ax.plot(x, avgs, label=name, color=color, linewidth=1.0, alpha=0.15,
+                        marker=marker, markersize=2, markerfacecolor="white", markeredgewidth=1)
+            else:
+                ax.plot(x, avgs, label=name, color=color, linewidth=2.5,
+                        marker=marker, markersize=4, markerfacecolor="white", markeredgewidth=2)
 
         ax.set_ylabel("平均分", fontsize=12, color="#555")
-        ax.set_title("各次考试班级平均分趋势 (满分卷)", fontsize=14, fontweight="bold", color="#2c3e50", pad=15)
+        ax.set_title("各次考试班级平均分趋势", fontsize=14, fontweight="bold", color="#2c3e50", pad=15)
         ax.legend(loc="upper right", fontsize=11)
         ax.grid(True, linestyle="--", alpha=0.3, color="#999")
         ax.set_xticks([])
@@ -336,7 +351,6 @@ class OverviewTab(QWidget):
         self._hover_dates = dates
         self._hover_lines = ax.lines
         self._hover_annot = None
-
         self.fig.tight_layout()
         self.canvas.draw()
 

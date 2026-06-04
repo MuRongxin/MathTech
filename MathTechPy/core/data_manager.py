@@ -202,7 +202,7 @@ class DataManager:
             if date_str not in self.exam_meta or not self.exam_meta[date_str].questions:
                 all_qscores = [r["questions"] for r in q_rows.values() if r["questions"]]
                 if all_qscores:
-                    questions = self._detect_questions(all_qscores)
+                    questions = self._detect_questions(all_qscores, etype)
                     if questions:
                         meta = self.get_exam_meta(date_str)
                         meta.questions = questions
@@ -387,8 +387,8 @@ class DataManager:
         has_sub = first_row.get("sub_total") is not None
         return q_rows, obj_total_idx is not None, sub_total_idx is not None and has_sub, full_total_idx is not None
 
-    def _detect_questions(self, all_qscores: List[dict]) -> List:
-        """从全班逐题分推断题目结构（分析得分分布区分单选/多选）"""
+    def _detect_questions(self, all_qscores: List[dict], etype: str = "quiz") -> List:
+        """从全班逐题分推断题目结构（结合考试类型和得分分布）"""
         from .models import Question as QModel
         # 按题号收集所有学生的得分
         qid_scores: dict[str, list[float]] = {}
@@ -402,20 +402,39 @@ class DataManager:
             scores = qid_scores[qid]
             max_seen = max(scores) if scores else 5.0
             unique_vals = set(scores)
-            # 推测满分：取整洁整数
             max_score = max(1.0, round(max_seen)) if max_seen > 0 else 5.0
 
-            # 区分题型
-            if max_score == 6 and any(v not in (0.0, 6.0) for v in unique_vals):
-                qtype = "multi_select"   # 多选：max=6 且存在中间分(2/3/4)
-            elif max_score <= 5:
-                qtype = "choice"          # 单选（5分）
-            elif max_score <= 6:
-                qtype = "choice"          # 单选（6分，仅0/6两种值）
+            # 提取题号数字
+            qnum = int(qid[1:]) if qid[1:].isdigit() else 0
+
+            # 按考试类型 + 题号推断题型
+            if etype == "exam":
+                # 正式考试精确结构: Q1-8单选(5') Q9-11多选(6') Q12-14填空(5') Q15-19解答(13-17')
+                if 1 <= qnum <= 8:
+                    qtype = "choice"
+                    max_score = 5
+                elif 9 <= qnum <= 11:
+                    qtype = "multi_select"
+                    max_score = 6
+                elif 12 <= qnum <= 14:
+                    qtype = "fill"
+                    max_score = 5
+                elif qnum == 15:
+                    qtype = "answer"; max_score = 13
+                elif qnum in (16, 17):
+                    qtype = "answer"; max_score = 15
+                elif qnum in (18, 19):
+                    qtype = "answer"; max_score = 17
+                else:
+                    qtype = "fill" if max_score <= 10 else "answer"
+            elif max_score == 6 and any(v not in (0.0, 6.0) for v in unique_vals):
+                qtype = "multi_select"   # quiz 中多选：max=6 且存在中间分
+            elif etype == "quiz":
+                qtype = "choice"          # 测验默认选择题
             elif max_score > 10:
-                qtype = "answer"          # 解答题
+                qtype = "answer"
             else:
-                qtype = "fill"            # 填空题
+                qtype = "fill"
 
             questions.append(QModel(id=qid, qtype=qtype, max_score=max_score))
         return questions

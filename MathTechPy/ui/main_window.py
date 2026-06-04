@@ -145,8 +145,4 @@ class MainWindow(QMainWindow):
         current = self.stack.currentIndex()
         if 0 <= current < len(self._tabs):
             self._tabs[current].refresh()
-            # 成绩分析页需同步模式按钮状态
-            if current == 2:
-                self._tabs[2].btn_obj.setChecked(not self.dm.use_full_score)
-                self._tabs[2].btn_full.setChecked(self.dm.use_full_score)
             self._update_mode_label()

@@ -476,6 +476,8 @@ class DataMaintenanceTab(QWidget):
     """数据维护页 — 逐题知识点绑定"""
 
     TYPE_ABBREV = {"choice": "选", "multi_select": "多", "fill": "填", "answer": "解"}
+    OBJ_COLOR = "#3498db"   # 客观题（选择、多选）
+    SUB_COLOR = "#e67e22"   # 主观题（填空、解答）
 
     def __init__(self, dm: DataManager):
         super().__init__()
@@ -681,6 +683,25 @@ class DataMaintenanceTab(QWidget):
 
     def _update_question_buttons(self):
         """刷新题目按钮的选中态和绑定标记"""
+        bound_style = """
+            QPushButton {
+                background: white; color: #2c3e50;
+                border: 2px solid #16a085; border-radius: 8px;
+                padding: 4px 10px; font-size: 12px; font-weight: bold;
+            }
+            QPushButton:hover { border-color: #0e6655; }
+            QPushButton:checked { background: #1abc9c; color: white; border-color: #16a085; }
+        """
+        unbound_style_tpl = """
+            QPushButton {{
+                background: white; color: #95a5a6;
+                border: 2px solid {border_color};
+                border-radius: 8px;
+                padding: 4px 10px; font-size: 12px; font-weight: bold;
+            }}
+            QPushButton:hover {{ border-color: #1abc9c; color: #1abc9c; }}
+            QPushButton:checked {{ background: #1abc9c; color: white; border-color: #16a085; }}
+        """
         for btn in self._question_buttons:
             qid = btn.property("qid")
             btn.setChecked(qid == self._current_qid)
@@ -692,14 +713,16 @@ class DataMaintenanceTab(QWidget):
             elif count == 2:
                 indicator = "❷"
             else:
-                indicator = f"❸" if count == 3 else str(count)
+                indicator = str(count)
             qtype = btn.property("qtype")
+            is_obj = qtype in ("choice", "multi_select")
+            border_color = self.OBJ_COLOR if is_obj else self.SUB_COLOR
             abbrev = self.TYPE_ABBREV.get(qtype, "?")
             btn.setText(f"Q{qid} {abbrev} {indicator}")
-            if count == 0:
-                btn.setStyleSheet(btn.styleSheet().replace("color: white", "color: #95a5a6").replace("border: 2px solid #1abc9c", "border: 2px solid #dfe6e9"))
+            if count > 0:
+                btn.setStyleSheet(bound_style)
             else:
-                btn.setStyleSheet(btn.styleSheet().replace("color: #95a5a6", "color: white").replace("border: 2px solid #dfe6e9", "border: 2px solid #1abc9c"))
+                btn.setStyleSheet(unbound_style_tpl.format(border_color=border_color))
 
     # ------------------------------------------------------------------
     # 知识点切换
@@ -782,16 +805,25 @@ class DataMaintenanceTab(QWidget):
         target = self._question_topics.get(self._current_qid, {})
         if name not in target:
             return
-        new_total = sum(v for k, v in target.items() if k != name) + weight
-        if new_total > 1.0:
-            for row in self._all_toggles():
-                if row.name == name:
-                    row.set_weight(target[name])
-                    break
-            self._shake_all_tags()
-            return
+        others = [n for n in target if n != name]
+        weight = max(0.01, min(0.99, weight))
         target[name] = weight
-        self._question_topics[self._current_qid] = target
+
+        # 总和偏离 1.0 的部分，从其他知识点按比例吸收
+        other_total = sum(target[n] for n in others)
+        total = weight + other_total
+        if total != 1.0 and others:
+            diff = 1.0 - total
+            for n in others:
+                share = target[n] / other_total if other_total > 0 else 1.0 / len(others)
+                target[n] = round(max(0.01, target[n] + diff * share), 2)
+            # 尾差修正
+            target[others[-1]] = round(max(0.01, 1.0 - sum(target[n] for n in others if n != others[-1]) - weight), 2)
+
+        # 同步各 toggle 滑块
+        for row in self._all_toggles():
+            if row.name in target:
+                row.set_weight(target[row.name])
         self._refresh_tags()
         self._auto_save()
 
@@ -865,19 +897,31 @@ class DataMaintenanceTab(QWidget):
             self._question_topics[self._current_qid] = {}
         target = self._question_topics[self._current_qid]
         if checked:
-            new_weight = row.get_weight()
-            new_total = sum(target.values()) + new_weight
-            if new_total > 1.0:
-                row.toggle.blockSignals(True)
-                row.set_checked(False)
-                row.toggle._update_style()
-                row.toggle.blockSignals(False)
-                self._shake_all_tags()
-                return
-            target[row.name] = new_weight
+            # 加入新知识点后自动均分权重
+            new_count = len(target) + 1
+            even_weight = round(1.0 / new_count, 2)
+            # 调整尾差：最后一个用减法确保总和精确为 1.0
+            for prev_name in target:
+                target[prev_name] = even_weight
+            # 新知识点占剩余份额
+            remainder = round(1.0 - sum(target.values()), 2)
+            target[row.name] = remainder if remainder > 0 else even_weight
+            # 同步各 toggle 的滑块
+            for r in self._all_toggles():
+                if r.is_checked():
+                    r.set_weight(target.get(r.name, even_weight))
         else:
             target.pop(row.name, None)
-            if not target and self._current_qid in self._question_topics:
+            if target:
+                # 剩余知识点均分至 1.0
+                even = round(1.0 / len(target), 2)
+                for n in target:
+                    target[n] = even
+                target[list(target.keys())[-1]] = round(1.0 - even * (len(target) - 1), 2)
+                for r in self._all_toggles():
+                    if r.name in target:
+                        r.set_weight(target[r.name])
+            elif self._current_qid in self._question_topics:
                 del self._question_topics[self._current_qid]
         self._update_question_buttons()
         self._refresh_tags()
@@ -959,22 +1003,28 @@ class DataMaintenanceTab(QWidget):
 
         for q in questions:
             abbrev = self.TYPE_ABBREV.get(q.qtype, "?")
+            is_obj = q.qtype in ("choice", "multi_select")
+            border_color = self.OBJ_COLOR if is_obj else self.SUB_COLOR
             btn = QPushButton(f"Q{q.id} {abbrev} -")
             btn.setProperty("qid", q.id)
             btn.setProperty("qtype", q.qtype)
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setMinimumHeight(32)
-            btn.setStyleSheet("""
-                QPushButton {
+            btn.setStyleSheet(f"""
+                QPushButton {{
                     background: white; color: #95a5a6;
-                    border: 2px solid #dfe6e9; border-radius: 8px;
+                    border: 2px solid {border_color};
+                    border-radius: 8px;
                     padding: 4px 10px; font-size: 12px; font-weight: bold;
-                }
-                QPushButton:hover { border-color: #1abc9c; color: #1abc9c; }
-                QPushButton:checked { background: #1abc9c; color: white; border-color: #16a085; }
+                }}
+                QPushButton:hover {{ border-color: #1abc9c; color: #1abc9c; }}
+                QPushButton:checked {{ background: #1abc9c; color: white; border-color: #16a085; }}
             """)
             btn.clicked.connect(lambda checked, qid=q.id: self._on_question_selected(qid))
+            btn.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            btn.customContextMenuRequested.connect(
+                lambda pos, qid=q.id, b=btn: self._on_question_menu(pos, qid, b))
             self.qbtn_layout.addWidget(btn)
             self._question_buttons.append(btn)
 
@@ -989,6 +1039,43 @@ class DataMaintenanceTab(QWidget):
         for g in self.cat_groups:
             count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)
+
+    def _on_question_menu(self, pos, qid: str, btn: QPushButton):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #f8f9fa; border: 1px solid #dce3e8;
+                border-radius: 10px; padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px; border-radius: 6px; color: #2c3e50;
+            }
+            QMenu::item:selected { background: #e0f0ea; color: #16a085; }
+            QMenu::separator { height: 1px; background: #dce3e8; margin: 4px 8px; }
+        """)
+        act_choice = menu.addAction("🔵 单选题")
+        act_multi = menu.addAction("🟢 多选题")
+        menu.addSeparator()
+        act_fill = menu.addAction("🟠 填空题")
+        act_answer = menu.addAction("🔴 解答题")
+        act = menu.exec(btn.mapToGlobal(pos))
+        if not act:
+            return
+        type_map = {act_choice: "choice", act_multi: "multi_select",
+                    act_fill: "fill", act_answer: "answer"}
+        new_type = type_map.get(act)
+        if new_type:
+            self._change_question_type(qid, new_type)
+
+    def _change_question_type(self, qid: str, new_type: str):
+        meta = self.dm.get_exam_meta(self._current_date)
+        for q in meta.questions:
+            if q.id == qid:
+                q.qtype = new_type
+                break
+        self._build_question_buttons(meta.questions)
+        self._update_question_buttons()
+        self._auto_save()
 
     def _all_toggles(self):
         for g in self.cat_groups:

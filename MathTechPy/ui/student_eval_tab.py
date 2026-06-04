@@ -14,10 +14,6 @@ from matplotlib.figure import Figure
 
 from core.data_manager import DataManager
 
-# ExamMeta.subjective_topics → 客观题（40分制）
-# ExamMeta.objective_topics  → 主观题（60分制）
-TOPIC_OBJ = "subjective_topics"
-TOPIC_SUB = "objective_topics"
 
 VIEW_LABELS = [
     "客观题知识点分析",
@@ -335,55 +331,6 @@ class StudentEvalTab(QWidget):
                 result[date] = round(ful / 100.0, 4)
         return result
 
-    def _build_topic_exam_map(self, topic_type: str, date_filter: set | None = None) -> dict:
-        """建立 {topic_name: [(date, weight), ...]} 索引，支持日期过滤"""
-        topic_map = {}
-        for date, meta in self.dm.exam_meta.items():
-            if date_filter and date not in date_filter:
-                continue
-            topics = getattr(meta, topic_type, [])
-            for t in topics:
-                if t.name not in topic_map:
-                    topic_map[t.name] = []
-                topic_map[t.name].append((date, t.weight))
-        return topic_map
-
-    def _compute_topic_performance(self, student_name: str, topic_type: str,
-                                   score_rates: dict, date_filter: set | None = None) -> dict:
-        """计算某学生在指定topic_type下各知识点的加权平均得分率"""
-        topic_exam_map = self._build_topic_exam_map(topic_type, date_filter)
-        if not topic_exam_map:
-            return {}
-
-        if not score_rates:
-            return {}
-
-        topic_category = {}
-        for cat, topics in self.dm.knowledge_pool.items():
-            for t in topics:
-                topic_category[t] = cat
-
-        result = {}
-        for topic_name, exam_list in topic_exam_map.items():
-            weighted_sum = 0.0
-            total_weight = 0.0
-            n_with_data = 0
-            for date, weight in exam_list:
-                if date in score_rates:
-                    weighted_sum += score_rates[date] * weight
-                    total_weight += weight
-                    n_with_data += 1
-            category = topic_category.get(topic_name, "未分类")
-            if total_weight > 0:
-                result[topic_name] = {
-                    "rate": round(weighted_sum / total_weight, 3),
-                    "count": n_with_data,
-                    "category": category,
-                }
-            else:
-                result[topic_name] = {"rate": None, "count": 0, "category": category}
-        return result
-
     def _compute_category_performance(self, topic_scores: dict) -> dict:
         """按一级分类聚合知识点表现"""
         cats = {}
@@ -398,75 +345,6 @@ class StudentEvalTab(QWidget):
         for cat, d in cats.items():
             d["rate"] = round(sum(d["rates"]) / len(d["rates"]), 3) if d["rates"] else 0.0
         return cats
-
-    def _compute_class_topic_performance(self, topic_type: str,
-                                          date_filter: set | None = None) -> dict:
-        """计算班级平均知识点表现 {topic: avg_rate}"""
-        class_idx = self.dm.current_class
-        students = [s.name for s in self.dm.students[class_idx][0]]
-        if not students:
-            return {}
-
-        # 预先构建 topic_exam_map（所有学生共用，避免重复计算）
-        topic_exam_map = self._build_topic_exam_map(topic_type, date_filter)
-        if not topic_exam_map:
-            return {}
-
-        is_obj = (topic_type == TOPIC_OBJ)
-        all_rates: dict[str, list[float]] = {}
-
-        for name in students:
-            if is_obj:
-                rates = self._get_score_rates(name, "obj")
-            else:
-                rates = self._get_score_rates(name, "sub")
-            # 直接用预构建的 exam_map 计算
-            perf = self._compute_topic_performance_from_map(
-                name, topic_exam_map, rates
-            )
-            for t, d in perf.items():
-                if d["rate"] is not None:
-                    if t not in all_rates:
-                        all_rates[t] = []
-                    all_rates[t].append(d["rate"])
-
-        result = {}
-        for t, rlist in all_rates.items():
-            result[t] = round(sum(rlist) / len(rlist), 3)
-        return result
-
-    def _compute_topic_performance_from_map(self, student_name: str,
-                                             topic_exam_map: dict,
-                                             score_rates: dict) -> dict:
-        """与 _compute_topic_performance 相同，但使用预构建的 topic_exam_map"""
-        if not topic_exam_map or not score_rates:
-            return {}
-
-        topic_category = {}
-        for cat, topics in self.dm.knowledge_pool.items():
-            for t in topics:
-                topic_category[t] = cat
-
-        result = {}
-        for topic_name, exam_list in topic_exam_map.items():
-            weighted_sum = 0.0
-            total_weight = 0.0
-            n_with_data = 0
-            for date, weight in exam_list:
-                if date in score_rates:
-                    weighted_sum += score_rates[date] * weight
-                    total_weight += weight
-                    n_with_data += 1
-            category = topic_category.get(topic_name, "未分类")
-            if total_weight > 0:
-                result[topic_name] = {
-                    "rate": round(weighted_sum / total_weight, 3),
-                    "count": n_with_data,
-                    "category": category,
-                }
-            else:
-                result[topic_name] = {"rate": None, "count": 0, "category": category}
-        return result
 
     # ------------------------------------------------------------------
     # 触发与刷新
@@ -634,12 +512,17 @@ class StudentEvalTab(QWidget):
 
         self.fig.clear()
 
-        # 趋势视图：填充知识点下拉
+        # 趋势视图：从题目绑定收集知识点列表
         if self._view_mode == 5:
             date_filter = self._get_filtered_dates()
-            obj_map = self._build_topic_exam_map(TOPIC_OBJ, date_filter)
-            sub_map = self._build_topic_exam_map(TOPIC_SUB, date_filter)
-            all_topics = sorted(set(obj_map.keys()) | set(sub_map.keys()))
+            all_topics = set()
+            for date, meta in self.dm.exam_meta.items():
+                if date_filter and date not in date_filter:
+                    continue
+                for q in meta.questions:
+                    for kt in q.topics:
+                        all_topics.add(kt.name)
+            all_topics = sorted(all_topics)
             prev_topic = self.combo_topic.currentText()
             self.combo_topic.blockSignals(True)
             self.combo_topic.clear()
@@ -650,9 +533,9 @@ class StudentEvalTab(QWidget):
 
         try:
             if self._view_mode == 0:
-                self._draw_topic_analysis(TOPIC_OBJ)
+                self._draw_topic_analysis("obj")
             elif self._view_mode == 1:
-                self._draw_topic_analysis(TOPIC_SUB)
+                self._draw_topic_analysis("sub")
             elif self._view_mode == 2:
                 self._draw_comparison()
             elif self._view_mode == 3:
@@ -708,31 +591,90 @@ class StudentEvalTab(QWidget):
         self.lbl_call.setText(f"被抽: <b style='color:#2c3e50'>{stats['call_count']}</b> 次")
 
     # ------------------------------------------------------------------
+    # 题目级知识点得分率（通用）
+    # ------------------------------------------------------------------
+    def _compute_question_topic_rates(self, date_filter, qtype_filter):
+        """从题目绑定计算每个知识点的加权得分率
+
+        qtype_filter: "obj"(仅客观), "sub"(仅主观), None(全部)
+        """
+        student = self._current_student
+        class_idx = self.dm.current_class
+        all_names = [s.name for s in self.dm.students[class_idx][0]]
+
+        # 收集题目-知识点绑定
+        topic_qlist: dict[str, list[tuple]] = {}
+        for date, meta in self.dm.exam_meta.items():
+            if date_filter and date not in date_filter:
+                continue
+            if not meta.questions:
+                continue
+            for q in meta.questions:
+                if qtype_filter == "obj" and q.qtype not in ("choice", "multi_select"):
+                    continue
+                if qtype_filter == "sub" and q.qtype not in ("fill", "answer"):
+                    continue
+                for kt in q.topics:
+                    topic_qlist.setdefault(kt.name, []).append(
+                        (date, q.id, q.max_score, kt.weight))
+
+        # 知识点→分类
+        topic_category = {}
+        for cat, topics in self.dm.knowledge_pool.items():
+            for t in topics:
+                topic_category[t] = cat
+
+        # 学生
+        stu_obj = None
+        for s in self.dm.students[class_idx][0]:
+            if s.name == student:
+                stu_obj = s
+                break
+
+        result = {}
+        for tname, qlist in topic_qlist.items():
+            s_sum, m_sum, n_exams = 0.0, 0.0, 0
+            cls_rates = []
+            for name in all_names:
+                ns_sum, nm_sum = 0.0, 0.0
+                name_qs = {}
+                for s in self.dm.students[class_idx][0]:
+                    if s.name == name:
+                        name_qs = s.question_scores
+                        break
+                for date, qid, max_score, weight in qlist:
+                    qs = name_qs.get(date, {})
+                    if qid in qs:
+                        ns_sum += qs[qid] * weight
+                        nm_sum += max_score * weight
+                if nm_sum > 0:
+                    cls_rates.append(ns_sum / nm_sum)
+                if name == student:
+                    s_sum, m_sum = ns_sum, nm_sum
+                    n_exams = sum(1 for d, q, _, _ in qlist if q in name_qs.get(d, {}))
+            import statistics
+            cat = topic_category.get(tname, "未分类")
+            if m_sum > 0:
+                c_avg = round(statistics.mean(cls_rates), 3) if cls_rates else 0.0
+                result[tname] = {"rate": round(s_sum / m_sum, 3), "count": n_exams,
+                                 "category": cat, "class_avg": c_avg}
+            else:
+                result[tname] = {"rate": None, "count": 0, "category": cat, "class_avg": 0.0}
+        return result
+
+    # ------------------------------------------------------------------
     # 绘图: 知识点分析（客观 / 主观）
     # ------------------------------------------------------------------
-    def _draw_topic_analysis(self, topic_type: str):
-        class_idx = self.dm.current_class
+    def _draw_topic_analysis(self, qtype_filter: str):
         date_filter = self._get_filtered_dates()
-        is_obj = (topic_type == TOPIC_OBJ)
+        is_obj = (qtype_filter == "obj")
+        label = "客观题" if is_obj else "主观题"
+        color_pos, color_neg = ("#3498db", "#e74c3c") if is_obj else ("#e67e22", "#e74c3c")
 
-        if is_obj:
-            score_rates = self._get_score_rates(self._current_student, "obj")
-            label = "客观题"
-            color_pos, color_neg = "#3498db", "#e74c3c"
-        else:
-            score_rates = self._get_score_rates(self._current_student, "sub")
-            label = "主观题"
-            color_pos, color_neg = "#e67e22", "#e74c3c"
-
-        perf = self._compute_topic_performance(
-            self._current_student, topic_type, score_rates, date_filter
-        )
+        perf = self._compute_question_topic_rates(date_filter, qtype_filter)
         if not perf:
-            self._show_empty(f"暂无知识点数据，请先在数据维护页设置考试{label}的知识点。")
+            self._show_empty(f"暂无知识点数据，请先在数据维护页绑定知识点到题目。")
             return
-
-        # 班级平均参照
-        class_avg = self._compute_class_topic_performance(topic_type, date_filter)
 
         items = sorted(
             [(n, d) for n, d in perf.items() if d["rate"] is not None],
@@ -747,6 +689,7 @@ class StudentEvalTab(QWidget):
         names = [x[0] for x in items] + [x[0] for x in null_items]
         rates = [x[1]["rate"] for x in items] + [0.0] * len(null_items)
         counts = [x[1]["count"] for x in items] + [0] * len(null_items)
+        class_avgs = [x[1]["class_avg"] for x in items] + [0.0] * len(null_items)
         colors = [color_pos if r >= 0.5 else color_neg for r in rates]
 
         ax = self.fig.add_subplot(111)
@@ -759,14 +702,12 @@ class StudentEvalTab(QWidget):
             ax.set_yticks(y_pos)
             ax.set_yticklabels(names, fontsize=7)
             ax.invert_yaxis()
-            ax.set_xlabel("加权得分率", fontsize=11)
+            ax.set_xlabel("知识点得分率", fontsize=11)
             for i, (r, n) in enumerate(zip(rates, counts)):
                 if n > 0:
                     ax.text(r + 0.01, i, f" {r:.0%}", va="center", fontsize=6)
-            # 班级均线标记
-            for i, name in enumerate(names):
-                ca = class_avg.get(name)
-                if ca is not None:
+            for i, ca in enumerate(class_avgs):
+                if ca > 0:
                     ax.plot(ca, i, "D", color="#7f8c8d", markersize=4, zorder=5)
         elif n_topics > 20:
             y_pos = list(range(n_topics))
@@ -774,59 +715,44 @@ class StudentEvalTab(QWidget):
             ax.set_yticks(y_pos)
             ax.set_yticklabels(names, fontsize=8)
             ax.invert_yaxis()
-            ax.set_xlabel("加权得分率", fontsize=11)
+            ax.set_xlabel("知识点得分率", fontsize=11)
             for i, (r, n) in enumerate(zip(rates, counts)):
                 if n > 0:
                     ax.text(r + 0.01, i, f" {r:.0%} (n={n})", va="center", fontsize=7)
-            for i, name in enumerate(names):
-                ca = class_avg.get(name)
-                if ca is not None:
+            for i, ca in enumerate(class_avgs):
+                if ca > 0:
                     ax.plot(ca, i, "D", color="#7f8c8d", markersize=5, zorder=5)
         else:
             x_pos = list(range(n_topics))
             ax.bar(x_pos, rates, color=colors, width=0.6)
             ax.set_xticks(x_pos)
             ax.set_xticklabels(names, fontsize=9, rotation=35, ha="right")
-            ax.set_ylabel("加权得分率", fontsize=11)
+            ax.set_ylabel("知识点得分率", fontsize=11)
             for i, (r, n) in enumerate(zip(rates, counts)):
                 if n > 0:
                     ax.text(i, r + 0.02, f"{r:.0%}", ha="center", fontsize=8)
                     ax.text(i, 0.01, f"n={n}", ha="center", fontsize=7, color="#95a5a6")
-            # 班级均线标记
-            for i, name in enumerate(names):
-                ca = class_avg.get(name)
-                if ca is not None:
+            for i, ca in enumerate(class_avgs):
+                if ca > 0:
                     ax.plot(i, ca, "D", color="#7f8c8d", markersize=5, zorder=5)
 
         ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
         date_info = self._date_filter_info()
-        ax.set_title(f"{self._current_student}  ·  {label}知识点分析(加权得分率){date_info}",
+        ax.set_title(f"{self._current_student}  ·  {label}知识点掌握度{date_info}",
                      fontsize=14, fontweight="bold")
         weak = [f"{n}({r:.0%})" for n, r in items[-3:]] if len(items) >= 3 else []
         weak_str = f" | 薄弱: {', '.join(reversed(weak))}" if weak else ""
-        if len(null_items) > 0:
-            self.status_label.setText(
-                f"{label}：{len(items)}个知识点有数据，{len(null_items)}个无数据{date_info}{weak_str}"
-            )
-        else:
-            self.status_label.setText(f"{label}：共 {len(items)} 个知识点{date_info}{weak_str}")
+        self.status_label.setText(
+            f"{label}：{len(items)}个知识点有数据，{len(null_items)}个无数据{date_info}{weak_str}"
+        )
 
     # ------------------------------------------------------------------
     # 绘图: 主客观对比
     # ------------------------------------------------------------------
     def _draw_comparison(self):
-        class_idx = self.dm.current_class
         date_filter = self._get_filtered_dates()
-
-        obj_rates = self._get_score_rates(self._current_student, "obj")
-        sub_rates = self._get_score_rates(self._current_student, "sub")
-
-        obj_perf = self._compute_topic_performance(
-            self._current_student, TOPIC_OBJ, obj_rates, date_filter
-        )
-        sub_perf = self._compute_topic_performance(
-            self._current_student, TOPIC_SUB, sub_rates, date_filter
-        )
+        obj_perf = self._compute_question_topic_rates(date_filter, "obj")
+        sub_perf = self._compute_question_topic_rates(date_filter, "sub")
 
         common = []
         for name in set(obj_perf.keys()) & set(sub_perf.keys()):
@@ -838,11 +764,10 @@ class StudentEvalTab(QWidget):
                 common.append((name, o_r, s_r, abs(o_r - s_r)))
 
         if not common:
-            self._show_empty("暂无主客观均设知识点的考试数据，无法对比。")
+            self._show_empty("暂无主客观均有题目绑定的知识点，无法对比。请先在数据维护页绑定知识点到题目。")
             return
 
         common.sort(key=lambda x: x[3], reverse=True)
-
         names = [x[0] for x in common]
         obj_d = [x[1] for x in common]
         sub_d = [x[2] for x in common]
@@ -852,33 +777,35 @@ class StudentEvalTab(QWidget):
             y_pos = list(range(n_items))
             w = 0.35
             ax = self.fig.add_subplot(111)
-            ax.barh([y + w/2 for y in y_pos], obj_d, w, color="#3498db", label="客观题")
-            ax.barh([y - w/2 for y in y_pos], sub_d, w, color="#e67e22", label="主观题")
+            ax.barh([y + w/2 for y in y_pos], obj_d, w, color="#3498db", label="客观题(选择/多选)")
+            ax.barh([y - w/2 for y in y_pos], sub_d, w, color="#e67e22", label="主观题(填空/解答)")
             ax.set_yticks(y_pos)
             ax.set_yticklabels(names, fontsize=7)
             ax.invert_yaxis()
-            ax.set_xlabel("加权得分率", fontsize=11)
+            ax.set_xlabel("得分率", fontsize=11)
             ax.set_xlim(-0.05, 1.05)
             ax.legend(fontsize=10, loc="lower right")
         else:
             ax = self.fig.add_subplot(111)
             x = list(range(n_items))
             w = 0.35
-            bars1 = ax.bar([xi - w/2 for xi in x], obj_d, w, color="#3498db", label="客观题")
-            bars2 = ax.bar([xi + w/2 for xi in x], sub_d, w, color="#e67e22", label="主观题")
+            bars1 = ax.bar([xi - w/2 for xi in x], obj_d, w, color="#3498db", label="客观题(选择/多选)")
+            bars2 = ax.bar([xi + w/2 for xi in x], sub_d, w, color="#e67e22", label="主观题(填空/解答)")
             ax.set_xticks(x)
             ax.set_xticklabels(names, fontsize=9, rotation=35, ha="right")
-            ax.set_ylabel("加权得分率", fontsize=11)
+            ax.set_ylabel("得分率", fontsize=11)
             ax.set_ylim(-0.05, 1.05)
             ax.legend(fontsize=11, loc="lower right")
             for bar in bars1:
                 h = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2, h + 0.02,
-                        f"{h:.0%}", ha="center", fontsize=7, color="#3498db")
+                if h > 0:
+                    ax.text(bar.get_x() + bar.get_width()/2, h + 0.02,
+                            f"{h:.0%}", ha="center", fontsize=7, color="#3498db")
             for bar in bars2:
                 h = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2, h + 0.02,
-                        f"{h:.0%}", ha="center", fontsize=7, color="#e67e22")
+                if h > 0:
+                    ax.text(bar.get_x() + bar.get_width()/2, h + 0.02,
+                            f"{h:.0%}", ha="center", fontsize=7, color="#e67e22")
 
         date_info = self._date_filter_info()
         ax.set_title(f"{self._current_student}  ·  主客观知识点对比{date_info}",
@@ -891,21 +818,21 @@ class StudentEvalTab(QWidget):
     # 绘图: 能力雷达图
     # ------------------------------------------------------------------
     def _draw_radar(self):
-        class_idx = self.dm.current_class
         date_filter = self._get_filtered_dates()
         compare_name = self.combo_compare.currentText() if self.btn_compare.isChecked() else ""
 
-        def _get_student_radar_vals(name: str) -> tuple[dict, dict]:
-            """返回 (cat_obj, cat_sub) 或空"""
-            o_r = self._get_score_rates(name, "obj")
-            s_r = self._get_score_rates(name, "sub")
-            op = self._compute_topic_performance(name, TOPIC_OBJ, o_r, date_filter)
-            sp = self._compute_topic_performance(name, TOPIC_SUB, s_r, date_filter)
-            return self._compute_category_performance(op), self._compute_category_performance(sp)
+        def _get_radar_vals(name: str):
+            # 临时切换 student 来调用 _compute_question_topic_rates
+            saved = self._current_student
+            self._current_student = name
+            obj_rates = self._compute_question_topic_rates(date_filter, "obj")
+            sub_rates = self._compute_question_topic_rates(date_filter, "sub")
+            self._current_student = saved
+            return self._compute_category_performance(obj_rates), \
+                   self._compute_category_performance(sub_rates)
 
-        cat_obj, cat_sub = _get_student_radar_vals(self._current_student)
+        cat_obj, cat_sub = _get_radar_vals(self._current_student)
 
-        # 确定分类排序（以主学生为准）
         all_cats = sorted(
             set(cat_obj.keys()) | set(cat_sub.keys()),
             key=lambda c: (cat_obj.get(c, {}).get("rate", 0) +
@@ -913,7 +840,7 @@ class StudentEvalTab(QWidget):
             reverse=True,
         )
         if len(all_cats) < 3:
-            self._show_empty(f"类别数量不足3个（当前{len(all_cats)}），无法绘制雷达图。")
+            self._show_empty(f"类别数量不足3个（当前{len(all_cats)}），请先在数据维护页绑定知识点到题目。")
             return
 
         N = len(all_cats)
@@ -930,8 +857,7 @@ class StudentEvalTab(QWidget):
         ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8)
 
         if compare_name:
-            # 多人对比模式：按分数模式取数据
-            cat_cmp, cat_cmp_sub = _get_student_radar_vals(compare_name)
+            cat_cmp_obj, cat_cmp_sub = _get_radar_vals(compare_name)
 
             def _pick_vals(co, cs):
                 vals = []
@@ -948,7 +874,7 @@ class StudentEvalTab(QWidget):
                 return vals + vals[:1]
 
             v1 = _pick_vals(cat_obj, cat_sub)
-            v2 = _pick_vals(cat_cmp, cat_cmp_sub)
+            v2 = _pick_vals(cat_cmp_obj, cat_cmp_sub)
             ax.plot(angles, v1, "o-", color="#3498db", linewidth=2, markersize=6,
                     label=self._current_student)
             ax.fill(angles, v1, alpha=0.08, color="#3498db")
@@ -962,19 +888,18 @@ class StudentEvalTab(QWidget):
                 f"对比: {self._current_student} vs {compare_name} | {N}个类别{date_info}"
             )
         else:
-            # 单人模式：按分数模式显示
             obj_vals = [cat_obj.get(c, {}).get("rate", 0) for c in all_cats]
             sub_vals = [cat_sub.get(c, {}).get("rate", 0) for c in all_cats]
             obj_vals += obj_vals[:1]
             sub_vals += sub_vals[:1]
 
-            if self._score_mode in (0, 2):  # 客观 or 总体
+            if self._score_mode in (0, 2):
                 ax.plot(angles, obj_vals, "o-", color="#3498db", linewidth=2, markersize=6,
-                        label="客观题")
+                        label="客观题(选择/多选)")
                 ax.fill(angles, obj_vals, alpha=0.1, color="#3498db")
-            if self._score_mode in (1, 2):  # 主观 or 总体
+            if self._score_mode in (1, 2):
                 ax.plot(angles, sub_vals, "s--", color="#e67e22", linewidth=2, markersize=6,
-                        label="主观题")
+                        label="主观题(填空/解答)")
 
             date_info = self._date_filter_info()
             ax.set_title(f"{self._current_student}  ·  能力雷达图{date_info}",
@@ -1165,13 +1090,13 @@ class StudentEvalTab(QWidget):
                 continue
             stu_qs = stu_obj.question_scores[date]
 
-            # 计算该学生在该知识点的得分率
+            # 计算该学生在该知识点的加权得分率
             stu_score_sum = 0.0
             stu_max_sum = 0.0
             for qid, qtype, max_score, weight in q_infos:
                 if qid in stu_qs:
-                    stu_score_sum += stu_qs[qid]
-                stu_max_sum += max_score
+                    stu_score_sum += stu_qs[qid] * weight
+                stu_max_sum += max_score * weight
 
             if stu_max_sum == 0:
                 continue
@@ -1191,8 +1116,8 @@ class StudentEvalTab(QWidget):
                 nm_sum = 0.0
                 for qid, qtype, max_score, weight in q_infos:
                     if qid in name_qs:
-                        ns_sum += name_qs[qid]
-                    nm_sum += max_score
+                        ns_sum += name_qs[qid] * weight
+                    nm_sum += max_score * weight
                 if nm_sum > 0:
                     class_rates.append(ns_sum / nm_sum)
             c_avg = round(statistics.mean(class_rates), 4) if class_rates else 0.0
