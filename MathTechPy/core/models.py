@@ -9,16 +9,14 @@ class StudentData:
     id: int
     name: str
     call_count: int = 0
-    # 客观分成绩: [["2024/09/01", "0.78"], ...]
+    # 客观分: [["2025/09/01", "30.00"], ...]
     scores: List[List[str]] = field(default_factory=list)
-    # 满分卷成绩: [["2024/09/01", "0.44"], ...]
+    # 主观分: [["2025/09/01", "45.00"], ...]
+    scores_sub: List[List[str]] = field(default_factory=list)
+    # 全卷总分: [["2025/09/01", "75.00"], ...]
     scores_full: List[List[str]] = field(default_factory=list)
     # 逐题分: {date: {question_id: score}}
     question_scores: dict = field(default_factory=dict)
-
-    @property
-    def score_count(self) -> int:
-        return len(self.scores)
 
     @property
     def avg_score(self) -> float:
@@ -66,6 +64,4 @@ class Question:
 class ExamMeta:
     """考试元数据"""
     date: str
-    subjective_topics: List[KnowledgeTopic] = field(default_factory=list)  # 客观分知识点
-    objective_topics: List[KnowledgeTopic] = field(default_factory=list)   # 满分卷知识点
-    questions: List[Question] = field(default_factory=list)                # 题目列表（可选）
+    questions: List[Question] = field(default_factory=list)  # 题目列表

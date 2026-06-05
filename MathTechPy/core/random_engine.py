@@ -7,7 +7,7 @@
 4. 增加 weight 机制：call_count 越小的学生权重越高
 """
 import random
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from dataclasses import dataclass, field
 
 from .models import StudentData
@@ -24,11 +24,11 @@ class RandomEngine:
     def __init__(self, data_manager):
         self.dm = data_manager
         # 按 (class_id, full_score) 隔离历史，避免切换班级时污染
-        self._history: Dict[Tuple[int, bool], List[int]] = {}
+        self._history: Dict[int, List[int]] = {}
         self._last_group_size: int = 3
 
-    def _key(self) -> Tuple[int, bool]:
-        return (self.dm.current_class, self.dm.use_full_score)
+    def _key(self) -> int:
+        return self.dm.current_class
 
     def _get_history(self) -> List[int]:
         return self._history.setdefault(self._key(), [])
@@ -97,23 +97,10 @@ class RandomEngine:
                 return s
         return students[-1]
 
-    def reset_history(self, class_id: int = None, full_score: bool = None) -> None:
-        """清空指定班级/模式的历史记录"""
-        if class_id is None and full_score is None:
+    def reset_history(self, class_id: int = None) -> None:
+        """清空指定班级的历史记录"""
+        if class_id is None:
             self._history.clear()
             return
+        self._history.pop(class_id, None)
 
-        keys_to_remove = []
-        for key in self._history:
-            c, f = key
-            if (class_id is None or c == class_id) and (full_score is None or f == full_score):
-                keys_to_remove.append(key)
-        for k in keys_to_remove:
-            del self._history[k]
-
-    def get_history_names(self) -> List[str]:
-        """获取当前会话已抽过的人名列表（最近在前）"""
-        history = self._get_history()
-        students = self.dm.current_students
-        id_map = {s.id: s for s in students}
-        return [id_map[hid].name for hid in reversed(history) if hid in id_map]

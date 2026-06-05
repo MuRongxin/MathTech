@@ -365,36 +365,23 @@ class CardTab(QWidget):
         if not students or not self._cards:
             return
 
-        # 高亮停的位置就是中奖者
-        winner_idx = self._highlight_idx
-        if winner_idx >= len(self._cards):
-            return
-        winner_card = self._cards[winner_idx]
-        winner_name = winner_card.name
-
-        # 找到对应的 StudentData
-        winner_stu = None
-        for s in students:
-            if s.name == winner_name:
-                winner_stu = s
-                break
-        if winner_stu is None:
+        group_size = self.spin_group.value()
+        use_weight = self.chk_weight.isChecked()
+        results = self.engine.pick(group_size=group_size, use_weight=use_weight)
+        if not results:
             return
 
-        # 更新 callCount
-        new_count = self.dm.update_call_count(self.dm.current_class, winner_stu.id)
-        winner_stu.call_count = new_count
+        winner_name = results[0].student.name
+        for r in results:
+            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
+            r.student.call_count = new_count
 
-        # 同步引擎历史
-        engine_history = self.engine._get_history()
-        engine_history.append(winner_stu.id)
-
-        # 只翻开中奖者的卡片
+        # 高亮引擎选中的学生的卡片
         for c in self._cards:
             c.flip(c.name == winner_name)
 
         self.winner_label.setText(f"🎉 {winner_name}")
-        self.status_label.setText(f"🎉 {winner_name}  ·  第{winner_stu.call_count}次被抽中")
+        self.status_label.setText(f"🎉 {winner_name}  ·  第{results[0].student.call_count}次被抽中")
         self.btn_roll.setText("🚀  开 始 翻 牌")
         self._set_start_style()
 

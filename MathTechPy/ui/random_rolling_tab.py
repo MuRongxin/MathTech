@@ -323,38 +323,32 @@ class RollingWheelTab(QWidget):
             return
 
         names = self.wheel.names
-        n = len(names)
-        aps = 360.0 / n
-        # 指针在右侧，角度偏移 90°
-        winner_idx = int(((90 - self.wheel.angle) % 360) / aps) % n
-        winner_name = names[winner_idx]
-
-        # 找到对应的 StudentData
-        winner_stu = None
-        for s in students:
-            if s.name == winner_name:
-                winner_stu = s
-                break
-        if winner_stu is None:
+        group_size = self.spin_group.value()
+        use_weight = self.chk_weight.isChecked()
+        results = self.engine.pick(group_size=group_size, use_weight=use_weight)
+        if not results:
             return
 
-        # 更新 callCount 并记录到 engine 历史
-        new_count = self.dm.update_call_count(self.dm.current_class, winner_stu.id)
-        winner_stu.call_count = new_count
+        winner_name = results[0].student.name
+        for r in results:
+            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
+            r.student.call_count = new_count
 
-        # 同步引擎历史（手动记录，不通过 pick()，避免二次抽取）
-        engine_history = self.engine._get_history()
-        engine_history.append(winner_stu.id)
-
+        try:
+            winner_idx = names.index(winner_name)
+        except ValueError:
+            winner_idx = 0
         self.wheel.set_highlight(winner_idx)
         self.wheel.update()
 
         self.winner_label.setText(f"🎉 {winner_name}")
-        self.status_label.setText(f"🎉 {winner_name}  ·  第{winner_stu.call_count}次被抽中")
+        self.status_label.setText(f"🎉 {winner_name}  ·  第{results[0].student.call_count}次被抽中")
         self.btn_roll.setText("🚀  开 始 转 动")
         self._set_start_style()
 
-        self.history_list.insertItem(0, f"{winner_name}  ·  第{winner_stu.call_count}次")
+        for r in reversed(results):
+            prefix = "🔄 " if r.is_new_cycle else ""
+            self.history_list.insertItem(0, f"{prefix}{r.student.name}  ·  第{r.student.call_count}次")
         self.hist_count.setText(str(self.history_list.count()))
 
     def reset_history(self):

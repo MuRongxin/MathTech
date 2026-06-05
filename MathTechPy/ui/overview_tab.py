@@ -234,32 +234,34 @@ class OverviewTab(QWidget):
         for i, row in enumerate(self.rows):
             row.set_expanded(idx == -1 or idx == i, animate=True)
 
-        if idx != -1:
-            self.dm.current_class = idx
-            window = self.window()
-            if hasattr(window, 'random_engine'):
-                window.random_engine.reset_history()
-
         self._draw_chart()
 
-    def _calc_metrics(self, students, full_marks: int = 100):
-        """计算班级指标，用得分率（实际分 / 全班最高分）统一不同分制"""
+    def _calc_metrics(self, students):
+        """计算最近一次考试的班级指标，得分率 = 实际分 / 理论满分"""
+        latest_dt = self.dm.dates[-1] if self.dm.dates else None
+        if not latest_dt:
+            return {"high": 0, "high_pct": 0, "pass": 0, "pass_pct": 0,
+                    "low": 0, "low_pct": 0, "std": 0, "avg": 0, "count": 0, "max_score": "--"}
+
         scores = []
         for s in students:
-            arr = s.scores if s.scores else s.scores_full
-            if arr:
-                try:
-                    scores.append(float(arr[-1][1]))
-                except:
-                    pass
+            score_map = {d: float(v) for d, v in (s.scores_full or s.scores or [])}
+            if latest_dt in score_map:
+                scores.append(score_map[latest_dt])
         if not scores:
             return {"high": 0, "high_pct": 0, "pass": 0, "pass_pct": 0,
-                    "low": 0, "low_pct": 0, "std": 0, "avg": 0, "count": 0, "max_score": 0}
+                    "low": 0, "low_pct": 0, "std": 0, "avg": 0, "count": 0, "max_score": "--"}
+
+        # 理论满分：逐题 max_score 加总
+        meta = self.dm.get_exam_meta(latest_dt)
+        if meta.questions:
+            theoretical_max = sum(q.max_score for q in meta.questions)
+        else:
+            theoretical_max = max(scores) if scores else 100.0
 
         import statistics
-        max_score = max(scores)
-        if max_score > 0:
-            rates = [sc / max_score for sc in scores]
+        if theoretical_max > 0:
+            rates = [sc / theoretical_max for sc in scores]
         else:
             rates = [0.0] * len(scores)
 
@@ -273,14 +275,14 @@ class OverviewTab(QWidget):
             "pass": passed, "pass_pct": round(passed / len(scores) * 100, 1),
             "low": low, "low_pct": round(low / len(scores) * 100, 1),
             "std": round(std, 2), "avg": round(avg, 1),
-            "count": len(scores), "max_score": round(max_score, 1)
+            "count": len(scores), "max_score": round(theoretical_max, 1)
         }
 
     def refresh(self):
         all_metrics = []
         for ci in range(self.dm.class_count):
             students = self.dm.students[ci][1]  # 固定用满分卷
-            all_metrics.append(self._calc_metrics(students, 100))
+            all_metrics.append(self._calc_metrics(students))
 
         needs_finalize = False
         for i, row in enumerate(self.rows):
@@ -316,15 +318,13 @@ class OverviewTab(QWidget):
         for ci in range(self.dm.class_count):
             students = self.dm.students[ci][1]
             avgs = []
-            for exam_i in range(len(dates)):
+            for dt in dates:
                 vals = []
                 for s in students:
-                    arr = s.scores if s.scores else s.scores_full
-                    if exam_i < len(arr):
-                        try:
-                            vals.append(float(arr[exam_i][1]))
-                        except:
-                            pass
+                    # date-keyed lookup 避免缺考错位
+                    score_map = {d: float(v) for d, v in (s.scores_full or s.scores or [])}
+                    if dt in score_map:
+                        vals.append(score_map[dt])
                 avgs.append(round(sum(vals) / len(vals), 1) if vals else 0.0)
 
             name = self.dm.class_names[ci] if ci < len(self.dm.class_names) else f"班级{ci+1}"

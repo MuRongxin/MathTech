@@ -103,9 +103,35 @@ def gen_exam_row(ability: float) -> list[int]:
     return scores
 
 
-def assign_abilities(n: int, seed_offset: int = 0) -> list[float]:
+# 《实力主义至上教室》角色 —— 高能力学生
+ELITE_OVERRIDES = {
+    # 绫小路清隆：隐藏实力的天才，全年级最强
+    "绫小路清隆": (0.93, 0.98),
+    # 坂柳有栖：A班领袖，天才级
+    "坂柳有栖": (0.90, 0.96),
+    # 堀北铃音：优等生，成绩拔尖
+    "堀北铃音": (0.85, 0.92),
+    # 一之濑帆波：B班领袖，综合能力强
+    "一之濑帆波": (0.82, 0.90),
+    # 龙园翔：C班领袖，策略型，成绩中上
+    "龙园翔": (0.70, 0.82),
+    # 栉田桔梗：表面乖巧，成绩中上
+    "栉田桔梗": (0.72, 0.82),
+    # 轻井泽惠：隐藏实力型，成绩中等偏上
+    "轻井泽惠": (0.65, 0.78),
+}
+
+
+def assign_abilities(names: list[str], seed_offset: int = 0) -> list[float]:
     random.seed(42 + seed_offset)
-    return [random.uniform(0.2, 0.95) for _ in range(n)]
+    abilities = []
+    for name in names:
+        if name in ELITE_OVERRIDES:
+            lo, hi = ELITE_OVERRIDES[name]
+            abilities.append(random.uniform(lo, hi))
+        else:
+            abilities.append(random.uniform(0.20, 0.95))
+    return abilities
 
 
 def write_csv(path: Path, header: list[str], rows: list[list]):
@@ -137,7 +163,8 @@ def wrong_obj_questions(scores: list[int], maxs: list[int], n_obj: int) -> str:
 def generate_for_class(cls_name: str, ability_seed: int):
     students = load_students(cls_name)
     n = len(students)
-    abilities = assign_abilities(n, ability_seed)
+    names = [s["name"] for s in students]
+    abilities = assign_abilities(names, ability_seed)
     quiz_count = 0
     exam_count = 0
 

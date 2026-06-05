@@ -18,7 +18,7 @@ class TagChip(QPushButton):
     """知识点标签：单击定位，双击移除"""
 
     def __init__(self, text: str, on_locate=None, on_remove=None, parent=None):
-        super().__init__(f"× {text}", parent)
+        super().__init__(text, parent)
         self._name = text.rsplit("(", 1)[0].strip() if "(" in text else text
         self._on_locate = on_locate
         self._on_remove = on_remove
@@ -425,16 +425,6 @@ class CategoryGroup(QWidget):
         total = len(self.toggles)
         cnt_str = f"({selected_count}/{total})" if selected_count > 0 else f"({total})"
         self.expand_btn.setText(f"{arrow} {self.cat_name} {cnt_str}")
-
-    def set_selected(self, selected_names: set[str]):
-        count = 0
-        for row in self.toggles:
-            is_sel = row.name in selected_names
-            row.set_checked(is_sel)
-            if is_sel:
-                count += 1
-        self._update_header(count)
-
 
 class DropContainer(QWidget):
     """可接收拖放的容器"""
@@ -1058,14 +1048,37 @@ class DataMaintenanceTab(QWidget):
         menu.addSeparator()
         act_fill = menu.addAction("🟠 填空题")
         act_answer = menu.addAction("🔴 解答题")
+        menu.addSeparator()
+        act_max = menu.addAction("✏️ 修改满分...")
         act = menu.exec(btn.mapToGlobal(pos))
         if not act:
+            return
+        if act == act_max:
+            self._change_question_max(qid)
             return
         type_map = {act_choice: "choice", act_multi: "multi_select",
                     act_fill: "fill", act_answer: "answer"}
         new_type = type_map.get(act)
         if new_type:
             self._change_question_type(qid, new_type)
+
+    def _change_question_max(self, qid: str):
+        meta = self.dm.get_exam_meta(self._current_date)
+        cur = 5.0
+        for q in meta.questions:
+            if q.id == qid:
+                cur = q.max_score
+                break
+        val, ok = QInputDialog.getDouble(self, "修改满分", f"题目 Q{qid} 满分:",
+                                         cur, 0.5, 50.0, 1)
+        if ok:
+            for q in meta.questions:
+                if q.id == qid:
+                    q.max_score = val
+                    break
+            self._build_question_buttons(meta.questions)
+            self._update_question_buttons()
+            self._auto_save()
 
     def _change_question_type(self, qid: str, new_type: str):
         meta = self.dm.get_exam_meta(self._current_date)

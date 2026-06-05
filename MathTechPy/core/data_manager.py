@@ -49,7 +49,6 @@ class DataManager:
         self.class_names: List[str] = []
 
         self.current_class: int = 0  # 当前选中班级的索引
-        self.use_full_score: bool = True  # 默认整卷分
 
         # 考试日期列表（从 Excel 表头读取）
         self.dates: List[str] = []
@@ -106,19 +105,21 @@ class DataManager:
             base = self._load_xml(xml_path)
             obj_students = [StudentData(s.id, s.name, s.call_count) for s in base]
             full_students = [StudentData(s.id, s.name, s.call_count) for s in base]
-            self.students.append([obj_students, full_students])
+            sub_students = [StudentData(s.id, s.name, s.call_count) for s in base]
+            self.students.append([obj_students, full_students, sub_students])
 
     def _load_question_scores(self) -> None:
         """扫描 question_scores/ 目录，加载逐题分并更新总分"""
         if not self._question_score_dir or not self._question_score_dir.exists():
             return
 
-        # 按班级分组所有学生 {class_idx: {name: (obj_stu, full_stu)}}
+        # 按班级分组所有学生 {class_idx: {name: (obj_stu, full_stu, sub_stu)}}
         class_maps = []
         for ci in range(self.class_count):
             obj_map = {s.name: s for s in self.students[ci][0]}
             full_map = {s.name: s for s in self.students[ci][1]}
-            class_maps.append((obj_map, full_map))
+            sub_map = {s.name: s for s in self.students[ci][2]}
+            class_maps.append((obj_map, full_map, sub_map))
 
         # 已知班级后缀
         class_suffixes = [cn.replace("A", "") for cn in self.class_names]
@@ -157,7 +158,7 @@ class DataManager:
                 print(f"[WARN] 无法解析 {fpath.name}: {e}")
                 continue
 
-            obj_map, full_map = class_maps[class_idx]
+            obj_map, full_map, sub_map = class_maps[class_idx]
 
             # 为每个学生分配逐题分并更新总分
             matched = 0
@@ -165,30 +166,65 @@ class DataManager:
                 q_scores = row_data["questions"]
                 stu_obj = obj_map.get(name)
                 stu_full = full_map.get(name)
+                stu_sub = sub_map.get(name)
 
                 if stu_obj:
                     stu_obj.question_scores[date_str] = q_scores
                 if stu_full:
                     stu_full.question_scores[date_str] = q_scores
+                if stu_sub:
+                    stu_sub.question_scores[date_str] = q_scores
 
                 if not stu_obj and not stu_full:
                     continue
                 matched += 1
 
-                # 用文件中的总分覆盖旧Excel数据
+                # 客观总分
                 if obj_total_col and row_data["obj_total"] is not None:
                     new_score_str = f"{row_data['obj_total']:.2f}"
                     if stu_obj:
                         self._upsert_score(stu_obj.scores, date_str, new_score_str)
+                # 主观总分
+                if sub_total_col and row_data["sub_total"] is not None:
+                    new_score_str = f"{row_data['sub_total']:.2f}"
+                    if stu_sub:
+                        self._upsert_score(stu_sub.scores_sub, date_str, new_score_str)
+                # 全卷总分
                 if full_total_col and row_data["full_total"] is not None:
                     new_score_str = f"{row_data['full_total']:.2f}"
                     if stu_full:
                         self._upsert_score(stu_full.scores_full, date_str, new_score_str)
-                elif sub_total_col and row_data["sub_total"] is not None:
-                    # quiz 文件：主观分0，全卷分=客观总分
-                    new_score_str = f"{row_data['sub_total']:.2f}"
-                    if stu_full:
-                        self._upsert_score(stu_full.scores_full, date_str, new_score_str)
+
+                # 兜底：缺总分列时从逐题分自动加总
+                has_obj = obj_total_col and row_data["obj_total"] is not None
+                has_full = full_total_col and row_data["full_total"] is not None
+                has_sub = sub_total_col and row_data["sub_total"] is not None
+                q_sum = sum(q_scores.values())
+                if not has_obj or not has_full or not has_sub:
+                    # 尝试从 exam_meta 分题型
+                    meta = self.exam_meta.get(date_str)
+                    obj_qids = set()
+                    if meta and meta.questions:
+                        for q in meta.questions:
+                            if q.qtype in ("choice", "multi_select"):
+                                obj_qids.add(q.id)
+                    if obj_qids:
+                        obj_sum = sum(q_scores.get(qid, 0.0) for qid in obj_qids)
+                        sub_sum = sum(q_scores.get(qid, 0.0) for qid in q_scores if qid not in obj_qids)
+                    else:
+                        obj_sum = q_sum
+                        sub_sum = 0.0
+                    if not has_obj and obj_sum > 0 and stu_obj:
+                        self._upsert_score(stu_obj.scores, date_str, f"{obj_sum:.2f}")
+                    if not has_full and q_sum > 0 and stu_full:
+                        self._upsert_score(stu_full.scores_full, date_str, f"{q_sum:.2f}")
+                    if not has_sub and stu_sub:
+                        if has_full and has_obj:
+                            sub_val = max(0.0, (row_data["full_total"] or 0) - (row_data["obj_total"] or 0))
+                        else:
+                            sub_val = sub_sum
+                        if sub_val > 0:
+                            self._upsert_score(stu_sub.scores_sub, date_str, f"{sub_val:.2f}")
 
             print(f"[INFO]   匹配 {matched}/{len(q_rows)} 名学生")
 
@@ -228,22 +264,21 @@ class DataManager:
         """
         import csv
         with open(path, "r", encoding="utf-8-sig") as f:
-            reader = csv.reader(f)
-            # 跳过标题行，找真正的列头行
-            headers = []
-            for _ in range(5):
-                row = next(reader, None)
-                if row is None:
-                    break
-                candidates = [h.strip() for h in row if h and h.strip()]
-                # 非空单元格中，含数字或属于已知字段的达到 2 个以上 → 列头行
-                valid = sum(1 for h in candidates
-                           if h in KNOWN_META_COLUMNS or any(ch.isdigit() for ch in h))
-                if valid >= 2:
-                    headers = [h.strip() for h in row]  # 保留原始列顺序（含空列头）
-                    break
-            if not headers:
-                return {}, False, False, False
+            all_rows = list(csv.reader(f))
+
+        # 跳过标题行，找真正的列头行，记录行号
+        headers = []
+        header_row_idx = 0
+        for ri, row in enumerate(all_rows[:5]):
+            candidates = [h.strip() for h in row if h and h.strip()]
+            valid = sum(1 for h in candidates
+                       if h in KNOWN_META_COLUMNS or any(ch.isdigit() for ch in h))
+            if valid >= 2:
+                headers = [h.strip() for h in row]
+                header_row_idx = ri
+                break
+        if not headers:
+            return {}, False, False, False
 
         # 识别列：不在元数据字典中 + 列名含数字 → 题目列
         obj_total_idx = sub_total_idx = full_total_idx = None
@@ -260,10 +295,7 @@ class DataManager:
                 q_cols.append((i, h))
 
         q_rows = {}
-        with open(path, "r", encoding="utf-8-sig") as f:
-            reader = csv.reader(f)
-            next(reader)
-            for row in reader:
+        for row in all_rows[header_row_idx + 1:]:
                 if not row or len(row) < 2:
                     continue
                 name = row[1].strip() if len(row) > 1 else ""
@@ -304,11 +336,11 @@ class DataManager:
                     "full_total": full_total,
                 }
 
-        # quiz 文件：如果主观分列为空，全卷分 = 客观总分
-        first_row = next(iter(q_rows.values()), {})
-        has_sub = first_row.get("sub_total") is not None
-
-        return q_rows, obj_total_idx is not None, sub_total_idx is not None and has_sub, full_total_idx is not None
+        # 检查主观分列是否有数据（采样多行，避免第一行恰巧为空）
+        sample_rows = list(q_rows.values())[:5]
+        has_sub = any(r.get("sub_total") is not None for r in sample_rows)
+        has_full = any(r.get("full_total") is not None for r in sample_rows)
+        return q_rows, obj_total_idx is not None, sub_total_idx is not None and has_sub, full_total_idx is not None and has_full
 
     def _parse_question_xlsx(self, path: Path) -> tuple:
         """解析逐题分 Excel（与 CSV 同格式：考号,姓名,Q1...Qn,客观总分,主观总分,全卷总分,客观错题题号）"""
@@ -383,9 +415,10 @@ class DataManager:
 
         wb.close()
 
-        first_row = next(iter(q_rows.values()), {})
-        has_sub = first_row.get("sub_total") is not None
-        return q_rows, obj_total_idx is not None, sub_total_idx is not None and has_sub, full_total_idx is not None
+        sample_rows = list(q_rows.values())[:5]
+        has_sub = any(r.get("sub_total") is not None for r in sample_rows)
+        has_full = any(r.get("full_total") is not None for r in sample_rows)
+        return q_rows, obj_total_idx is not None, sub_total_idx is not None and has_sub, full_total_idx is not None and has_full
 
     def _detect_questions(self, all_qscores: List[dict], etype: str = "quiz") -> List:
         """从全班逐题分推断题目结构（结合考试类型和得分分布）"""
@@ -453,9 +486,10 @@ class DataManager:
     def _validate(self) -> None:
         """数据完整性校验"""
         for ci, class_data in enumerate(self.students):
-            for mi, mode_name in [(0, "客观分"), (1, "满分卷")]:
+            for mi, mode_name in [(0, "客观分"), (1, "全卷分"), (2, "主观分")]:
                 students = class_data[mi]
-                no_score = [s.name for s in students if not s.scores and not s.scores_full]
+                attr = ["scores", "scores_full", "scores_sub"][mi]
+                no_score = [s.name for s in students if not getattr(s, attr)]
                 if no_score:
                     print(f"[WARN] 班级{ci}({self.class_names[ci]})-{mode_name}: {len(no_score)} 名学生无成绩")
 
@@ -464,115 +498,63 @@ class DataManager:
     # ------------------------------------------------------------------
     @property
     def current_students(self) -> List[StudentData]:
-        """获取当前班级+当前模式的学生列表"""
+        """获取当前班级的学生列表"""
         if not self.students:
             return []
-        mode = 1 if self.use_full_score else 0
-        return self.students[self.current_class][mode]
-
-    def get_class_info(self, class_idx: int, full_score: bool = False) -> ClassInfo:
-        """获取班级统计信息"""
-        if class_idx < 0 or class_idx >= len(self.students):
-            return ClassInfo(name="未知", count=0, avg_call=0.0, avg_score=0.0, avg_score_full=0.0)
-
-        mode = 1 if full_score else 0
-        students = self.students[class_idx][mode]
-        count = len(students)
-        if count == 0:
-            return ClassInfo(name=self.class_names[class_idx], count=0,
-                           avg_call=0.0, avg_score=0.0, avg_score_full=0.0)
-
-        avg_call = sum(s.call_count for s in students) / count
-        avg_score = sum(s.avg_score for s in students) / count
-        avg_score_full = sum(s.avg_score_full for s in students) / count
-
-        return ClassInfo(
-            name=self.class_names[class_idx],
-            count=count,
-            avg_call=round(avg_call, 2),
-            avg_score=round(avg_score, 2),
-            avg_score_full=round(avg_score_full, 2)
-        )
+        return self.students[self.current_class][0]
 
     def get_zscores(self, class_idx: int, full_score: bool = False) -> list[list]:
         """获取指定班级的标准分数据
-        
-        直接对原始分计算 Z = (原始分 - μ) / σ
-        不受满分值影响，Z 分数对线性缩放不变。
-        
-        返回: 每个学生每次考试的标准分列表
-              [[name, [z1, z2, ...]], ...]
+
+        Z = (原始分 - μ) / σ，缺考排除出统计。
+        返回: [[name, [z1, z2, ...]], ...], 缺考为 None
         """
         import statistics
-        mode = 1 if full_score else 0
-        students = self.students[class_idx][mode]
+        students = self.students[class_idx][1 if full_score else 0]
         if not students or not self.dates:
             return []
 
         n_exams = len(self.dates)
         result = []
 
-        # 收集原始分
+        # 收集原始分：用 date→score 字典，缺考记 None
         for s in students:
-            arr = s.scores if s.scores else s.scores_full
+            arr = s.scores_full if full_score else s.scores
+            score_by_date = {d: float(v) for d, v in arr} if arr else {}
             raw_list = []
-            for i in range(n_exams):
-                if i < len(arr):
-                    try:
-                        raw_list.append(float(arr[i][1]))
-                    except:
-                        raw_list.append(0.0)
+            for dt in self.dates:
+                if dt in score_by_date:
+                    raw_list.append(score_by_date[dt])
                 else:
-                    raw_list.append(0.0)
+                    raw_list.append(None)
             result.append([s.name, raw_list])
 
-        # 对每次考试计算标准分 Z = (原始分 - μ) / σ
+        # 对每次考试计算 Z
         for exam_i in range(n_exams):
-            raw = [r[1][exam_i] for r in result]
-            mean = statistics.mean(raw)
-            std = statistics.stdev(raw) if len(raw) > 1 else 0
-            for r in result:
-                if std > 0:
-                    r[1][exam_i] = round((r[1][exam_i] - mean) / std, 2)
-                else:
-                    r[1][exam_i] = 0.0
+            valid = [(ri, r[1][exam_i]) for ri, r in enumerate(result)
+                     if r[1][exam_i] is not None]
+            if len(valid) < 2:
+                for r in result:
+                    r[1][exam_i] = 0.0 if r[1][exam_i] is not None else None
+                continue
+            raw_vals = [v for _, v in valid]
+            mean = statistics.mean(raw_vals)
+            std = statistics.stdev(raw_vals)
+            if std == 0:
+                for r in result:
+                    r[1][exam_i] = 0.0 if r[1][exam_i] is not None else None
+            else:
+                for ri, v in valid:
+                    result[ri][1][exam_i] = round((v - mean) / std, 2)
 
         return result
 
-    def get_overview_data(self) -> dict:
-        """获取概览页需要的所有数据"""
-        def calc_averages(students: List[StudentData], full_marks: int) -> List[float]:
-            if not students or not self.dates:
-                return []
-            avgs = []
-            for i in range(len(self.dates)):
-                vals = []
-                for s in students:
-                    arr = s.scores if s.scores else s.scores_full
-                    if i < len(arr):
-                        try:
-                            vals.append(float(arr[i][1]) / full_marks)
-                        except (ValueError, IndexError):
-                            pass
-                avgs.append(round(sum(vals) / len(vals), 2) if vals else 0.0)
-            return avgs
-
-        result = {
-            "dates": self.dates,
-            "classes": [],
-        }
-
-        for ci in range(self.class_count):
-            info = self.get_class_info(ci)
-            result["classes"].append({
-                "name": info.name,
-                "count": info.count,
-                "avg_call": info.avg_call,
-                "averages": calc_averages(self.students[ci][0], 40),
-                "averages_full": calc_averages(self.students[ci][1], 100),
-            })
-
-        return result
+    def is_quiz(self, date: str) -> bool:
+        """纯客观题(仅有choice/multi_select) = quiz"""
+        meta = self.exam_meta.get(date)
+        if not meta or not meta.questions:
+            return True
+        return not any(q.qtype in ("fill", "answer") for q in meta.questions)
 
     # ------------------------------------------------------------------
     # 更新
@@ -704,41 +686,23 @@ class DataManager:
             if not dt:
                 continue
 
-            def _parse_topics(parent_tag: str) -> List[KnowledgeTopic]:
-                topics = []
-                parent = exam.find(parent_tag)
-                if parent is not None:
-                    for t in parent.findall("topic"):
+            questions = []
+            qnode = exam.find("questions")
+            if qnode is not None:
+                for q in qnode.findall("question"):
+                    qid = q.get("id", "")
+                    qtype = q.get("type", "choice")
+                    max_score = float(q.get("max", "5.0"))
+                    topics = []
+                    for t in q.findall("topic"):
                         cat = t.get("category", "")
                         name = (t.text or "").strip()
                         weight = float(t.get("weight", "1.0"))
                         if cat and name:
                             topics.append(KnowledgeTopic(category=cat, name=name, weight=weight))
-                return topics
-
-            def _parse_questions() -> List[Question]:
-                questions = []
-                qnode = exam.find("questions")
-                if qnode is not None:
-                    for q in qnode.findall("question"):
-                        qid = q.get("id", "")
-                        qtype = q.get("type", "choice")
-                        max_score = float(q.get("max", "5.0"))
-                        topics = []
-                        for t in q.findall("topic"):
-                            cat = t.get("category", "")
-                            name = (t.text or "").strip()
-                            weight = float(t.get("weight", "1.0"))
-                            if cat and name:
-                                topics.append(KnowledgeTopic(category=cat, name=name, weight=weight))
-                        if qid:
-                            questions.append(Question(id=qid, qtype=qtype, max_score=max_score, topics=topics))
-                return questions
-
-            sub = _parse_topics("subjective")
-            obj = _parse_topics("objective")
-            qs = _parse_questions()
-            self.exam_meta[dt] = ExamMeta(date=dt, subjective_topics=sub, objective_topics=obj, questions=qs)
+                    if qid:
+                        questions.append(Question(id=qid, qtype=qtype, max_score=max_score, topics=topics))
+            self.exam_meta[dt] = ExamMeta(date=dt, questions=questions)
 
     def _save_exam_meta(self) -> None:
         path = self.data_dir / "exam_meta.xml"
@@ -746,15 +710,7 @@ class DataManager:
         for dt, meta in self.exam_meta.items():
             exam = ET.SubElement(root, "exam", {"date": dt})
 
-            def _save_topics(parent_tag: str, topics: List[KnowledgeTopic]) -> None:
-                parent = ET.SubElement(exam, parent_tag)
-                for kt in topics:
-                    attrs = {"category": kt.category}
-                    if kt.weight != 1.0:
-                        attrs["weight"] = f"{kt.weight:.2f}"
-                    ET.SubElement(parent, "topic", attrs).text = kt.name
-
-            # 有 questions 节点时只写 questions，否则写旧格式（兼容）
+            # 只写 questions 节点
             if meta.questions:
                 qnode = ET.SubElement(exam, "questions")
                 for q in meta.questions:
@@ -765,9 +721,6 @@ class DataManager:
                         if kt.weight != 1.0:
                             attrs["weight"] = f"{kt.weight:.2f}"
                         ET.SubElement(qelem, "topic", attrs).text = kt.name
-            else:
-                _save_topics("subjective", meta.subjective_topics)
-                _save_topics("objective", meta.objective_topics)
         self._indent_xml(root)
         ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
 
@@ -776,14 +729,6 @@ class DataManager:
         if date not in self.exam_meta:
             self.exam_meta[date] = ExamMeta(date=date)
         return self.exam_meta[date]
-
-    def update_exam_meta(self, date: str, sub_topics: List[KnowledgeTopic],
-                         obj_topics: List[KnowledgeTopic]) -> None:
-        """更新考试知识点并保存"""
-        self.exam_meta[date] = ExamMeta(date=date,
-                                         subjective_topics=sub_topics,
-                                         objective_topics=obj_topics)
-        self._save_exam_meta()
 
     def get_exam_questions(self, date: str) -> List[Question]:
         """获取某次考试的题目列表"""
@@ -795,18 +740,6 @@ class DataManager:
         meta = self.get_exam_meta(date)
         meta.questions = questions
         self._save_exam_meta()
-
-    def reorder_category(self, category: str, direction: int) -> None:
-        """调整分类顺序，direction: -1=上移, +1=下移"""
-        if category not in self.category_order:
-            return
-        idx = self.category_order.index(category)
-        new_idx = idx + direction
-        if new_idx < 0 or new_idx >= len(self.category_order):
-            return
-        self.category_order[idx], self.category_order[new_idx] = \
-            self.category_order[new_idx], self.category_order[idx]
-        self._save_knowledge_pool(self.data_dir / "knowledge_pool.xml")
 
     def move_category(self, category: str, target_idx: int) -> None:
         """将分类移动到指定位置（拖拽用）"""

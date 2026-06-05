@@ -15,7 +15,7 @@ sys.path.insert(0, str(project_root))
 
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 
 import matplotlib
 matplotlib.use("QtAgg")
@@ -35,6 +35,11 @@ def main():
 
     app = QApplication(sys.argv)
     app.setFont(QFont("Microsoft YaHei", 10))
+
+    # 应用图标
+    icon_path = Path(__file__).parent / "xdp-QQ图片20260114152820(1689).jpeg"
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
 
     # 全局样式
     app.setStyleSheet("""

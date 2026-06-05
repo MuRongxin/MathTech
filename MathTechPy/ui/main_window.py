@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         self._tabs = [
             OverviewTab(self.dm),
             RandomCombinedTab(self.dm, self.random_engine),
-            ScoreTab(self.dm, on_mode_change=self._update_mode_label),
+            ScoreTab(self.dm),
             DataMaintenanceTab(self.dm),
             StudentEvalTab(self.dm),
         ]
@@ -110,19 +110,7 @@ class MainWindow(QMainWindow):
 
         layout.addStretch()
 
-        # 模式切换
-        self.mode_label = QLabel("成绩模式: 整卷分")
-        self.mode_label.setStyleSheet("color: #bdc3c7; padding: 5px 20px;")
-        layout.addWidget(self.mode_label)
-
         return sidebar
-
-    def _update_mode_label(self):
-        """更新左下角成绩模式标签"""
-        if self.dm.use_full_score:
-            self.mode_label.setText("成绩模式: 整卷分")
-        else:
-            self.mode_label.setText("成绩模式: 仅客观分")
 
     def switch_tab(self, index: int):
         """切换内容页"""
@@ -145,4 +133,3 @@ class MainWindow(QMainWindow):
         current = self.stack.currentIndex()
         if 0 <= current < len(self._tabs):
             self._tabs[current].refresh()
-            self._update_mode_label()

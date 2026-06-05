@@ -16,7 +16,7 @@
 """
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider, QCompleter
+    QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider, QCompleter, QButtonGroup
 )
 from PyQt6.QtCore import Qt, QStringListModel
 from PyQt6.QtGui import QFont
@@ -34,10 +34,9 @@ class ScoreTab(QWidget):
     MODE_LAST7 = "📈 进退步榜"
     MODE_TARGET = "🎯 目标分对比"
 
-    def __init__(self, dm: DataManager, on_mode_change=None):
+    def __init__(self, dm: DataManager):
         super().__init__()
         self.dm = dm
-        self._on_mode_change = on_mode_change
         self._current_mode = self.MODE_DISTRIBUTION
         self._exam_index = -1
         self._display_count = 8
@@ -123,6 +122,33 @@ class ScoreTab(QWidget):
         row1.addLayout(type_btns_layout)
 
         row1.addStretch()
+
+        # 测验/考试切换
+        self.exam_type_btns: dict[str, QPushButton] = {}
+        self.exam_type_group = QButtonGroup(self)
+        self._exam_type = 2  # 0=quiz, 1=exam, 2=all
+        for i, label in enumerate(["测验", "考试", "全部"]):
+            btn = QPushButton(label)
+            btn.setCheckable(True)
+            btn.setChecked(i == 2)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setMinimumHeight(30)
+            r_left = "8px" if i == 0 else "0px"
+            r_right = "8px" if i == 2 else "0px"
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: white; border: 2px solid #95a5a6;
+                    border-radius: {r_left} {r_right} {r_right} {r_left};
+                    padding: 4px 10px; font-size: 12px; color: #636e72; font-weight: bold;
+                }}
+                QPushButton:hover {{ background: #ecf0f1; }}
+                QPushButton:checked {{ background: #95a5a6; color: white; }}
+            """)
+            self.exam_type_group.addButton(btn, i)
+            row1.addWidget(btn)
+            self.exam_type_btns[label] = btn
+        self.exam_type_group.buttonClicked.connect(self._on_exam_type_changed)
+
         layout.addLayout(row1)
 
         # ===== 第二行：上下文控件（按模式显示） =====
@@ -228,23 +254,36 @@ class ScoreTab(QWidget):
         self._score_type = stype
         for t, btn in self._type_btns.items():
             btn.setChecked(t == stype)
-        if self._on_mode_change:
-            self._on_mode_change()
         self.refresh()
+
+    def _on_exam_type_changed(self):
+        self._exam_type = self.exam_type_group.checkedId()
+        self.refresh()
+
+    def _filter_dates(self):
+        """返回符合测验/考试筛选的日期列表"""
+        et = self._exam_type if hasattr(self, '_exam_type') else 2
+        if et == 2:
+            return self.dm.dates
+        return [dt for dt in self.dm.dates if self.dm.is_quiz(dt) == (et == 0)]
 
     def _get_typed_scores(self, students, date_idx: int = -1):
         """按当前题型过滤，返回 [(name, score), ...]"""
+        if not self.dm.dates:
+            return []
         stype = self._score_type
         result = []
         for s in students:
             if stype == "total":
-                arr = s.scores if s.scores else s.scores_full
-                idx = date_idx if 0 <= date_idx < len(arr) else len(arr) - 1
-                if 0 <= idx < len(arr):
-                    try:
-                        result.append((s.name, float(arr[idx][1])))
-                    except (ValueError, TypeError):
-                        pass
+                # date-keyed lookup 避免缺考错位
+                score_map = {d: float(v) for d, v in (s.scores_full or s.scores or [])}
+                if not self.dm.dates:
+                    continue
+                dt_idx = date_idx if 0 <= date_idx < len(self.dm.dates) else len(self.dm.dates) - 1
+                if 0 <= dt_idx < len(self.dm.dates):
+                    dt = self.dm.dates[dt_idx]
+                    if dt in score_map:
+                        result.append((s.name, score_map[dt]))
             else:
                 # 按题型汇总逐题分
                 qtype_filter = {"choice": ("choice", "multi_select"),
@@ -494,71 +533,91 @@ class ScoreTab(QWidget):
             self._show_empty("请从下拉框选择学生")
             return
 
-        # 收集该学生所有考试的题型得分
-        dates = []
-        scores = []
-        class_avgs = []
+        # 收集该学生所有考试的题型得分 + 理论满分
+        stype = self._score_type
+        qtype_filter = {"choice": ("choice", "multi_select"),
+                        "fill": ("fill",), "answer": ("answer",)}.get(stype, None)
+        dates, rates, class_rates = [], [], []
+        filtered_dates = self._filter_dates()
         for exam_i, dt in enumerate(self.dm.dates):
+            if dt not in filtered_dates:
+                continue
             data = self._get_typed_scores(students, exam_i)
             if not data:
                 continue
             sd = dict(data)
             if name not in sd:
                 continue
+            meta = self.dm.get_exam_meta(dt)
+            if meta.questions:
+                if qtype_filter:
+                    max_score = sum(q.max_score for q in meta.questions
+                                    if q.qtype in qtype_filter)
+                else:
+                    max_score = sum(q.max_score for q in meta.questions)
+            else:
+                max_score = max(v for _, v in data) if data else 100.0
+            if max_score <= 0:
+                continue
             dates.append(dt)
-            scores.append(sd[name])
-            class_avgs.append(sum(v for _, v in data) / len(data))
+            rates.append(round(sd[name] / max_score, 4))
+            class_rates.append(round(sum(v for _, v in data) / len(data) / max_score, 4))
 
-        if not scores:
+        if not rates:
             self._show_empty(f"{name} 无该题型成绩数据")
             return
 
         is_last7 = self.chk_last7.isChecked()
         if is_last7:
-            n = min(7, len(scores))
+            n = min(7, len(rates))
             dates = dates[-n:]
-            scores = scores[-n:]
-            class_avgs = class_avgs[-n:]
+            rates = rates[-n:]
+            class_rates = class_rates[-n:]
 
-        n_pts = len(scores)
+        n_pts = len(rates)
         step = max(1, n_pts // 8)
         tick_pos = list(range(0, n_pts, step))
         x = list(range(n_pts))
 
         ax = self.fig.add_subplot(111)
-        ax.plot(x, scores, marker="o", linewidth=2.5,
+        ax.plot(x, rates, marker="o", linewidth=2.5,
                 color="#8e44ad", markersize=7, zorder=3, label=name)
-        ax.plot(x, class_avgs, color="#e74c3c", linestyle="--", linewidth=2.2,
-                label="班级平均分", zorder=4, alpha=0.9)
+        ax.plot(x, class_rates, color="#e74c3c", linestyle="--", linewidth=2.2,
+                label="班级平均得分率", zorder=4, alpha=0.9)
 
-        r_min, r_max = min(scores + class_avgs), max(scores + class_avgs)
-        r_pad = max((r_max - r_min) * 0.3, 3)
-        ax.set_ylim(r_min - r_pad, r_max + r_pad)
+        ax.set_ylim(-0.05, 1.05)
+        ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
 
         type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
-        title = f"{name} — {type_name}" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
+        title = f"{name} — {type_name}得分率" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
         ax.set_title(title, fontsize=13, fontweight="bold")
-        ax.set_ylabel(f"{type_name}得分", fontsize=11)
+        ax.set_ylabel("得分率", fontsize=11)
         ax.legend(fontsize=9, loc="upper left")
         ax.grid(True, linestyle="--", alpha=0.4)
         ax.set_xticks(tick_pos)
         ax.set_xticklabels([dates[i] for i in tick_pos], rotation=45, ha="right")
 
         if is_last7:
-            for xi, sc in zip(x, scores):
-                ax.text(xi, sc + r_pad * 0.1, f"{sc:.1f}", ha="center", fontsize=8, color="#8e44ad")
+            for xi, r in zip(x, rates):
+                ax.text(xi, r + 0.03, f"{r:.0%}", ha="center", fontsize=8, color="#8e44ad")
 
         self._hover_dates = dates
-        self._hover_raw = scores
+        self._hover_raw = rates
+        avg = sum(rates) / n_pts
         self.status_label.setText(
             f"{name} | {type_name} | {'最近7次' if is_last7 else f'共{n_pts}次'} | "
-            f"均分 {sum(scores)/n_pts:.1f} | "
-            f"最高 {max(scores):.1f} | 最低 {min(scores):.1f}"
+            f"均得分率 {avg:.0%} | "
+            f"最高 {max(rates):.0%} | 最低 {min(rates):.0%}"
         )
 
     def _draw_latest(self, students):
         """最近一次考试柱状图 — 按题型分数排序"""
-        data = self._get_typed_scores(students, -1)
+        fdates = self._filter_dates()
+        if not fdates:
+            self._show_empty("无符合筛选条件的考试")
+            return
+        latest_idx = self.dm.dates.index(fdates[-1])
+        data = self._get_typed_scores(students, latest_idx)
         if not data:
             self._show_empty("无该题型成绩数据")
             return
@@ -601,20 +660,23 @@ class ScoreTab(QWidget):
 
     def _draw_last7(self, students):
         """进退步榜：最近 N 次考试题型得分变化"""
-        n = min(7, len(self.dm.dates))
+        fdates = self._filter_dates()
+        n = min(7, len(fdates))
         if n < 2:
             self._show_empty("考试次数不足")
             return
 
-        # 为每个学生收集最近 n 次考试的题型得分
-        dates = self.dm.dates[-n:]
+        dates = fdates[-n:]
         changes = []
         for s in students:
             scores_n = []
-            for exam_i in range(len(self.dm.dates) - n, len(self.dm.dates)):
+            for dt in dates:
+                exam_i = self.dm.dates.index(dt)
                 data = self._get_typed_scores(students, exam_i)
                 sd = dict(data) if data else {}
-                scores_n.append(sd.get(s.name, 0.0))
+                if s.name not in sd:
+                    continue  # 缺考不参与趋势计算
+                scores_n.append(sd[s.name])
             if len(scores_n) >= 2:
                 k = len(scores_n)
                 mx = (k - 1) / 2
@@ -682,7 +744,12 @@ class ScoreTab(QWidget):
         except ValueError:
             target = 0
 
-        data = self._get_typed_scores(students, -1)
+        fdates = self._filter_dates()
+        if not fdates:
+            self._show_empty("无符合筛选条件的考试")
+            return
+        latest_idx = self.dm.dates.index(fdates[-1])
+        data = self._get_typed_scores(students, latest_idx)
         if not data:
             self._show_empty("无该题型成绩数据")
             return
@@ -730,7 +797,7 @@ class ScoreTab(QWidget):
     # ------------------------------------------------------------------
     def prev_group(self):
         students = self.dm.current_students
-        data = self._get_scores(students)
+        data = self._get_typed_scores(students)
         if not data:
             return
         total = len(data)
@@ -739,7 +806,7 @@ class ScoreTab(QWidget):
 
     def next_group(self):
         students = self.dm.current_students
-        data = self._get_scores(students)
+        data = self._get_typed_scores(students)
         if not data:
             return
         total = len(data)

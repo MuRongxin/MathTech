@@ -1,1646 +1,332 @@
 <?xml version='1.0' encoding='utf-8'?>
 <exams>
-  <exam date="2024/09/01">
-    <subjective>
-      <topic category="函数" weight="0.41">定义域</topic>
-      <topic category="不等式" weight="0.31">线性规划</topic>
-      <topic category="函数" weight="0.28">指数运算</topic>
-    </subjective>
-    <objective>
-      <topic category="集合与逻辑" weight="0.45">存在量词</topic>
-      <topic category="函数" weight="0.55">函数零点与方程根</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/04">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.18">充分必要条件</topic>
-      <topic category="不等式" weight="0.34">不等式性质</topic>
-      <topic category="函数" weight="0.30">定义域</topic>
-      <topic category="集合与逻辑" weight="0.18">全称量词</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.56">奇偶性应用</topic>
-      <topic category="不等式" weight="0.44">均值不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/07">
-    <subjective>
-      <topic category="函数" weight="0.10">对数运算</topic>
-      <topic category="函数" weight="0.33">单调性应用</topic>
-      <topic category="函数" weight="0.25">单调性判断</topic>
-      <topic category="函数" weight="0.32">幂函数</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.43">幂函数</topic>
-      <topic category="函数" weight="0.57">单调性判断</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/10">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.16">存在量词</topic>
-      <topic category="函数" weight="0.19">二次函数图像与性质</topic>
-      <topic category="不等式" weight="0.23">均值不等式</topic>
-      <topic category="函数" weight="0.21">单调性判断</topic>
-      <topic category="函数" weight="0.21">值域与最值</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.13">一元二次不等式</topic>
-      <topic category="函数" weight="0.31">对数函数</topic>
-      <topic category="函数" weight="0.23">奇偶性应用</topic>
-      <topic category="函数" weight="0.22">二次函数图像与性质</topic>
-      <topic category="不等式" weight="0.11">含绝对值不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/13">
-    <subjective>
-      <topic category="函数" weight="0.32">奇偶性应用</topic>
-      <topic category="函数" weight="0.23">函数模型应用</topic>
-      <topic category="函数" weight="0.21">幂函数</topic>
-      <topic category="函数" weight="0.24">指数运算</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.62">二次函数最值</topic>
-      <topic category="函数" weight="0.38">值域与最值</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/16">
-    <subjective>
-      <topic category="函数" weight="0.26">二次函数图像与性质</topic>
-      <topic category="集合与逻辑" weight="0.43">存在量词</topic>
-      <topic category="不等式" weight="0.31">均值不等式</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.21">奇偶性判断</topic>
-      <topic category="函数" weight="0.25">指数运算</topic>
-      <topic category="函数" weight="0.17">二次函数最值</topic>
-      <topic category="不等式" weight="0.21">线性规划</topic>
-      <topic category="集合与逻辑" weight="0.16">全称量词</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/19">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.39">充分必要条件</topic>
-      <topic category="集合与逻辑" weight="0.14">集合运算</topic>
-      <topic category="函数" weight="0.14">单调性判断</topic>
-      <topic category="函数" weight="0.33">值域与最值</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.26">幂函数</topic>
-      <topic category="不等式" weight="0.25">不等式性质</topic>
-      <topic category="函数" weight="0.06">函数模型应用</topic>
-      <topic category="集合与逻辑" weight="0.22">充分必要条件</topic>
-      <topic category="函数" weight="0.21">指数运算</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/22">
-    <subjective>
-      <topic category="不等式" weight="0.11">一元二次不等式</topic>
-      <topic category="函数" weight="0.07">对数运算</topic>
-      <topic category="函数" weight="0.25">单调性应用</topic>
-      <topic category="函数" weight="0.25">指数函数</topic>
-      <topic category="函数" weight="0.32">函数零点与方程根</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.59">一元二次不等式</topic>
-      <topic category="函数" weight="0.41">指数函数</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/25">
-    <subjective>
-      <topic category="函数" weight="0.27">奇偶性判断</topic>
-      <topic category="函数" weight="0.27">对数函数</topic>
-      <topic category="函数" weight="0.27">奇偶性应用</topic>
-      <topic category="集合与逻辑" weight="0.19">全称量词</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.50">对数函数</topic>
-      <topic category="函数" weight="0.50">指数函数</topic>
-    </objective>
-  </exam>
-  <exam date="2024/09/28">
-    <subjective>
-      <topic category="函数" weight="0.35">单调性判断</topic>
-      <topic category="不等式" weight="0.40">线性规划</topic>
-      <topic category="集合与逻辑" weight="0.25">集合运算</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2024/10/01">
-    <subjective>
-      <topic category="函数" weight="0.28">指数运算</topic>
-      <topic category="集合与逻辑" weight="0.27">充分必要条件</topic>
-      <topic category="不等式" weight="0.23">不等式性质</topic>
-      <topic category="函数" weight="0.22">函数零点与方程根</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.28">含绝对值不等式</topic>
-      <topic category="不等式" weight="0.19">一元二次不等式</topic>
-      <topic category="函数" weight="0.12">对数函数</topic>
-      <topic category="函数" weight="0.10">函数模型应用</topic>
-      <topic category="集合与逻辑" weight="0.31">充分必要条件</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/04">
-    <subjective>
-      <topic category="函数" weight="0.34">单调性判断</topic>
-      <topic category="不等式" weight="0.35">均值不等式</topic>
-      <topic category="不等式" weight="0.31">一元二次不等式</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.23">指数运算</topic>
-      <topic category="不等式" weight="0.19">含绝对值不等式</topic>
-      <topic category="集合与逻辑" weight="0.58">集合运算</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/07">
-    <subjective>
-      <topic category="函数" weight="0.20">二次函数最值</topic>
-      <topic category="集合与逻辑" weight="0.13">集合运算</topic>
-      <topic category="函数" weight="0.15">函数零点与方程根</topic>
-      <topic category="函数" weight="0.25">二次函数图像与性质</topic>
-      <topic category="函数" weight="0.07">单调性应用</topic>
-      <topic category="不等式" weight="0.20">不等式性质</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.35">幂函数</topic>
-      <topic category="不等式" weight="0.65">线性规划</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/10">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.17">全称量词</topic>
-      <topic category="函数" weight="0.27">函数模型应用</topic>
-      <topic category="函数" weight="0.43">奇偶性判断</topic>
-      <topic category="函数" weight="0.13">函数零点与方程根</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.53">值域与最值</topic>
-      <topic category="不等式" weight="0.47">一元二次不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/13">
-    <subjective>
-      <topic category="函数" weight="0.38">奇偶性应用</topic>
-      <topic category="函数" weight="0.39">函数零点与方程根</topic>
-      <topic category="集合与逻辑" weight="0.14">集合运算</topic>
-      <topic category="函数" weight="0.09">二次函数图像与性质</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.32">指数函数</topic>
-      <topic category="函数" weight="0.26">函数零点与方程根</topic>
-      <topic category="不等式" weight="0.15">均值不等式</topic>
-      <topic category="不等式" weight="0.16">线性规划</topic>
-      <topic category="集合与逻辑" weight="0.11">全称量词</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/16">
-    <subjective>
-      <topic category="不等式" weight="0.14">线性规划</topic>
-      <topic category="函数" weight="0.33">对数运算</topic>
-      <topic category="函数" weight="0.53">值域与最值</topic>
-    </subjective>
-    <objective>
-      <topic category="集合与逻辑" weight="0.78">充分必要条件</topic>
-      <topic category="函数" weight="0.22">单调性判断</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/19">
-    <subjective>
-      <topic category="函数" weight="0.36">幂函数</topic>
-      <topic category="函数" weight="0.12">单调性应用</topic>
-      <topic category="集合与逻辑" weight="0.14">存在量词</topic>
-      <topic category="函数" weight="0.38">二次函数最值</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.24">指数运算</topic>
-      <topic category="函数" weight="0.22">二次函数图像与性质</topic>
-      <topic category="不等式" weight="0.16">含绝对值不等式</topic>
-      <topic category="不等式" weight="0.38">均值不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/22">
-    <subjective>
-      <topic category="函数" weight="0.45">定义域</topic>
-      <topic category="函数" weight="0.44">函数模型应用</topic>
-      <topic category="不等式" weight="0.11">不等式性质</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2024/10/25">
-    <subjective>
-      <topic category="函数" weight="0.16">单调性判断</topic>
-      <topic category="函数" weight="0.18">二次函数最值</topic>
-      <topic category="函数" weight="0.13">对数函数</topic>
-      <topic category="函数" weight="0.29">指数函数</topic>
-      <topic category="函数" weight="0.24">奇偶性应用</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.18">含绝对值不等式</topic>
-      <topic category="函数" weight="0.17">单调性应用</topic>
-      <topic category="函数" weight="0.39">奇偶性判断</topic>
-      <topic category="函数" weight="0.26">指数运算</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/28">
-    <subjective>
-      <topic category="函数" weight="0.18">二次函数图像与性质</topic>
-      <topic category="不等式" weight="0.29">含绝对值不等式</topic>
-      <topic category="不等式" weight="0.27">一元二次不等式</topic>
-      <topic category="函数" weight="0.09">指数运算</topic>
-      <topic category="集合与逻辑" weight="0.17">充分必要条件</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.63">对数运算</topic>
-      <topic category="函数" weight="0.37">奇偶性判断</topic>
-    </objective>
-  </exam>
-  <exam date="2024/10/31">
-    <subjective>
-      <topic category="三角函数" weight="0.19">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.27">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.21">同角关系</topic>
-      <topic category="三角函数" weight="0.10">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.09">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.14">倍角半角公式</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.50">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.50">三角函数图像</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/03">
-    <subjective>
-      <topic category="三角函数" weight="0.22">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.05">诱导公式</topic>
-      <topic category="三角函数" weight="0.19">三角函数图像</topic>
-      <topic category="三角函数" weight="0.11">和差公式</topic>
-      <topic category="三角函数" weight="0.23">同角关系</topic>
-      <topic category="三角函数" weight="0.20">正弦型函数 y=Asin(ωx+φ)</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.38">三角函数性质</topic>
-      <topic category="三角函数" weight="0.18">诱导公式</topic>
-      <topic category="三角函数" weight="0.44">同角关系</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/06">
-    <subjective>
-      <topic category="函数" weight="0.27">幂函数</topic>
-      <topic category="函数" weight="0.19">对数函数</topic>
-      <topic category="函数" weight="0.15">函数零点与方程根</topic>
-      <topic category="三角函数" weight="0.09">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.30">任意角与弧度</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.10">二次函数最值</topic>
-      <topic category="函数" weight="0.33">幂函数</topic>
-      <topic category="函数" weight="0.11">单调性应用</topic>
-      <topic category="集合与逻辑" weight="0.32">集合运算</topic>
-      <topic category="三角函数" weight="0.14">任意角与弧度</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/09">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.34">存在量词</topic>
-      <topic category="函数" weight="0.13">奇偶性应用</topic>
-      <topic category="函数" weight="0.09">单调性判断</topic>
-      <topic category="三角函数" weight="0.21">三角函数图像</topic>
-      <topic category="集合与逻辑" weight="0.23">全称量词</topic>
-    </subjective>
-    <objective>
-      <topic category="集合与逻辑" weight="0.37">充分必要条件</topic>
-      <topic category="集合与逻辑" weight="0.36">存在量词</topic>
-      <topic category="三角函数" weight="0.27">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/12">
-    <subjective>
-      <topic category="三角函数" weight="0.37">三角函数性质</topic>
-      <topic category="三角函数" weight="0.24">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.39">余弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.39">和差公式</topic>
-      <topic category="三角函数" weight="0.25">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.36">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/15">
-    <subjective>
-      <topic category="不等式" weight="0.12">线性规划</topic>
-      <topic category="集合与逻辑" weight="0.17">集合运算</topic>
-      <topic category="不等式" weight="0.28">不等式性质</topic>
-      <topic category="不等式" weight="0.25">含绝对值不等式</topic>
-      <topic category="三角函数" weight="0.10">倍角半角公式</topic>
-      <topic category="不等式" weight="0.08">均值不等式</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.36">诱导公式</topic>
-      <topic category="三角函数" weight="0.13">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.10">余弦定理及应用</topic>
-      <topic category="不等式" weight="0.41">均值不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/18">
-    <subjective>
-      <topic category="三角函数" weight="0.43">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.28">和差公式</topic>
-      <topic category="三角函数" weight="0.29">三角函数图像</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2024/11/21">
-    <subjective>
-      <topic category="三角函数" weight="0.39">和差公式</topic>
-      <topic category="三角函数" weight="0.35">三角函数图像</topic>
-      <topic category="三角函数" weight="0.26">诱导公式</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.53">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.47">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/24">
-    <subjective>
-      <topic category="三角函数" weight="0.18">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.10">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.28">和差公式</topic>
-      <topic category="三角函数" weight="0.18">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.26">三角函数性质</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.25">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.35">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.18">三角函数图像</topic>
-      <topic category="三角函数" weight="0.22">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/27">
-    <subjective>
-      <topic category="三角函数" weight="0.42">诱导公式</topic>
-      <topic category="三角函数" weight="0.27">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.31">三角函数图像</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.14">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.22">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.37">和差公式</topic>
-      <topic category="三角函数" weight="0.27">任意角与弧度</topic>
-    </objective>
-  </exam>
-  <exam date="2024/11/30">
-    <subjective>
-      <topic category="三角函数" weight="0.15">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.19">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.20">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.22">诱导公式</topic>
-      <topic category="三角函数" weight="0.14">三角函数图像</topic>
-      <topic category="三角函数" weight="0.10">余弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.23">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.24">和差公式</topic>
-      <topic category="三角函数" weight="0.15">诱导公式</topic>
-      <topic category="三角函数" weight="0.22">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.16">三角函数图像</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/03">
-    <subjective>
-      <topic category="三角函数" weight="0.28">和差公式</topic>
-      <topic category="三角函数" weight="0.34">诱导公式</topic>
-      <topic category="三角函数" weight="0.38">倍角半角公式</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.35">和差公式</topic>
-      <topic category="三角函数" weight="0.23">三角函数性质</topic>
-      <topic category="三角函数" weight="0.32">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.10">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/06">
-    <subjective>
-      <topic category="三角函数" weight="0.30">同角关系</topic>
-      <topic category="三角函数" weight="0.18">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.27">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.25">余弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.18">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.38">三角函数性质</topic>
-      <topic category="三角函数" weight="0.44">正弦型函数 y=Asin(ωx+φ)</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/09">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.32">存在量词</topic>
-      <topic category="三角函数" weight="0.44">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.24">余弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.39">诱导公式</topic>
-      <topic category="三角函数" weight="0.23">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.38">三角函数图像</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/12">
-    <subjective>
-      <topic category="三角函数" weight="0.43">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.15">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.42">和差公式</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2024/12/15">
-    <subjective>
-      <topic category="三角函数" weight="0.13">同角关系</topic>
-      <topic category="三角函数" weight="0.19">和差公式</topic>
-      <topic category="三角函数" weight="0.23">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.10">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.20">三角函数图像</topic>
-      <topic category="三角函数" weight="0.15">余弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.29">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.09">三角函数性质</topic>
-      <topic category="三角函数" weight="0.30">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.13">和差公式</topic>
-      <topic category="三角函数" weight="0.19">同角关系</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/18">
-    <subjective>
-      <topic category="三角函数" weight="0.17">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.14">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.12">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.12">和差公式</topic>
-      <topic category="三角函数" weight="0.19">诱导公式</topic>
-      <topic category="三角函数" weight="0.26">同角关系</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.27">同角关系</topic>
-      <topic category="三角函数" weight="0.38">三角函数图像</topic>
-      <topic category="三角函数" weight="0.35">和差公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/21">
-    <subjective>
-      <topic category="三角函数" weight="0.22">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.12">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.18">同角关系</topic>
-      <topic category="三角函数" weight="0.16">诱导公式</topic>
-      <topic category="三角函数" weight="0.17">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.15">三角函数图像</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.30">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.22">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.26">三角函数性质</topic>
-      <topic category="三角函数" weight="0.22">诱导公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/24">
-    <subjective>
-      <topic category="三角函数" weight="0.28">三角函数图像</topic>
-      <topic category="三角函数" weight="0.35">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.22">倍角半角公式</topic>
-      <topic category="三角函数" weight="0.15">诱导公式</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2024/12/27">
-    <subjective>
-      <topic category="三角函数" weight="0.13">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.13">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.23">三角函数性质</topic>
-      <topic category="三角函数" weight="0.51">正弦定理及应用</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.20">三角函数图像</topic>
-      <topic category="三角函数" weight="0.13">任意角与弧度</topic>
-      <topic category="三角函数" weight="0.09">余弦定理及应用</topic>
-      <topic category="集合与逻辑" weight="0.36">集合运算</topic>
-      <topic category="三角函数" weight="0.22">倍角半角公式</topic>
-    </objective>
-  </exam>
-  <exam date="2024/12/30">
-    <subjective>
-      <topic category="向量" weight="0.23">向量概念</topic>
-      <topic category="数列" weight="0.26">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.07">数量积</topic>
-      <topic category="数列" weight="0.11">数列概念与通项</topic>
-      <topic category="数列" weight="0.18">等差数列性质</topic>
-      <topic category="向量" weight="0.15">加减与数乘</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.28">空间向量</topic>
-      <topic category="向量" weight="0.28">加减与数乘</topic>
-      <topic category="数列" weight="0.44">错位相减求和</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/02">
-    <subjective>
-      <topic category="向量" weight="0.35">数量积</topic>
-      <topic category="向量" weight="0.13">空间向量</topic>
-      <topic category="数列" weight="0.13">数列概念与通项</topic>
-      <topic category="向量" weight="0.27">平行与垂直</topic>
-      <topic category="数列" weight="0.12">等差数列通项与求和</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/01/05">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.17">充分必要条件</topic>
-      <topic category="不等式" weight="0.17">含绝对值不等式</topic>
-      <topic category="向量" weight="0.12">数量积</topic>
-      <topic category="数列" weight="0.16">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.20">向量概念</topic>
-      <topic category="集合与逻辑" weight="0.18">存在量词</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.34">不等式性质</topic>
-      <topic category="数列" weight="0.29">等比数列通项与求和</topic>
-      <topic category="不等式" weight="0.37">线性规划</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/08">
-    <subjective>
-      <topic category="三角函数" weight="0.21">同角关系</topic>
-      <topic category="三角函数" weight="0.23">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="三角函数" weight="0.18">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.21">任意角与弧度</topic>
-      <topic category="向量" weight="0.17">数量积</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.16">等差数列性质</topic>
-      <topic category="三角函数" weight="0.13">同角关系</topic>
-      <topic category="数列" weight="0.09">等差数列通项与求和</topic>
-      <topic category="不等式" weight="0.33">不等式性质</topic>
-      <topic category="三角函数" weight="0.29">正弦型函数 y=Asin(ωx+φ)</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/11">
-    <subjective>
-      <topic category="向量" weight="0.36">空间向量</topic>
-      <topic category="向量" weight="0.45">坐标表示</topic>
-      <topic category="数列" weight="0.19">等比数列性质</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.35">等比数列性质</topic>
-      <topic category="数列" weight="0.20">等差数列性质</topic>
-      <topic category="向量" weight="0.19">数量积</topic>
-      <topic category="数列" weight="0.16">错位相减求和</topic>
-      <topic category="向量" weight="0.10">向量概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/14">
-    <subjective>
-      <topic category="三角函数" weight="0.12">正弦型函数 y=Asin(ωx+φ)</topic>
-      <topic category="函数" weight="0.11">单调性判断</topic>
-      <topic category="函数" weight="0.24">幂函数</topic>
-      <topic category="数列" weight="0.13">等差数列性质</topic>
-      <topic category="函数" weight="0.15">二次函数图像与性质</topic>
-      <topic category="数列" weight="0.25">裂项相消求和</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.27">单调性应用</topic>
-      <topic category="数列" weight="0.24">等比数列通项与求和</topic>
-      <topic category="向量" weight="0.22">空间向量</topic>
-      <topic category="函数" weight="0.10">对数运算</topic>
-      <topic category="函数" weight="0.17">定义域</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/17">
-    <subjective>
-      <topic category="向量" weight="0.24">向量概念</topic>
-      <topic category="数列" weight="0.14">数列概念与通项</topic>
-      <topic category="函数" weight="0.07">二次函数最值</topic>
-      <topic category="函数" weight="0.16">二次函数图像与性质</topic>
-      <topic category="函数" weight="0.12">幂函数</topic>
-      <topic category="集合与逻辑" weight="0.27">存在量词</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/01/20">
-    <subjective>
-      <topic category="向量" weight="0.31">向量概念</topic>
-      <topic category="向量" weight="0.22">平行与垂直</topic>
-      <topic category="数列" weight="0.24">等比数列性质</topic>
-      <topic category="向量" weight="0.23">加减与数乘</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.25">错位相减求和</topic>
-      <topic category="数列" weight="0.38">等比数列通项与求和</topic>
-      <topic category="向量" weight="0.37">数量积</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/23">
-    <subjective>
-      <topic category="集合与逻辑" weight="0.20">存在量词</topic>
-      <topic category="数列" weight="0.21">数列概念与通项</topic>
-      <topic category="向量" weight="0.26">数量积</topic>
-      <topic category="集合与逻辑" weight="0.16">集合运算</topic>
-      <topic category="三角函数" weight="0.17">正弦型函数 y=Asin(ωx+φ)</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.24">同角关系</topic>
-      <topic category="向量" weight="0.13">坐标表示</topic>
-      <topic category="数列" weight="0.28">错位相减求和</topic>
-      <topic category="三角函数" weight="0.08">余弦定理及应用</topic>
-      <topic category="向量" weight="0.27">向量概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/26">
-    <subjective>
-      <topic category="数列" weight="0.08">错位相减求和</topic>
-      <topic category="向量" weight="0.31">坐标表示</topic>
-      <topic category="向量" weight="0.15">平行与垂直</topic>
-      <topic category="数列" weight="0.09">等差数列性质</topic>
-      <topic category="向量" weight="0.28">向量概念</topic>
-      <topic category="数列" weight="0.09">数列概念与通项</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.42">平行与垂直</topic>
-      <topic category="数列" weight="0.58">等差数列性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/01/29">
-    <subjective>
-      <topic category="三角函数" weight="0.24">和差公式</topic>
-      <topic category="三角函数" weight="0.24">余弦定理及应用</topic>
-      <topic category="向量" weight="0.25">空间向量</topic>
-      <topic category="三角函数" weight="0.14">倍角半角公式</topic>
-      <topic category="数列" weight="0.13">等差数列性质</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.17">三角函数性质</topic>
-      <topic category="数列" weight="0.24">等差数列通项与求和</topic>
-      <topic category="三角函数" weight="0.25">和差公式</topic>
-      <topic category="数列" weight="0.20">等差数列性质</topic>
-      <topic category="向量" weight="0.14">向量概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/01">
-    <subjective>
-      <topic category="向量" weight="0.40">数量积</topic>
-      <topic category="数列" weight="0.21">数列概念与通项</topic>
-      <topic category="数列" weight="0.24">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.15">坐标表示</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.45">裂项相消求和</topic>
-      <topic category="数列" weight="0.35">等差数列性质</topic>
-      <topic category="集合与逻辑" weight="0.20">充分必要条件</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/04">
-    <subjective>
-      <topic category="数列" weight="0.21">等比数列通项与求和</topic>
-      <topic category="向量" weight="0.26">向量概念</topic>
-      <topic category="向量" weight="0.33">坐标表示</topic>
-      <topic category="数列" weight="0.20">等比数列性质</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.42">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.18">向量概念</topic>
-      <topic category="数列" weight="0.40">裂项相消求和</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/07">
-    <subjective>
-      <topic category="数列" weight="0.16">等比数列性质</topic>
-      <topic category="数列" weight="0.15">等比数列通项与求和</topic>
-      <topic category="数列" weight="0.13">错位相减求和</topic>
-      <topic category="向量" weight="0.23">向量概念</topic>
-      <topic category="数列" weight="0.07">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.26">平行与垂直</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.46">数量积</topic>
-      <topic category="向量" weight="0.54">坐标表示</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/10">
-    <subjective>
-      <topic category="数列" weight="0.16">等比数列性质</topic>
-      <topic category="数列" weight="0.16">等比数列通项与求和</topic>
-      <topic category="向量" weight="0.17">数量积</topic>
-      <topic category="数列" weight="0.16">裂项相消求和</topic>
-      <topic category="向量" weight="0.19">平行与垂直</topic>
-      <topic category="向量" weight="0.16">加减与数乘</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.32">等比数列性质</topic>
-      <topic category="向量" weight="0.68">向量概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/13">
-    <subjective>
-      <topic category="向量" weight="0.15">平行与垂直</topic>
-      <topic category="数列" weight="0.22">错位相减求和</topic>
-      <topic category="数列" weight="0.20">等比数列性质</topic>
-      <topic category="函数" weight="0.09">幂函数</topic>
-      <topic category="函数" weight="0.20">奇偶性判断</topic>
-      <topic category="集合与逻辑" weight="0.14">存在量词</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.30">向量概念</topic>
-      <topic category="集合与逻辑" weight="0.14">充分必要条件</topic>
-      <topic category="数列" weight="0.28">等比数列性质</topic>
-      <topic category="向量" weight="0.28">数量积</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/16">
-    <subjective>
-      <topic category="数列" weight="0.12">等差数列通项与求和</topic>
-      <topic category="数列" weight="0.20">错位相减求和</topic>
-      <topic category="数列" weight="0.32">数列概念与通项</topic>
-      <topic category="数列" weight="0.16">等比数列性质</topic>
-      <topic category="向量" weight="0.20">加减与数乘</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.09">等差数列通项与求和</topic>
-      <topic category="向量" weight="0.33">坐标表示</topic>
-      <topic category="数列" weight="0.24">等比数列通项与求和</topic>
-      <topic category="向量" weight="0.34">向量概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/19">
-    <subjective>
-      <topic category="函数" weight="0.15">值域与最值</topic>
-      <topic category="函数" weight="0.19">指数运算</topic>
-      <topic category="数列" weight="0.09">等比数列通项与求和</topic>
-      <topic category="数列" weight="0.29">等比数列性质</topic>
-      <topic category="数列" weight="0.10">等差数列通项与求和</topic>
-      <topic category="函数" weight="0.18">对数运算</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.07">数量积</topic>
-      <topic category="函数" weight="0.16">指数运算</topic>
-      <topic category="数列" weight="0.18">错位相减求和</topic>
-      <topic category="函数" weight="0.31">函数零点与方程根</topic>
-      <topic category="不等式" weight="0.28">线性规划</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/22">
-    <subjective>
-      <topic category="立体几何" weight="0.30">体积</topic>
-      <topic category="函数" weight="0.27">奇偶性应用</topic>
-      <topic category="函数" weight="0.09">值域与最值</topic>
-      <topic category="立体几何" weight="0.12">空间距离</topic>
-      <topic category="立体几何" weight="0.22">线面垂直判定</topic>
-    </subjective>
-    <objective>
-      <topic category="集合与逻辑" weight="0.57">存在量词</topic>
-      <topic category="函数" weight="0.43">单调性应用</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/25">
-    <subjective>
-      <topic category="立体几何" weight="0.35">空间距离</topic>
-      <topic category="立体几何" weight="0.45">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.20">体积</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.61">线面平行判定</topic>
-      <topic category="立体几何" weight="0.39">体积</topic>
-    </objective>
-  </exam>
-  <exam date="2025/02/28">
-    <subjective>
-      <topic category="立体几何" weight="0.15">空间角计算</topic>
-      <topic category="立体几何" weight="0.58">表面积</topic>
-      <topic category="立体几何" weight="0.27">体积</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.36">线面平行判定</topic>
-      <topic category="立体几何" weight="0.28">表面积</topic>
-      <topic category="立体几何" weight="0.36">体积</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/03">
-    <subjective>
-      <topic category="立体几何" weight="0.11">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.20">空间距离</topic>
-      <topic category="立体几何" weight="0.22">表面积</topic>
-      <topic category="立体几何" weight="0.26">线面垂直判定</topic>
-      <topic category="立体几何" weight="0.21">线面平行判定</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.62">表面积</topic>
-      <topic category="立体几何" weight="0.38">线面垂直判定</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/06">
-    <subjective>
-      <topic category="数列" weight="0.50">错位相减求和</topic>
-      <topic category="立体几何" weight="0.19">线面平行判定</topic>
-      <topic category="函数" weight="0.31">单调性应用</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.25">奇偶性应用</topic>
-      <topic category="函数" weight="0.30">幂函数</topic>
-      <topic category="函数" weight="0.12">指数函数</topic>
-      <topic category="函数" weight="0.33">单调性判断</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/09">
-    <subjective>
-      <topic category="立体几何" weight="0.25">线面垂直判定</topic>
-      <topic category="立体几何" weight="0.31">空间距离</topic>
-      <topic category="立体几何" weight="0.29">体积</topic>
-      <topic category="立体几何" weight="0.15">空间角计算</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.15">线面平行判定</topic>
-      <topic category="立体几何" weight="0.14">体积</topic>
-      <topic category="立体几何" weight="0.29">线面垂直判定</topic>
-      <topic category="立体几何" weight="0.42">表面积</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/12">
-    <subjective>
-      <topic category="立体几何" weight="0.23">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.17">表面积</topic>
-      <topic category="立体几何" weight="0.29">空间距离</topic>
-      <topic category="立体几何" weight="0.31">线面平行判定</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.61">线面平行判定</topic>
-      <topic category="立体几何" weight="0.39">面面平行与垂直</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/15">
-    <subjective>
-      <topic category="立体几何" weight="0.26">空间角计算</topic>
-      <topic category="立体几何" weight="0.35">线面垂直判定</topic>
-      <topic category="立体几何" weight="0.16">体积</topic>
-      <topic category="立体几何" weight="0.23">表面积</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/03/18">
-    <subjective>
-      <topic category="立体几何" weight="0.15">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.29">空间角计算</topic>
-      <topic category="立体几何" weight="0.56">线面平行判定</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.11">表面积</topic>
-      <topic category="立体几何" weight="0.34">体积</topic>
-      <topic category="立体几何" weight="0.43">空间角计算</topic>
-      <topic category="立体几何" weight="0.12">线面垂直判定</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/21">
-    <subjective>
-      <topic category="立体几何" weight="0.24">线面垂直判定</topic>
-      <topic category="立体几何" weight="0.27">空间距离</topic>
-      <topic category="立体几何" weight="0.21">线面平行判定</topic>
-      <topic category="立体几何" weight="0.09">体积</topic>
-      <topic category="立体几何" weight="0.08">空间角计算</topic>
-      <topic category="立体几何" weight="0.11">面面平行与垂直</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.55">线面平行判定</topic>
-      <topic category="立体几何" weight="0.45">线面垂直判定</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/24">
-    <subjective>
-      <topic category="立体几何" weight="0.11">体积</topic>
-      <topic category="立体几何" weight="0.27">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.24">表面积</topic>
-      <topic category="立体几何" weight="0.22">线面平行判定</topic>
-      <topic category="立体几何" weight="0.16">空间距离</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/03/27">
-    <subjective>
-      <topic category="立体几何" weight="0.37">表面积</topic>
-      <topic category="立体几何" weight="0.32">体积</topic>
-      <topic category="立体几何" weight="0.31">线面平行判定</topic>
-    </subjective>
-    <objective>
-      <topic category="立体几何" weight="0.70">表面积</topic>
-      <topic category="立体几何" weight="0.30">线面垂直判定</topic>
-    </objective>
-  </exam>
-  <exam date="2025/03/30">
-    <subjective>
-      <topic category="立体几何" weight="0.21">面面平行与垂直</topic>
-      <topic category="立体几何" weight="0.33">空间距离</topic>
-      <topic category="立体几何" weight="0.23">线面平行判定</topic>
-      <topic category="立体几何" weight="0.23">表面积</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/04/02">
-    <subjective>
-      <topic category="三角函数" weight="0.06">正弦定理及应用</topic>
-      <topic category="三角函数" weight="0.11">和差公式</topic>
-      <topic category="数列" weight="0.21">错位相减求和</topic>
-      <topic category="数列" weight="0.17">等差数列性质</topic>
-      <topic category="立体几何" weight="0.22">线面垂直判定</topic>
-      <topic category="数列" weight="0.23">裂项相消求和</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/04/05">
-    <subjective>
-      <topic category="解析几何" weight="0.26">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.24">抛物线性质</topic>
-      <topic category="解析几何" weight="0.25">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.25">直线位置关系</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/04/08">
-    <subjective>
-      <topic category="解析几何" weight="0.42">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.22">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.36">直线与圆</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.38">直线与圆</topic>
-      <topic category="解析几何" weight="0.32">直线位置关系</topic>
-      <topic category="解析几何" weight="0.30">圆的方程</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/11">
-    <subjective>
-      <topic category="解析几何" weight="0.37">圆的方程</topic>
-      <topic category="解析几何" weight="0.37">双曲线性质</topic>
-      <topic category="解析几何" weight="0.26">抛物线性质</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.16">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.33">椭圆性质</topic>
-      <topic category="解析几何" weight="0.26">圆的方程</topic>
-      <topic category="解析几何" weight="0.25">双曲线性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/14">
-    <subjective>
-      <topic category="数列" weight="0.23">等比数列通项与求和</topic>
-      <topic category="解析几何" weight="0.31">直线位置关系</topic>
-      <topic category="数列" weight="0.09">数列概念与通项</topic>
-      <topic category="解析几何" weight="0.21">抛物线性质</topic>
-      <topic category="解析几何" weight="0.16">圆的方程</topic>
-    </subjective>
-    <objective>
-      <topic category="数列" weight="0.61">等比数列通项与求和</topic>
-      <topic category="不等式" weight="0.39">不等式性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/17">
-    <subjective>
-      <topic category="解析几何" weight="0.44">直线方程</topic>
-      <topic category="解析几何" weight="0.12">双曲线性质</topic>
-      <topic category="解析几何" weight="0.33">直线位置关系</topic>
-      <topic category="解析几何" weight="0.11">椭圆性质</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.29">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.16">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.25">圆的方程</topic>
-      <topic category="解析几何" weight="0.23">椭圆性质</topic>
-      <topic category="解析几何" weight="0.07">抛物线性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/20">
-    <subjective>
-      <topic category="解析几何" weight="0.12">直线位置关系</topic>
-      <topic category="解析几何" weight="0.27">椭圆性质</topic>
-      <topic category="解析几何" weight="0.30">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.21">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.10">圆的方程</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/04/23">
-    <subjective>
-      <topic category="解析几何" weight="0.23">椭圆定义与方程</topic>
-      <topic category="解析几何" weight="0.25">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.16">圆的方程</topic>
-      <topic category="解析几何" weight="0.10">直线位置关系</topic>
-      <topic category="解析几何" weight="0.26">抛物线定义与方程</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.74">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.26">双曲线定义与方程</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/26">
-    <subjective>
-      <topic category="解析几何" weight="0.21">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.07">双曲线性质</topic>
-      <topic category="解析几何" weight="0.21">椭圆定义与方程</topic>
-      <topic category="向量" weight="0.22">坐标表示</topic>
-      <topic category="解析几何" weight="0.23">圆的方程</topic>
-      <topic category="解析几何" weight="0.06">抛物线性质</topic>
-    </subjective>
-    <objective>
-      <topic category="向量" weight="0.16">加减与数乘</topic>
-      <topic category="立体几何" weight="0.43">体积</topic>
-      <topic category="解析几何" weight="0.41">椭圆定义与方程</topic>
-    </objective>
-  </exam>
-  <exam date="2025/04/29">
-    <subjective>
-      <topic category="解析几何" weight="0.36">双曲线性质</topic>
-      <topic category="解析几何" weight="0.18">直线方程</topic>
-      <topic category="解析几何" weight="0.26">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.20">椭圆性质</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.24">直线与圆</topic>
-      <topic category="解析几何" weight="0.26">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.10">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.21">椭圆定义与方程</topic>
-      <topic category="解析几何" weight="0.19">双曲线定义与方程</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/02">
-    <subjective>
-      <topic category="解析几何" weight="0.27">双曲线定义与方程</topic>
-      <topic category="解析几何" weight="0.27">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.10">抛物线性质</topic>
-      <topic category="解析几何" weight="0.13">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.23">直线位置关系</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.35">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.65">直线位置关系</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/05">
-    <subjective>
-      <topic category="解析几何" weight="0.08">圆的方程</topic>
-      <topic category="解析几何" weight="0.20">双曲线性质</topic>
-      <topic category="数列" weight="0.13">等比数列通项与求和</topic>
-      <topic category="数列" weight="0.34">数列概念与通项</topic>
-      <topic category="解析几何" weight="0.17">直线方程</topic>
-      <topic category="数列" weight="0.08">等差数列性质</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.32">椭圆定义与方程</topic>
-      <topic category="解析几何" weight="0.13">直线位置关系</topic>
-      <topic category="解析几何" weight="0.32">抛物线性质</topic>
-      <topic category="数列" weight="0.23">等比数列性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/08">
-    <subjective>
-      <topic category="解析几何" weight="0.31">双曲线定义与方程</topic>
-      <topic category="函数" weight="0.24">对数运算</topic>
-      <topic category="解析几何" weight="0.11">椭圆定义与方程</topic>
-      <topic category="函数" weight="0.17">值域与最值</topic>
-      <topic category="函数" weight="0.17">函数模型应用</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/05/11">
-    <subjective>
-      <topic category="解析几何" weight="0.22">直线位置关系</topic>
-      <topic category="解析几何" weight="0.24">直线与圆锥曲线综合</topic>
-      <topic category="解析几何" weight="0.13">双曲线性质</topic>
-      <topic category="解析几何" weight="0.06">直线方程</topic>
-      <topic category="解析几何" weight="0.15">椭圆性质</topic>
-      <topic category="解析几何" weight="0.20">椭圆定义与方程</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/05/14">
-    <subjective>
-      <topic category="解析几何" weight="0.31">直线位置关系</topic>
-      <topic category="解析几何" weight="0.08">抛物线定义与方程</topic>
-      <topic category="解析几何" weight="0.17">抛物线性质</topic>
-      <topic category="解析几何" weight="0.17">直线方程</topic>
-      <topic category="解析几何" weight="0.27">直线与圆</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.53">椭圆性质</topic>
-      <topic category="解析几何" weight="0.47">直线与圆</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/17">
-    <subjective>
-      <topic category="导数" weight="0.25">导数与单调性</topic>
-      <topic category="导数" weight="0.10">基本导数公式</topic>
-      <topic category="概率统计" weight="0.25">方差与标准差</topic>
-      <topic category="概率统计" weight="0.17">二项分布</topic>
-      <topic category="概率统计" weight="0.23">均值中位数众数</topic>
-    </subjective>
-    <objective>
-      <topic category="导数" weight="0.17">导数四则运算</topic>
-      <topic category="复数" weight="0.25">三角形式</topic>
-      <topic category="概率统计" weight="0.58">互斥与对立事件</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/20">
-    <subjective>
-      <topic category="概率统计" weight="0.14">频率分布直方图</topic>
-      <topic category="概率统计" weight="0.28">离散型随机变量</topic>
-      <topic category="概率统计" weight="0.12">古典概型</topic>
-      <topic category="概率统计" weight="0.17">二项分布</topic>
-      <topic category="概率统计" weight="0.29">条件概率</topic>
-    </subjective>
-    <objective>
-      <topic category="概率统计" weight="0.30">随机抽样</topic>
-      <topic category="导数" weight="0.25">复合函数求导</topic>
-      <topic category="概率统计" weight="0.29">方差与标准差</topic>
-      <topic category="概率统计" weight="0.16">几何概型</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/23">
-    <subjective>
-      <topic category="复数" weight="0.22">三角形式</topic>
-      <topic category="概率统计" weight="0.07">条件概率</topic>
-      <topic category="概率统计" weight="0.19">方差与标准差</topic>
-      <topic category="概率统计" weight="0.23">离散型随机变量</topic>
-      <topic category="概率统计" weight="0.17">随机抽样</topic>
-      <topic category="导数" weight="0.12">导数四则运算</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/05/26">
-    <subjective>
-      <topic category="概率统计" weight="0.27">互斥与对立事件</topic>
-      <topic category="复数" weight="0.17">复数概念</topic>
-      <topic category="复数" weight="0.08">三角形式</topic>
-      <topic category="概率统计" weight="0.31">几何概型</topic>
-      <topic category="导数" weight="0.17">导数与极值</topic>
-    </subjective>
-    <objective>
-      <topic category="复数" weight="0.25">代数运算</topic>
-      <topic category="导数" weight="0.18">基本导数公式</topic>
-      <topic category="导数" weight="0.30">导数四则运算</topic>
-      <topic category="复数" weight="0.27">几何意义</topic>
-    </objective>
-  </exam>
-  <exam date="2025/05/29">
-    <subjective>
-      <topic category="复数" weight="0.15">复数概念</topic>
-      <topic category="复数" weight="0.21">几何意义</topic>
-      <topic category="概率统计" weight="0.38">互斥与对立事件</topic>
-      <topic category="导数" weight="0.26">基本导数公式</topic>
-    </subjective>
-    <objective>
-      <topic category="复数" weight="0.44">复数概念</topic>
-      <topic category="导数" weight="0.56">导数与单调性</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/01">
-    <subjective>
-      <topic category="导数" weight="0.33">导数与单调性</topic>
-      <topic category="概率统计" weight="0.31">离散型随机变量</topic>
-      <topic category="概率统计" weight="0.36">正态分布</topic>
-    </subjective>
-    <objective>
-      <topic category="导数" weight="0.40">导数与极值</topic>
-      <topic category="概率统计" weight="0.60">条件概率</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/04">
-    <subjective>
-      <topic category="概率统计" weight="0.09">几何概型</topic>
-      <topic category="解析几何" weight="0.07">抛物线性质</topic>
-      <topic category="概率统计" weight="0.10">正态分布</topic>
-      <topic category="解析几何" weight="0.22">直线位置关系</topic>
-      <topic category="概率统计" weight="0.28">古典概型</topic>
-      <topic category="导数" weight="0.24">导数综合应用</topic>
-    </subjective>
-    <objective>
-      <topic category="复数" weight="0.22">三角形式</topic>
-      <topic category="导数" weight="0.22">导数与单调性</topic>
-      <topic category="解析几何" weight="0.17">椭圆性质</topic>
-      <topic category="解析几何" weight="0.39">椭圆定义与方程</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/07">
-    <subjective>
-      <topic category="概率统计" weight="0.35">方差与标准差</topic>
-      <topic category="概率统计" weight="0.30">离散型随机变量</topic>
-      <topic category="导数" weight="0.14">导数综合应用</topic>
-      <topic category="导数" weight="0.21">复合函数求导</topic>
-    </subjective>
-    <objective>
-      <topic category="概率统计" weight="0.37">互斥与对立事件</topic>
-      <topic category="概率统计" weight="0.10">二项分布</topic>
-      <topic category="导数" weight="0.21">导数与单调性</topic>
-      <topic category="复数" weight="0.32">复数概念</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/10">
-    <subjective>
-      <topic category="概率统计" weight="0.13">几何概型</topic>
-      <topic category="概率统计" weight="0.18">正态分布</topic>
-      <topic category="导数" weight="0.11">导数四则运算</topic>
-      <topic category="导数" weight="0.21">导数与单调性</topic>
-      <topic category="概率统计" weight="0.20">均值中位数众数</topic>
-      <topic category="复数" weight="0.17">代数运算</topic>
-    </subjective>
-    <objective />
-  </exam>
-  <exam date="2025/06/13">
-    <subjective>
-      <topic category="导数" weight="0.12">基本导数公式</topic>
-      <topic category="导数" weight="0.20">复合函数求导</topic>
-      <topic category="导数" weight="0.24">导数与单调性</topic>
-      <topic category="复数" weight="0.12">三角形式</topic>
-      <topic category="概率统计" weight="0.23">频率分布直方图</topic>
-      <topic category="概率统计" weight="0.09">离散型随机变量</topic>
-    </subjective>
-    <objective>
-      <topic category="导数" weight="0.15">导数与最值</topic>
-      <topic category="复数" weight="0.22">代数运算</topic>
-      <topic category="概率统计" weight="0.31">随机抽样</topic>
-      <topic category="概率统计" weight="0.32">二项分布</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/16">
-    <subjective>
-      <topic category="导数" weight="0.09">导数与最值</topic>
-      <topic category="不等式" weight="0.34">均值不等式</topic>
-      <topic category="概率统计" weight="0.29">频率分布直方图</topic>
-      <topic category="导数" weight="0.15">导数综合应用</topic>
-      <topic category="概率统计" weight="0.13">随机抽样</topic>
-    </subjective>
-    <objective>
-      <topic category="不等式" weight="0.47">不等式性质</topic>
-      <topic category="导数" weight="0.53">导数定义与意义</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/19">
-    <subjective>
-      <topic category="立体几何" weight="0.10">空间角计算</topic>
-      <topic category="数列" weight="0.24">等差数列性质</topic>
-      <topic category="数列" weight="0.12">等差数列通项与求和</topic>
-      <topic category="三角函数" weight="0.27">诱导公式</topic>
-      <topic category="立体几何" weight="0.13">表面积</topic>
-      <topic category="概率统计" weight="0.14">方差与标准差</topic>
-    </subjective>
-    <objective>
-      <topic category="三角函数" weight="0.58">余弦定理及应用</topic>
-      <topic category="三角函数" weight="0.42">三角函数性质</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/22">
-    <subjective>
-      <topic category="函数" weight="0.14">值域与最值</topic>
-      <topic category="数列" weight="0.25">等差数列性质</topic>
-      <topic category="数列" weight="0.20">等比数列通项与求和</topic>
-      <topic category="数列" weight="0.09">等比数列性质</topic>
-      <topic category="集合与逻辑" weight="0.08">集合运算</topic>
-      <topic category="集合与逻辑" weight="0.24">全称量词</topic>
-    </subjective>
-    <objective>
-      <topic category="函数" weight="0.10">单调性应用</topic>
-      <topic category="函数" weight="0.19">二次函数最值</topic>
-      <topic category="数列" weight="0.29">错位相减求和</topic>
-      <topic category="不等式" weight="0.25">不等式性质</topic>
-      <topic category="不等式" weight="0.17">含绝对值不等式</topic>
-    </objective>
-  </exam>
-  <exam date="2025/06/25">
-    <subjective>
-      <topic category="函数" weight="0.27">值域与最值</topic>
-      <topic category="函数" weight="0.26">单调性应用</topic>
-      <topic category="复数" weight="0.11">几何意义</topic>
-      <topic category="概率统计" weight="0.21">均值中位数众数</topic>
-      <topic category="概率统计" weight="0.15">古典概型</topic>
-    </subjective>
-    <objective>
-      <topic category="解析几何" weight="0.48">直线与圆</topic>
-      <topic category="立体几何" weight="0.13">线面平行判定</topic>
-      <topic category="立体几何" weight="0.24">空间距离</topic>
-      <topic category="概率统计" weight="0.15">离散型随机变量</topic>
-    </objective>
-  </exam>
   <exam date="2025/09/07">
     <questions>
       <question id="Q1" type="choice" max="5.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
         <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q7" type="choice" max="5.0">
-        <topic category="不等式">含绝对值不等式</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q8" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q12" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
-      </question>
-      <question id="Q13" type="choice" max="5.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="不等式">不等式性质</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q12" type="choice" max="5.0">
+        <topic category="集合与逻辑">充分必要条件</topic>
+      </question>
+      <question id="Q13" type="choice" max="5.0">
+        <topic category="不等式">线性规划</topic>
+      </question>
       <question id="Q14" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
       <question id="Q15" type="answer" max="11.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="不等式">一元二次不等式</topic>
       </question>
       <question id="Q16" type="answer" max="13.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q17" type="answer" max="12.0">
-        <topic category="不等式">不等式性质</topic>
-      </question>
-      <question id="Q18" type="answer" max="12.0">
+      <question id="Q17" type="answer" max="13.0">
         <topic category="集合与逻辑">集合运算</topic>
       </question>
-      <question id="Q19" type="answer" max="12.0">
-        <topic category="集合与逻辑">全称量词</topic>
+      <question id="Q18" type="answer" max="14.0">
+        <topic category="不等式">均值不等式</topic>
+      </question>
+      <question id="Q19" type="answer" max="13.0">
+        <topic category="不等式">均值不等式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/21">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数">指数函数</topic>
+        <topic category="函数" weight="0.43">单调性应用</topic>
+        <topic category="不等式" weight="0.57">均值不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
+        <topic category="函数">单调性应用</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">值域与最值</topic>
+        <topic category="三角函数">正弦定理及应用</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="不等式">均值不等式</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数" weight="0.50">对数运算</topic>
-        <topic category="函数" weight="0.50">对数函数</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
         <topic category="不等式">一元二次不等式</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="函数" weight="0.56">定义域</topic>
+        <topic category="函数" weight="0.44">值域与最值</topic>
       </question>
-      <question id="Q8" type="multi_select" max="5.0">
-        <topic category="三角函数">三角函数性质</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="函数">指数运算</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="函数" weight="0.50">函数零点与方程根</topic>
-        <topic category="不等式" weight="0.50">一元二次不等式</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
+      <question id="Q6" type="choice" max="5.0">
         <topic category="函数">二次函数图像与性质</topic>
       </question>
-      <question id="Q12" type="fill" max="5.0">
-        <topic category="三角函数">诱导公式</topic>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="函数" weight="0.40">定义域</topic>
+        <topic category="函数" weight="0.60">值域与最值</topic>
       </question>
-      <question id="Q13" type="fill" max="5.0">
-        <topic category="函数">定义域</topic>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="函数" weight="0.42">对数运算</topic>
+        <topic category="函数" weight="0.58">对数函数</topic>
       </question>
-      <question id="Q14" type="fill" max="5.0">
-        <topic category="函数">指数函数</topic>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
-      <question id="Q15" type="answer" max="11.0">
-        <topic category="函数" weight="0.50">定义域</topic>
-        <topic category="函数" weight="0.50">值域与最值</topic>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
-      <question id="Q16" type="answer" max="13.0">
-        <topic category="函数" weight="0.41">定义域</topic>
-        <topic category="函数" weight="0.59">值域与最值</topic>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="函数">单调性应用</topic>
       </question>
-      <question id="Q17" type="answer" max="11.0">
-        <topic category="函数">指数函数</topic>
+      <question id="Q12" type="choice" max="5.0">
+        <topic category="函数" weight="0.51">函数零点与方程根</topic>
+        <topic category="不等式" weight="0.49">一元二次不等式</topic>
       </question>
-      <question id="Q18" type="answer" max="13.0">
-        <topic category="三角函数">诱导公式</topic>
+      <question id="Q13" type="choice" max="5.0">
+        <topic category="函数" weight="0.55">奇偶性判断</topic>
+        <topic category="函数" weight="0.45">奇偶性应用</topic>
       </question>
-      <question id="Q19" type="answer" max="14.0">
-        <topic category="函数" weight="0.50">对数运算</topic>
-        <topic category="函数" weight="0.50">对数函数</topic>
+      <question id="Q14" type="choice" max="5.0">
+        <topic category="函数">对数运算</topic>
+      </question>
+      <question id="Q15" type="answer" max="12.0">
+        <topic category="函数" weight="0.59">定义域</topic>
+        <topic category="函数" weight="0.41">值域与最值</topic>
+      </question>
+      <question id="Q16" type="answer" max="14.0">
+        <topic category="函数" weight="0.47">奇偶性判断</topic>
+        <topic category="函数" weight="0.53">奇偶性应用</topic>
+      </question>
+      <question id="Q17" type="answer" max="14.0">
+        <topic category="函数" weight="0.44">定义域</topic>
+        <topic category="函数" weight="0.56">值域与最值</topic>
+      </question>
+      <question id="Q18" type="answer" max="15.0">
+        <topic category="不等式">一元二次不等式</topic>
+      </question>
+      <question id="Q19" type="answer" max="15.0">
+        <topic category="函数" weight="0.43">单调性判断</topic>
+        <topic category="函数" weight="0.57">单调性应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/12">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="向量">空间向量</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列" weight="0.52">等比数列通项与求和</topic>
-        <topic category="数列" weight="0.48">等比数列性质</topic>
+        <topic category="数列" weight="0.47">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.53">等比数列性质</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="向量" weight="0.58">数量积</topic>
-        <topic category="三角函数" weight="0.42">和差公式</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="向量">向量概念</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="向量" weight="0.58">坐标表示</topic>
-        <topic category="三角函数" weight="0.42">正弦型函数 y=Asin(ωx+φ)</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="向量" weight="0.48">坐标表示</topic>
-        <topic category="三角函数" weight="0.52">正弦型函数 y=Asin(ωx+φ)</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
         <topic category="数列">等比数列通项与求和</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
+      <question id="Q4" type="choice" max="5.0">
         <topic category="向量">空间向量</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量">空间向量</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列" weight="0.56">等比数列通项与求和</topic>
-        <topic category="数列" weight="0.44">等比数列性质</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="向量">加减与数乘</topic>
-      </question>
-      <question id="Q12" type="choice" max="5.0">
-        <topic category="向量">坐标表示</topic>
-      </question>
-      <question id="Q13" type="choice" max="5.0">
-        <topic category="数列" weight="0.59">等比数列通项与求和</topic>
-        <topic category="数列" weight="0.41">等比数列性质</topic>
-      </question>
-      <question id="Q14" type="choice" max="5.0">
-        <topic category="三角函数">倍角半角公式</topic>
-      </question>
-      <question id="Q15" type="answer" max="11.0">
+      <question id="Q5" type="choice" max="5.0">
         <topic category="数列" weight="0.42">等比数列通项与求和</topic>
         <topic category="数列" weight="0.58">等比数列性质</topic>
       </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="数列">等差数列通项与求和</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="数列" weight="0.59">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.41">等比数列性质</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="不等式">线性规划</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="数列" weight="0.56">等差数列通项与求和</topic>
+        <topic category="数列" weight="0.44">等差数列性质</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.53">数量积</topic>
+        <topic category="三角函数" weight="0.47">和差公式</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.46">数量积</topic>
+        <topic category="三角函数" weight="0.54">和差公式</topic>
+      </question>
+      <question id="Q12" type="choice" max="5.0">
+        <topic category="向量">向量概念</topic>
+      </question>
+      <question id="Q13" type="choice" max="5.0">
+        <topic category="数列">裂项相消求和</topic>
+      </question>
+      <question id="Q14" type="choice" max="5.0">
+        <topic category="数列">错位相减求和</topic>
+      </question>
+      <question id="Q15" type="answer" max="12.0">
+        <topic category="数列">裂项相消求和</topic>
+      </question>
       <question id="Q16" type="answer" max="12.0">
-        <topic category="三角函数">正弦定理及应用</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q17" type="answer" max="13.0">
-        <topic category="向量" weight="0.45">数量积</topic>
-        <topic category="三角函数" weight="0.55">和差公式</topic>
+        <topic category="三角函数">正弦定理及应用</topic>
       </question>
-      <question id="Q18" type="answer" max="15.0">
-        <topic category="三角函数">三角函数性质</topic>
+      <question id="Q18" type="answer" max="14.0">
+        <topic category="三角函数">三角函数图像</topic>
       </question>
-      <question id="Q19" type="answer" max="14.0">
-        <topic category="不等式">不等式性质</topic>
+      <question id="Q19" type="answer" max="15.0">
+        <topic category="向量" weight="0.59">数量积</topic>
+        <topic category="三角函数" weight="0.41">和差公式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/26">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="立体几何" weight="0.50">体积</topic>
-        <topic category="向量" weight="0.50">空间向量</topic>
-      </question>
-      <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">对数运算</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="向量" weight="0.57">加减与数乘</topic>
-        <topic category="向量" weight="0.43">坐标表示</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="数列">数列概念与通项</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="立体几何">体积</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="立体几何">空间角计算</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量">空间向量</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.50">数量积</topic>
-        <topic category="向量" weight="0.50">坐标表示</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="函数">单调性应用</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.51">加减与数乘</topic>
-        <topic category="向量" weight="0.49">坐标表示</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="5.0">
-        <topic category="立体几何">面面平行与垂直</topic>
-      </question>
-      <question id="Q13" type="choice" max="5.0">
-        <topic category="立体几何">表面积</topic>
-      </question>
-      <question id="Q14" type="choice" max="5.0">
         <topic category="向量">向量概念</topic>
       </question>
-      <question id="Q15" type="answer" max="11.0">
-        <topic category="向量" weight="0.48">数量积</topic>
-        <topic category="向量" weight="0.52">坐标表示</topic>
+      <question id="Q2" type="choice" max="5.0">
+        <topic category="立体几何">表面积</topic>
+      </question>
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="函数">定义域</topic>
+      </question>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="立体几何">体积</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="函数">二次函数图像与性质</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="向量">平行与垂直</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="立体几何">体积</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="立体几何">线面平行判定</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="数列">裂项相消求和</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="数列">裂项相消求和</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.44">数量积</topic>
+        <topic category="向量" weight="0.56">坐标表示</topic>
+      </question>
+      <question id="Q12" type="choice" max="5.0">
+        <topic category="立体几何">线面平行判定</topic>
+      </question>
+      <question id="Q13" type="choice" max="5.0">
+        <topic category="向量">数量积</topic>
+      </question>
+      <question id="Q14" type="choice" max="5.0">
+        <topic category="数列">等比数列通项与求和</topic>
+      </question>
+      <question id="Q15" type="fill" max="10.0">
+        <topic category="数列">等比数列性质</topic>
       </question>
       <question id="Q16" type="answer" max="13.0">
-        <topic category="向量" weight="0.50">加减与数乘</topic>
-        <topic category="向量" weight="0.50">坐标表示</topic>
+        <topic category="函数">对数函数</topic>
       </question>
       <question id="Q17" type="answer" max="13.0">
-        <topic category="立体几何" weight="0.50">体积</topic>
-        <topic category="向量" weight="0.50">空间向量</topic>
+        <topic category="向量" weight="0.53">数量积</topic>
+        <topic category="向量" weight="0.47">坐标表示</topic>
       </question>
-      <question id="Q18" type="answer" max="14.0">
-        <topic category="立体几何" weight="0.50">体积</topic>
-        <topic category="向量" weight="0.50">空间向量</topic>
+      <question id="Q18" type="answer" max="16.0">
+        <topic category="向量" weight="0.52">空间向量</topic>
+        <topic category="立体几何" weight="0.48">空间角计算</topic>
       </question>
       <question id="Q19" type="answer" max="15.0">
-        <topic category="立体几何" weight="0.50">体积</topic>
-        <topic category="向量" weight="0.50">空间向量</topic>
+        <topic category="向量" weight="0.46">数量积</topic>
+        <topic category="向量" weight="0.54">坐标表示</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/01">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
         <topic category="不等式">线性规划</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
+      <question id="Q4" type="choice" max="5.0">
         <topic category="不等式">一元二次不等式</topic>
       </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="不等式">含绝对值不等式</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="集合与逻辑">充分必要条件</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">全称量词</topic>
+      </question>
       <question id="Q8" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">存在量词</topic>
+        <topic category="不等式">线性规划</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="不等式">含绝对值不等式</topic>
+        <topic category="集合与逻辑">全称量词</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/02">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="不等式">一元二次不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="不等式">均值不等式</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="不等式">含绝对值不等式</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="不等式">线性规划</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="不等式">线性规划</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
         <topic category="集合与逻辑">全称量词</topic>
       </question>
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="集合与逻辑">存在量词</topic>
+      </question>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="不等式">不等式性质</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="不等式">均值不等式</topic>
+      </question>
       <question id="Q8" type="multi_select" max="6.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
     </questions>
   </exam>
@@ -1650,1079 +336,1035 @@
         <topic category="不等式">一元二次不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="不等式">线性规划</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="不等式">均值不等式</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
         <topic category="不等式">一元二次不等式</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="不等式">不等式性质</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="不等式">含绝对值不等式</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="不等式">线性规划</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="集合与逻辑">全称量词</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="不等式">均值不等式</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">存在量词</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
         <topic category="不等式">一元二次不等式</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/04">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
+        <topic category="不等式">线性规划</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="不等式">均值不等式</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
+        <topic category="不等式">均值不等式</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="不等式">不等式性质</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
         <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="6.0">
-        <topic category="不等式">线性规划</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/05">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q4" type="multi_select" max="6.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q5" type="multi_select" max="6.0">
         <topic category="集合与逻辑">全称量词</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="不等式">含绝对值不等式</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="不等式">一元二次不等式</topic>
+        <topic category="不等式">不等式性质</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/08">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.44">集合运算</topic>
-        <topic category="函数" weight="0.56">定义域</topic>
+        <topic category="函数">幂函数</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">单调性判断</topic>
+        <topic category="集合与逻辑" weight="0.57">充分必要条件</topic>
+        <topic category="函数" weight="0.43">函数零点与方程根</topic>
       </question>
-      <question id="Q3" type="multi_select" max="6.0">
-        <topic category="函数">单调性判断</topic>
-      </question>
-      <question id="Q4" type="multi_select" max="6.0">
-        <topic category="函数">单调性应用</topic>
-      </question>
-      <question id="Q5" type="multi_select" max="6.0">
+      <question id="Q3" type="choice" max="5.0">
         <topic category="集合与逻辑">全称量词</topic>
       </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="函数">对数函数</topic>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="函数">指数运算</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="集合与逻辑">存在量词</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="集合与逻辑">全称量词</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="函数">单调性应用</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="函数">指数函数</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/09">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数">幂函数</topic>
+        <topic category="函数">对数函数</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.53">充分必要条件</topic>
-        <topic category="函数" weight="0.47">函数零点与方程根</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">值域与最值</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="函数" weight="0.51">指数运算</topic>
+        <topic category="函数" weight="0.49">指数函数</topic>
+      </question>
+      <question id="Q4" type="choice" max="5.0">
         <topic category="集合与逻辑">充分必要条件</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="集合与逻辑" weight="0.54">集合运算</topic>
+        <topic category="函数" weight="0.46">定义域</topic>
       </question>
-      <question id="Q9" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q10" type="choice" max="5.0">
-        <topic category="函数">函数零点与方程根</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">全称量词</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="6.0">
-        <topic category="函数">指数运算</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="函数">值域与最值</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/10">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">指数函数</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">二次函数最值</topic>
+        <topic category="函数" weight="0.43">奇偶性判断</topic>
+        <topic category="函数" weight="0.57">奇偶性应用</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
         <topic category="集合与逻辑">存在量词</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="函数">二次函数图像与性质</topic>
       </question>
       <question id="Q7" type="choice" max="5.0">
-        <topic category="函数" weight="0.46">奇偶性判断</topic>
-        <topic category="函数" weight="0.54">奇偶性应用</topic>
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
       <question id="Q8" type="choice" max="5.0">
         <topic category="函数" weight="0.44">定义域</topic>
         <topic category="函数" weight="0.56">值域与最值</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="函数">幂函数</topic>
+      <question id="Q9" type="choice" max="5.0">
+        <topic category="集合与逻辑" weight="0.46">充分必要条件</topic>
+        <topic category="函数" weight="0.54">函数零点与方程根</topic>
       </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="函数">二次函数最值</topic>
+      <question id="Q10" type="choice" max="5.0">
+        <topic category="集合与逻辑">集合运算</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="函数">对数函数</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="函数">定义域</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/11">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数" weight="0.49">二次函数图像与性质</topic>
-        <topic category="函数" weight="0.51">二次函数最值</topic>
+        <topic category="函数">对数运算</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">定义域</topic>
+        <topic category="函数" weight="0.41">单调性判断</topic>
+        <topic category="函数" weight="0.59">单调性应用</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数" weight="0.58">单调性判断</topic>
-        <topic category="函数" weight="0.42">单调性应用</topic>
+        <topic category="集合与逻辑" weight="0.52">集合运算</topic>
+        <topic category="函数" weight="0.48">定义域</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="函数">二次函数最值</topic>
+        <topic category="函数" weight="0.48">奇偶性判断</topic>
+        <topic category="函数" weight="0.52">奇偶性应用</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">存在量词</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="函数">奇偶性判断</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.49">充分必要条件</topic>
-        <topic category="函数" weight="0.51">函数零点与方程根</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.51">奇偶性判断</topic>
+        <topic category="函数" weight="0.49">奇偶性应用</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="函数">值域与最值</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="函数">单调性判断</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">集合运算</topic>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.56">二次函数图像与性质</topic>
+        <topic category="函数" weight="0.44">二次函数最值</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/12">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.47">充分必要条件</topic>
-        <topic category="函数" weight="0.53">函数零点与方程根</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数" weight="0.40">定义域</topic>
-        <topic category="函数" weight="0.60">值域与最值</topic>
+        <topic category="函数">奇偶性判断</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
+        <topic category="集合与逻辑">集合运算</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="集合与逻辑">全称量词</topic>
+        <topic category="函数">对数函数</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
+        <topic category="集合与逻辑" weight="0.44">集合运算</topic>
         <topic category="函数" weight="0.56">定义域</topic>
-        <topic category="函数" weight="0.44">值域与最值</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.52">集合运算</topic>
-        <topic category="函数" weight="0.48">定义域</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.42">定义域</topic>
+        <topic category="函数" weight="0.58">值域与最值</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
+      <question id="Q7" type="multi_select" max="6.0">
         <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="集合与逻辑">集合运算</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="函数">幂函数</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">集合运算</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/15">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数">同角关系</topic>
+        <topic category="不等式">均值不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">正弦定理及应用</topic>
+        <topic category="函数">单调性判断</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数">三角函数图像</topic>
+        <topic category="不等式">线性规划</topic>
       </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="函数">单调性应用</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q5" type="multi_select" max="6.0">
-        <topic category="三角函数">三角函数性质</topic>
+        <topic category="函数" weight="0.57">定义域</topic>
+        <topic category="函数" weight="0.43">值域与最值</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="函数" weight="0.43">单调性应用</topic>
-        <topic category="不等式" weight="0.57">均值不等式</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/16">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数" weight="0.45">函数零点与方程根</topic>
-        <topic category="不等式" weight="0.55">一元二次不等式</topic>
-      </question>
-      <question id="Q2" type="choice" max="5.0">
-        <topic category="函数" weight="0.46">定义域</topic>
-        <topic category="函数" weight="0.54">值域与最值</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="不等式">线性规划</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="函数" weight="0.41">定义域</topic>
-        <topic category="函数" weight="0.59">值域与最值</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数" weight="0.44">指数运算</topic>
-        <topic category="函数" weight="0.56">指数函数</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="三角函数">倍角半角公式</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
-        <topic category="函数">指数函数</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数">指数运算</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
         <topic category="函数">值域与最值</topic>
       </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="三角函数">倍角半角公式</topic>
+      <question id="Q2" type="choice" max="5.0">
+        <topic category="三角函数">余弦定理及应用</topic>
+      </question>
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+      </question>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="函数">幂函数</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="函数">单调性判断</topic>
+      </question>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.57">对数运算</topic>
+        <topic category="函数" weight="0.43">对数函数</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="三角函数">余弦定理及应用</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.47">奇偶性判断</topic>
+        <topic category="函数" weight="0.53">奇偶性应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/17">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数">二次函数图像与性质</topic>
+        <topic category="函数" weight="0.42">奇偶性判断</topic>
+        <topic category="函数" weight="0.58">奇偶性应用</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">函数模型应用</topic>
+        <topic category="函数" weight="0.57">指数运算</topic>
+        <topic category="函数" weight="0.43">指数函数</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="三角函数">倍角半角公式</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">任意角与弧度</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
         <topic category="三角函数">三角函数图像</topic>
       </question>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="函数">值域与最值</topic>
+      </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="函数" weight="0.49">指数运算</topic>
-        <topic category="函数" weight="0.51">指数函数</topic>
+        <topic category="函数" weight="0.59">单调性应用</topic>
+        <topic category="不等式" weight="0.41">均值不等式</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="函数">函数零点与方程根</topic>
+        <topic category="函数" weight="0.48">函数零点与方程根</topic>
+        <topic category="不等式" weight="0.52">一元二次不等式</topic>
       </question>
       <question id="Q8" type="multi_select" max="6.0">
-        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="函数">定义域</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/18">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数">余弦定理及应用</topic>
+        <topic category="不等式">一元二次不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">对数函数</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="函数">函数模型应用</topic>
+        <topic category="函数" weight="0.42">奇偶性判断</topic>
+        <topic category="函数" weight="0.58">奇偶性应用</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="三角函数">倍角半角公式</topic>
+        <topic category="函数">对数函数</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="函数">幂函数</topic>
+        <topic category="不等式">不等式性质</topic>
       </question>
       <question id="Q7" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
+        <topic category="函数" weight="0.45">函数零点与方程根</topic>
+        <topic category="不等式" weight="0.55">一元二次不等式</topic>
       </question>
       <question id="Q8" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q9" type="choice" max="5.0">
-        <topic category="函数" weight="0.48">指数运算</topic>
-        <topic category="函数" weight="0.52">指数函数</topic>
+        <topic category="三角函数">三角函数性质</topic>
       </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="函数">对数函数</topic>
+      <question id="Q10" type="choice" max="5.0">
+        <topic category="函数" weight="0.54">函数零点与方程根</topic>
+        <topic category="不等式" weight="0.46">一元二次不等式</topic>
       </question>
       <question id="Q11" type="multi_select" max="6.0">
-        <topic category="函数">对数函数</topic>
+        <topic category="三角函数">任意角与弧度</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="函数">指数运算</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/19">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
+        <topic category="三角函数">正弦定理及应用</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">任意角与弧度</topic>
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">指数运算</topic>
+        <topic category="三角函数">正弦定理及应用</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="函数">幂函数</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">二次函数最值</topic>
+        <topic category="函数" weight="0.41">对数运算</topic>
+        <topic category="函数" weight="0.59">对数函数</topic>
       </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="三角函数">和差公式</topic>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
-      <question id="Q7" type="multi_select" max="6.0">
-        <topic category="三角函数">倍角半角公式</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数" weight="0.41">单调性应用</topic>
-        <topic category="不等式" weight="0.59">均值不等式</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
+      <question id="Q7" type="choice" max="5.0">
         <topic category="不等式">一元二次不等式</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="不等式">不等式性质</topic>
+      </question>
+      <question id="Q9" type="choice" max="5.0">
+        <topic category="函数">函数零点与方程根</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.49">二次函数图像与性质</topic>
+        <topic category="函数" weight="0.51">二次函数最值</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="不等式">一元二次不等式</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="函数" weight="0.45">奇偶性判断</topic>
+        <topic category="函数" weight="0.55">奇偶性应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/22">
     <questions>
-      <question id="Q1" type="choice" max="5.0" />
+      <question id="Q1" type="choice" max="5.0">
+        <topic category="三角函数">三角函数图像</topic>
+      </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="函数">单调性判断</topic>
       </question>
       <question id="Q3" type="multi_select" max="6.0">
-        <topic category="三角函数">和差公式</topic>
-      </question>
-      <question id="Q4" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q5" type="multi_select" max="6.0">
         <topic category="三角函数">同角关系</topic>
       </question>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="三角函数">诱导公式</topic>
+      </question>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">充分必要条件</topic>
+      </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.49">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.51">余弦定理及应用</topic>
+        <topic category="三角函数" weight="0.48">同角关系</topic>
+        <topic category="三角函数" weight="0.52">诱导公式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/23">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.50">充分必要条件</topic>
+        <topic category="函数">单调性判断</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.51">集合运算</topic>
-        <topic category="函数" weight="0.49">定义域</topic>
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
         <topic category="集合与逻辑">集合运算</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
+      <question id="Q4" type="choice" max="5.0">
         <topic category="函数">函数零点与方程根</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.54">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.46">余弦定理及应用</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="三角函数">倍角半角公式</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="三角函数">任意角与弧度</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="集合与逻辑" weight="0.46">集合运算</topic>
-        <topic category="函数" weight="0.54">定义域</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="集合与逻辑" weight="0.42">集合运算</topic>
-        <topic category="函数" weight="0.58">定义域</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="集合与逻辑" weight="0.43">集合运算</topic>
-        <topic category="函数" weight="0.57">定义域</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="函数">对数函数</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/24">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="函数">二次函数图像与性质</topic>
+        <topic category="函数">对数运算</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="集合与逻辑">充分必要条件</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">值域与最值</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.55">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.45">余弦定理及应用</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
         <topic category="函数">单调性应用</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
+      <question id="Q3" type="multi_select" max="6.0">
+        <topic category="集合与逻辑" weight="0.47">充分必要条件</topic>
+        <topic category="函数" weight="0.53">函数零点与方程根</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="函数">幂函数</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="三角函数" weight="0.51">三角函数图像</topic>
+        <topic category="三角函数" weight="0.49">三角函数性质</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="集合与逻辑">集合运算</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="集合与逻辑" weight="0.50">集合运算</topic>
+        <topic category="函数" weight="0.50">定义域</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.43">正弦型函数 y=Asin(ωx+φ)</topic>
-        <topic category="三角函数" weight="0.57">三角函数性质</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/25">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.50">同角关系</topic>
-        <topic category="三角函数" weight="0.50">诱导公式</topic>
+        <topic category="三角函数">三角函数图像</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.46">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.54">余弦定理及应用</topic>
+        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.52">和差公式</topic>
-        <topic category="三角函数" weight="0.48">倍角半角公式</topic>
+        <topic category="函数">值域与最值</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">奇偶性判断</topic>
+        <topic category="三角函数" weight="0.60">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数" weight="0.40">三角函数性质</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.48">正弦型函数 y=Asin(ωx+φ)</topic>
-        <topic category="三角函数" weight="0.52">三角函数性质</topic>
+        <topic category="三角函数">倍角半角公式</topic>
       </question>
-      <question id="Q7" type="multi_select" max="6.0">
-        <topic category="函数">二次函数图像与性质</topic>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="集合与逻辑">充分必要条件</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.47">和差公式</topic>
-        <topic category="三角函数" weight="0.53">倍角半角公式</topic>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="函数">对数运算</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.46">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.54">余弦定理及应用</topic>
+      <question id="Q9" type="choice" max="5.0">
+        <topic category="集合与逻辑" weight="0.50">充分必要条件</topic>
+        <topic category="函数" weight="0.50">函数零点与方程根</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="三角函数">三角函数图像</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">存在量词</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="函数">对数函数</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/09/26">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.50">三角函数性质</topic>
-        <topic category="三角函数" weight="0.50">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="函数">奇偶性判断</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">任意角与弧度</topic>
+        <topic category="集合与逻辑" weight="0.59">充分必要条件</topic>
+        <topic category="函数" weight="0.41">函数零点与方程根</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="集合与逻辑" weight="0.57">集合运算</topic>
-        <topic category="函数" weight="0.43">定义域</topic>
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">任意角与弧度</topic>
+        <topic category="函数">指数函数</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">奇偶性应用</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="三角函数">同角关系</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="三角函数">正弦定理及应用</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="集合与逻辑">存在量词</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.48">和差公式</topic>
-        <topic category="三角函数" weight="0.52">倍角半角公式</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
+      <question id="Q5" type="multi_select" max="6.0">
         <topic category="集合与逻辑">集合运算</topic>
       </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.52">同角关系</topic>
-        <topic category="三角函数" weight="0.48">诱导公式</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="函数">函数零点与方程根</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="集合与逻辑">全称量词</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/06">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.56">三角函数图像</topic>
-        <topic category="三角函数" weight="0.44">三角函数性质</topic>
+        <topic category="三角函数" weight="0.57">和差公式</topic>
+        <topic category="三角函数" weight="0.43">倍角半角公式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数" weight="0.43">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数" weight="0.57">三角函数性质</topic>
       </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="数列">等比数列性质</topic>
+      <question id="Q3" type="multi_select" max="6.0">
+        <topic category="函数">函数模型应用</topic>
       </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">三角函数性质</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="三角函数">同角关系</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.60">同角关系</topic>
-        <topic category="三角函数" weight="0.40">诱导公式</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="函数">单调性判断</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.47">和差公式</topic>
-        <topic category="三角函数" weight="0.53">倍角半角公式</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="三角函数">正弦定理及应用</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数">正弦定理及应用</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列">等差数列性质</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.50">正弦型函数 y=Asin(ωx+φ)</topic>
-        <topic category="三角函数" weight="0.50">三角函数性质</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="数列">等比数列通项与求和</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/07">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列">等差数列通项与求和</topic>
+        <topic category="函数">幂函数</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="三角函数">任意角与弧度</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="数列">等差数列通项与求和</topic>
+        <topic category="三角函数" weight="0.43">同角关系</topic>
+        <topic category="三角函数" weight="0.57">诱导公式</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">诱导公式</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">单调性应用</topic>
+        <topic category="三角函数" weight="0.45">正弦定理及应用</topic>
+        <topic category="三角函数" weight="0.55">余弦定理及应用</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="函数">函数模型应用</topic>
+        <topic category="函数">幂函数</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="函数">指数函数</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="数列">等比数列通项与求和</topic>
       </question>
       <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数">单调性应用</topic>
+        <topic category="函数">指数函数</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="函数">对数运算</topic>
+        <topic category="三角函数">任意角与弧度</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列">等差数列通项与求和</topic>
+        <topic category="函数">对数运算</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/08">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列">裂项相消求和</topic>
+        <topic category="函数">函数零点与方程根</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.42">同角关系</topic>
-        <topic category="三角函数" weight="0.58">诱导公式</topic>
+        <topic category="数列">等差数列性质</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.56">三角函数图像</topic>
-        <topic category="三角函数" weight="0.44">三角函数性质</topic>
+        <topic category="三角函数" weight="0.59">正弦定理及应用</topic>
+        <topic category="三角函数" weight="0.41">余弦定理及应用</topic>
       </question>
-      <question id="Q4" type="multi_select" max="6.0">
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="函数">函数模型应用</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="三角函数">诱导公式</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="三角函数">三角函数性质</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="三角函数" weight="0.48">和差公式</topic>
+        <topic category="三角函数" weight="0.52">倍角半角公式</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
         <topic category="数列">错位相减求和</topic>
-      </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="三角函数">正弦定理及应用</topic>
-      </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="函数">奇偶性应用</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
-        <topic category="函数">对数运算</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/09">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.55">正弦型函数 y=Asin(ωx+φ)</topic>
-        <topic category="三角函数" weight="0.45">三角函数性质</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">余弦定理及应用</topic>
+        <topic category="数列">裂项相消求和</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">单调性判断</topic>
+        <topic category="三角函数">三角函数图像</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">诱导公式</topic>
+        <topic category="三角函数" weight="0.43">和差公式</topic>
+        <topic category="三角函数" weight="0.57">倍角半角公式</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">幂函数</topic>
+        <topic category="函数">奇偶性应用</topic>
       </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.57">同角关系</topic>
-        <topic category="三角函数" weight="0.43">诱导公式</topic>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="数列">等差数列性质</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.48">正弦型函数 y=Asin(ωx+φ)</topic>
-        <topic category="三角函数" weight="0.52">三角函数性质</topic>
+        <topic category="三角函数">正弦定理及应用</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="数列">等差数列通项与求和</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="函数">幂函数</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/10">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.40">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.60">余弦定理及应用</topic>
+        <topic category="三角函数">倍角半角公式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">对数运算</topic>
+        <topic category="函数">二次函数最值</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数" weight="0.42">正弦定理及应用</topic>
-        <topic category="三角函数" weight="0.58">余弦定理及应用</topic>
+        <topic category="函数">函数模型应用</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">单调性应用</topic>
+        <topic category="三角函数" weight="0.48">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数" weight="0.52">三角函数性质</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="函数">对数运算</topic>
+        <topic category="三角函数" weight="0.46">正弦定理及应用</topic>
+        <topic category="三角函数" weight="0.54">余弦定理及应用</topic>
       </question>
       <question id="Q7" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="三角函数">诱导公式</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数">单调性应用</topic>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="数列">等差数列通项与求和</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数" weight="0.43">同角关系</topic>
-        <topic category="三角函数" weight="0.57">诱导公式</topic>
+        <topic category="三角函数">同角关系</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列">数列概念与通项</topic>
+        <topic category="三角函数" weight="0.42">正弦型函数 y=Asin(ωx+φ)</topic>
+        <topic category="三角函数" weight="0.58">三角函数性质</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="数列">等差数列性质</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/13">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="不等式">含绝对值不等式</topic>
+        <topic category="向量">数量积</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="数列">等差数列通项与求和</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="向量">空间向量</topic>
+        <topic category="数列" weight="0.55">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.45">等比数列性质</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
+        <topic category="数列">等比数列性质</topic>
       </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="向量">向量概念</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="不等式">线性规划</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="不等式">均值不等式</topic>
+        <topic category="向量">空间向量</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.52">数量积</topic>
+        <topic category="三角函数" weight="0.48">和差公式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/14">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">加减与数乘</topic>
+        <topic category="向量">平行与垂直</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="向量">向量概念</topic>
+        <topic category="向量">平行与垂直</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数">余弦定理及应用</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="数列">等比数列通项与求和</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="不等式">线性规划</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="向量" weight="0.56">数量积</topic>
-        <topic category="三角函数" weight="0.44">和差公式</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.56">数量积</topic>
-        <topic category="三角函数" weight="0.44">和差公式</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
         <topic category="不等式">不等式性质</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="不等式">含绝对值不等式</topic>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="不等式">不等式性质</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="数列">错位相减求和</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="向量">加减与数乘</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="数列" weight="0.51">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.49">等比数列性质</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="数列" weight="0.48">等差数列通项与求和</topic>
+        <topic category="数列" weight="0.52">等差数列性质</topic>
+      </question>
+      <question id="Q9" type="choice" max="5.0">
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列" weight="0.42">等差数列通项与求和</topic>
-        <topic category="数列" weight="0.58">等差数列性质</topic>
+        <topic category="数列" weight="0.42">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.58">等比数列性质</topic>
       </question>
       <question id="Q11" type="multi_select" max="6.0">
-        <topic category="数列">裂项相消求和</topic>
+        <topic category="数列" weight="0.42">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.58">等比数列性质</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/15">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="数列">错位相减求和</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">诱导公式</topic>
+        <topic category="向量" weight="0.41">数量积</topic>
+        <topic category="三角函数" weight="0.59">和差公式</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="数列" weight="0.42">等比数列通项与求和</topic>
-        <topic category="数列" weight="0.58">等比数列性质</topic>
+        <topic category="向量" weight="0.44">坐标表示</topic>
+        <topic category="三角函数" weight="0.56">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="向量" weight="0.50">数量积</topic>
-        <topic category="三角函数" weight="0.50">和差公式</topic>
+        <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="向量">加减与数乘</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="向量">向量概念</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.46">数量积</topic>
-        <topic category="三角函数" weight="0.54">和差公式</topic>
+        <topic category="向量">向量概念</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.56">数量积</topic>
-        <topic category="三角函数" weight="0.44">和差公式</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="向量">数量积</topic>
+        <topic category="数列">等比数列性质</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/16">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">加减与数乘</topic>
-      </question>
-      <question id="Q2" type="choice" max="5.0">
-        <topic category="不等式">均值不等式</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="数列">裂项相消求和</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
         <topic category="数列">错位相减求和</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
+      <question id="Q2" type="choice" max="5.0">
+        <topic category="三角函数">正弦定理及应用</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.45">数量积</topic>
-        <topic category="三角函数" weight="0.55">和差公式</topic>
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="向量" weight="0.56">数量积</topic>
+        <topic category="三角函数" weight="0.44">和差公式</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="数列">等比数列性质</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.57">坐标表示</topic>
+        <topic category="三角函数" weight="0.43">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="三角函数">诱导公式</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="向量">数量积</topic>
+      </question>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="向量">坐标表示</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="三角函数">倍角半角公式</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/17">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列" weight="0.59">等差数列通项与求和</topic>
-        <topic category="数列" weight="0.41">等差数列性质</topic>
+        <topic category="数列">裂项相消求和</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">数列概念与通项</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数">三角函数性质</topic>
+        <topic category="向量">加减与数乘</topic>
       </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="三角函数">余弦定理及应用</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="不等式">不等式性质</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="向量">数量积</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
+      <question id="Q6" type="multi_select" max="6.0">
         <topic category="数列">等差数列性质</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量">坐标表示</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="数列" weight="0.46">等差数列通项与求和</topic>
-        <topic category="数列" weight="0.54">等差数列性质</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量">平行与垂直</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="数列">错位相减求和</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="三角函数">三角函数图像</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="6.0">
-        <topic category="三角函数">诱导公式</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="三角函数">余弦定理及应用</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/20">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">平行与垂直</topic>
+        <topic category="不等式">含绝对值不等式</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="三角函数">诱导公式</topic>
+        <topic category="向量" weight="0.49">坐标表示</topic>
+        <topic category="三角函数" weight="0.51">正弦型函数 y=Asin(ωx+φ)</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="三角函数">余弦定理及应用</topic>
+        <topic category="向量" weight="0.43">数量积</topic>
+        <topic category="三角函数" weight="0.57">和差公式</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="数列">等比数列通项与求和</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="不等式">一元二次不等式</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="三角函数">和差公式</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.48">坐标表示</topic>
-        <topic category="三角函数" weight="0.52">正弦型函数 y=Asin(ωx+φ)</topic>
-      </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="数列">等比数列性质</topic>
-      </question>
-      <question id="Q9" type="choice" max="5.0">
-        <topic category="不等式">均值不等式</topic>
-      </question>
-      <question id="Q10" type="choice" max="5.0">
-        <topic category="向量">空间向量</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
         <topic category="向量">向量概念</topic>
       </question>
-      <question id="Q12" type="multi_select" max="6.0">
+      <question id="Q5" type="choice" max="5.0">
         <topic category="三角函数">倍角半角公式</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="不等式">线性规划</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="向量">平行与垂直</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="向量">空间向量</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="数列" weight="0.56">等比数列通项与求和</topic>
+        <topic category="数列" weight="0.44">等比数列性质</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="数列">等比数列性质</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/21">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="立体几何" weight="0.50">空间距离</topic>
+        <topic category="向量" weight="0.55">空间向量</topic>
+        <topic category="立体几何" weight="0.45">体积</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">裂项相消求和</topic>
+        <topic category="向量" weight="0.45">数量积</topic>
+        <topic category="向量" weight="0.55">坐标表示</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
         <topic category="数列">等差数列通项与求和</topic>
       </question>
-      <question id="Q4" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.42">加减与数乘</topic>
-        <topic category="向量" weight="0.58">坐标表示</topic>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="向量" weight="0.43">加减与数乘</topic>
+        <topic category="向量" weight="0.57">坐标表示</topic>
       </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="函数">二次函数图像与性质</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="向量" weight="0.56">加减与数乘</topic>
+        <topic category="向量" weight="0.44">坐标表示</topic>
       </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="立体几何" weight="0.50">空间角计算</topic>
-        <topic category="向量" weight="0.50">空间向量</topic>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="向量">数量积</topic>
       </question>
-      <question id="Q7" type="multi_select" max="6.0" />
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="立体几何">空间角计算</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="向量" weight="0.53">数量积</topic>
+        <topic category="向量" weight="0.47">坐标表示</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.44">加减与数乘</topic>
+        <topic category="向量" weight="0.56">坐标表示</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="向量">向量概念</topic>
+      </question>
     </questions>
   </exam>
   <exam date="2025/10/22">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">坐标表示</topic>
+        <topic category="向量">空间向量</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">裂项相消求和</topic>
+        <topic category="向量" weight="0.55">空间向量</topic>
+        <topic category="立体几何" weight="0.45">体积</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="数列">等比数列性质</topic>
+        <topic category="向量">坐标表示</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="向量">平行与垂直</topic>
+        <topic category="向量">空间向量</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="向量" weight="0.43">加减与数乘</topic>
-        <topic category="向量" weight="0.57">坐标表示</topic>
+        <topic category="向量" weight="0.59">数量积</topic>
+        <topic category="向量" weight="0.41">坐标表示</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="数列">等比数列性质</topic>
+        <topic category="向量">坐标表示</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="立体几何">表面积</topic>
+        <topic category="函数">奇偶性判断</topic>
       </question>
       <question id="Q8" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.59">加减与数乘</topic>
-        <topic category="向量" weight="0.41">坐标表示</topic>
+        <topic category="数列">等比数列性质</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="向量">坐标表示</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/23">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">平行与垂直</topic>
+        <topic category="数列">等比数列性质</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">指数运算</topic>
+        <topic category="立体几何">表面积</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">对数运算</topic>
+        <topic category="向量" weight="0.44">数量积</topic>
+        <topic category="向量" weight="0.56">坐标表示</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="向量">向量概念</topic>
+        <topic category="立体几何">线面平行判定</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="向量">平行与垂直</topic>
+        <topic category="立体几何">空间角计算</topic>
       </question>
       <question id="Q6" type="choice" max="5.0">
-        <topic category="向量" weight="0.50">加减与数乘</topic>
-        <topic category="向量" weight="0.50">坐标表示</topic>
+        <topic category="向量" weight="0.49">加减与数乘</topic>
+        <topic category="向量" weight="0.51">坐标表示</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.52">数量积</topic>
-        <topic category="向量" weight="0.48">坐标表示</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="数列">等差数列通项与求和</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="数列">数列概念与通项</topic>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="数列">等比数列性质</topic>
       </question>
-      <question id="Q9" type="choice" max="5.0">
-        <topic category="函数">对数运算</topic>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="函数">指数函数</topic>
       </question>
-      <question id="Q10" type="choice" max="5.0">
-        <topic category="函数">值域与最值</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="数列">数列概念与通项</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.48">空间向量</topic>
-        <topic category="立体几何" weight="0.52">空间角计算</topic>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.49">空间向量</topic>
+        <topic category="立体几何" weight="0.51">体积</topic>
       </question>
     </questions>
   </exam>
@@ -2732,200 +1374,194 @@
         <topic category="数列">数列概念与通项</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="向量" weight="0.59">加减与数乘</topic>
+        <topic category="向量" weight="0.41">坐标表示</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">对数函数</topic>
+        <topic category="立体几何">表面积</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="向量" weight="0.46">加减与数乘</topic>
-        <topic category="向量" weight="0.54">坐标表示</topic>
+        <topic category="立体几何">空间角计算</topic>
       </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="函数">奇偶性应用</topic>
-      </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.50">加减与数乘</topic>
-        <topic category="向量" weight="0.50">坐标表示</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
+      <question id="Q5" type="choice" max="5.0">
         <topic category="立体几何">空间距离</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数">定义域</topic>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="向量">向量概念</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="立体几何">面面平行与垂直</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="向量">平行与垂直</topic>
+      </question>
+      <question id="Q9" type="choice" max="5.0">
+        <topic category="函数">单调性应用</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="立体几何">表面积</topic>
+      </question>
+      <question id="Q11" type="multi_select" max="6.0">
+        <topic category="立体几何">面面平行与垂直</topic>
+      </question>
+      <question id="Q12" type="multi_select" max="6.0">
+        <topic category="函数">奇偶性判断</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/27">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">数量积</topic>
+        <topic category="函数">函数零点与方程根</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="向量" weight="0.42">数量积</topic>
-        <topic category="向量" weight="0.58">坐标表示</topic>
+        <topic category="立体几何">面面平行与垂直</topic>
       </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="数列">裂项相消求和</topic>
+      <question id="Q3" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.52">数量积</topic>
+        <topic category="向量" weight="0.48">坐标表示</topic>
       </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="向量" weight="0.55">加减与数乘</topic>
-        <topic category="向量" weight="0.45">坐标表示</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.47">空间向量</topic>
+        <topic category="立体几何" weight="0.53">体积</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="数列">等比数列性质</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.48">加减与数乘</topic>
+        <topic category="向量" weight="0.52">坐标表示</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
-      </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.47">数量积</topic>
-        <topic category="向量" weight="0.53">坐标表示</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="立体几何">表面积</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量">空间向量</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="立体几何">体积</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="数列">等差数列通项与求和</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/28">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="立体几何" weight="0.50">面面平行与垂直</topic>
+        <topic category="立体几何">面面平行与垂直</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="立体几何">表面积</topic>
+        <topic category="向量" weight="0.58">空间向量</topic>
+        <topic category="立体几何" weight="0.42">体积</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
         <topic category="立体几何">表面积</topic>
       </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="函数">单调性应用</topic>
+      <question id="Q4" type="multi_select" max="6.0">
+        <topic category="数列">错位相减求和</topic>
       </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">函数零点与方程根</topic>
+      <question id="Q5" type="multi_select" max="6.0">
+        <topic category="数列">等比数列通项与求和</topic>
       </question>
       <question id="Q6" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.56">空间向量</topic>
-        <topic category="立体几何" weight="0.44">空间角计算</topic>
+        <topic category="向量" weight="0.55">数量积</topic>
+        <topic category="向量" weight="0.45">坐标表示</topic>
       </question>
       <question id="Q7" type="multi_select" max="6.0">
-        <topic category="数列">裂项相消求和</topic>
-      </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="函数">二次函数最值</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.54">数量积</topic>
-        <topic category="向量" weight="0.46">坐标表示</topic>
+        <topic category="数列">数列概念与通项</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/29">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量">坐标表示</topic>
+        <topic category="向量" weight="0.41">数量积</topic>
+        <topic category="向量" weight="0.59">坐标表示</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="函数">函数零点与方程根</topic>
+        <topic category="向量">数量积</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="向量" weight="0.42">数量积</topic>
-        <topic category="向量" weight="0.58">坐标表示</topic>
+        <topic category="向量" weight="0.56">空间向量</topic>
+        <topic category="立体几何" weight="0.44">体积</topic>
       </question>
-      <question id="Q4" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.52">空间向量</topic>
-        <topic category="立体几何" weight="0.48">体积</topic>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="向量" weight="0.51">数量积</topic>
+        <topic category="向量" weight="0.49">坐标表示</topic>
       </question>
-      <question id="Q5" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.53">空间向量</topic>
-        <topic category="立体几何" weight="0.47">体积</topic>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="数列">等差数列性质</topic>
       </question>
-      <question id="Q6" type="multi_select" max="6.0">
-        <topic category="立体几何">面面平行与垂直</topic>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="数列">数列概念与通项</topic>
+      </question>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="数列">错位相减求和</topic>
+      </question>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.58">加减与数乘</topic>
+        <topic category="向量" weight="0.42">坐标表示</topic>
+      </question>
+      <question id="Q9" type="multi_select" max="6.0">
+        <topic category="数列">数列概念与通项</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/30">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列" weight="0.50">错位相减求和</topic>
+        <topic category="数列">等比数列性质</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="数列">等差数列通项与求和</topic>
+        <topic category="向量" weight="0.41">数量积</topic>
+        <topic category="向量" weight="0.59">坐标表示</topic>
       </question>
       <question id="Q3" type="choice" max="5.0">
-        <topic category="函数">单调性判断</topic>
+        <topic category="向量" weight="0.41">加减与数乘</topic>
+        <topic category="向量" weight="0.59">坐标表示</topic>
       </question>
       <question id="Q4" type="choice" max="5.0">
-        <topic category="数列">等差数列性质</topic>
+        <topic category="向量">坐标表示</topic>
       </question>
       <question id="Q5" type="choice" max="5.0">
-        <topic category="立体几何">线面平行判定</topic>
+        <topic category="向量" weight="0.41">加减与数乘</topic>
+        <topic category="向量" weight="0.59">坐标表示</topic>
       </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="向量" weight="0.47">数量积</topic>
-        <topic category="向量" weight="0.53">坐标表示</topic>
+      <question id="Q6" type="multi_select" max="6.0">
+        <topic category="函数">定义域</topic>
       </question>
-      <question id="Q7" type="choice" max="5.0">
-        <topic category="向量" weight="0.43">数量积</topic>
-        <topic category="向量" weight="0.57">坐标表示</topic>
+      <question id="Q7" type="multi_select" max="6.0">
+        <topic category="向量">平行与垂直</topic>
       </question>
-      <question id="Q8" type="choice" max="5.0">
-        <topic category="立体几何">线面垂直判定</topic>
-      </question>
-      <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量">坐标表示</topic>
-      </question>
-      <question id="Q10" type="multi_select" max="6.0">
-        <topic category="向量">坐标表示</topic>
-      </question>
-      <question id="Q11" type="multi_select" max="6.0">
-        <topic category="向量">加减与数乘</topic>
-      </question>
-      <question id="Q12" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.50">空间向量</topic>
-        <topic category="立体几何" weight="0.50">体积</topic>
+      <question id="Q8" type="multi_select" max="6.0">
+        <topic category="向量">数量积</topic>
       </question>
     </questions>
   </exam>
   <exam date="2025/10/31">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="数列" weight="0.50">裂项相消求和</topic>
+        <topic category="立体几何">空间角计算</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
-        <topic category="立体几何">线面平行判定</topic>
-      </question>
-      <question id="Q3" type="choice" max="5.0">
-        <topic category="向量" weight="0.42">数量积</topic>
-        <topic category="向量" weight="0.58">坐标表示</topic>
-      </question>
-      <question id="Q4" type="choice" max="5.0">
-        <topic category="向量" weight="0.58">加减与数乘</topic>
-        <topic category="向量" weight="0.42">坐标表示</topic>
-      </question>
-      <question id="Q5" type="choice" max="5.0">
-        <topic category="函数">指数运算</topic>
-      </question>
-      <question id="Q6" type="choice" max="5.0">
-        <topic category="函数">函数模型应用</topic>
-      </question>
-      <question id="Q7" type="multi_select" max="6.0">
         <topic category="向量">坐标表示</topic>
       </question>
-      <question id="Q8" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.54">加减与数乘</topic>
-        <topic category="向量" weight="0.46">坐标表示</topic>
+      <question id="Q3" type="choice" max="5.0">
+        <topic category="数列">等比数列性质</topic>
+      </question>
+      <question id="Q4" type="choice" max="5.0">
+        <topic category="立体几何">表面积</topic>
+      </question>
+      <question id="Q5" type="choice" max="5.0">
+        <topic category="向量" weight="0.60">空间向量</topic>
+        <topic category="立体几何" weight="0.40">体积</topic>
+      </question>
+      <question id="Q6" type="choice" max="5.0">
+        <topic category="向量" weight="0.58">空间向量</topic>
+        <topic category="立体几何" weight="0.42">空间角计算</topic>
+      </question>
+      <question id="Q7" type="choice" max="5.0">
+        <topic category="立体几何">线面平行判定</topic>
+      </question>
+      <question id="Q8" type="choice" max="5.0">
+        <topic category="数列">等差数列通项与求和</topic>
       </question>
       <question id="Q9" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.45">空间向量</topic>
-        <topic category="立体几何" weight="0.55">体积</topic>
+        <topic category="向量" weight="0.52">加减与数乘</topic>
+        <topic category="向量" weight="0.48">坐标表示</topic>
+      </question>
+      <question id="Q10" type="multi_select" max="6.0">
+        <topic category="向量" weight="0.47">空间向量</topic>
+        <topic category="立体几何" weight="0.53">空间角计算</topic>
       </question>
     </questions>
   </exam>

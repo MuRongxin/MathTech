@@ -355,10 +355,6 @@ class RandomWheelTab(QWidget):
         if not students:
             return
 
-        n = len(students)
-        aps = 360.0 / n
-        winner_idx = int((-self._angle % 360) / aps) % n
-
         group_size = self.spin_group.value()
         use_weight = self.chk_weight.isChecked()
 
@@ -375,10 +371,14 @@ class RandomWheelTab(QWidget):
             new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
             r.student.call_count = new_count
 
+        # 用引擎选中的第一个学生作为转盘高亮目标
+        winner_name = results[0].student.name
+        try:
+            winner_idx = [s.name for s in students].index(winner_name)
+        except ValueError:
+            winner_idx = 0
         self.wheel._highlight = winner_idx
         self.wheel._draw_text = True
-
-        winner_name = students[winner_idx].name
         self.winner_label.setText(f"🎉 {winner_name}")
         self.status_label.setText("✨ 点击「开始转动」")
         self.btn_roll.setText("🚀  开 始 转 动")
