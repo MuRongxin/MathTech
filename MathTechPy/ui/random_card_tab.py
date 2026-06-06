@@ -253,7 +253,7 @@ class CardTab(QWidget):
         self._card_w, self._card_h, self._cols = card_w, card_h, cols
 
         # 清空网格并重新添加
-        for i in reversed(range(self.card_grid.count())):
+        while self.card_grid.count():
             self.card_grid.takeAt(0)
 
         for idx, card in enumerate(self._cards):

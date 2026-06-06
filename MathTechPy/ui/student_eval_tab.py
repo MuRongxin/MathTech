@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
-    QLineEdit, QFrame, QPushButton, QButtonGroup, QCompleter
+    QLineEdit, QFrame, QPushButton, QButtonGroup, QCompleter, QStackedWidget
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -39,6 +39,11 @@ class StudentEvalTab(QWidget):
         self._score_mode = 0  # 0=客观, 1=主观, 2=总体
         self._filter_start: str = ""  # 日期筛选起始
         self._filter_end: str = ""    # 日期筛选截止
+        self._radar_fills: list = []  # 雷达填充对象引用
+        self._radar_cats: list[str] = []  # 雷达分类顺序（用于复用判断）
+        self._radar_N: int = 0        # 雷达分类数量
+        self._radar_config = None     # (score_mode, compare)
+        self._radar_anim_token: int = 0  # 动画取消令牌
         self._setup_ui()
 
     # ------------------------------------------------------------------
@@ -205,6 +210,23 @@ class StudentEvalTab(QWidget):
             self.exam_type_btns.append(btn)
         self.exam_type_group.buttonClicked.connect(lambda: self.refresh())
 
+        # ---- 固定顺序切换（雷达图专用，默认隐藏）----
+        self.btn_fixed_order = QPushButton("📐 固定雷达图顺序")
+        self.btn_fixed_order.setCheckable(True)
+        self.btn_fixed_order.setChecked(True)
+        self.btn_fixed_order.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_fixed_order.setFixedHeight(30)
+        self.btn_fixed_order.setStyleSheet("""
+            QPushButton {
+                background: transparent; border: 1px solid #bdc3c7; border-radius: 8px;
+                padding: 4px 10px; font-size: 12px; color: #7f8c8d;
+            }
+            QPushButton:checked { background: #ecf0f1; color: #2c3e50; border-color: #bdc3c7; }
+        """)
+        self.btn_fixed_order.clicked.connect(lambda: self.refresh())
+        self.btn_fixed_order.setVisible(False)
+        toolbar.addWidget(self.btn_fixed_order)
+
         # ---- 日期范围筛选 ----
         toolbar.addWidget(QLabel("起始:"))
         self.combo_start = QComboBox()
@@ -270,11 +292,20 @@ class StudentEvalTab(QWidget):
         stats_layout.addStretch()
         layout.addWidget(self.stats_frame)
 
-        # ---- matplotlib 图表 ----
+        # ---- matplotlib 图表区 ----
         self.fig = Figure(figsize=(10, 6.5), dpi=100)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setStyleSheet("background: white; border: 1px solid #ecf0f1; border-radius: 10px;")
-        layout.addWidget(self.canvas, 1)
+
+        # 雷达图独立画布（不被其他视图的 fig.clear() 影响）
+        self.radar_fig = Figure(figsize=(10, 6.5), dpi=100)
+        self.radar_canvas = FigureCanvas(self.radar_fig)
+        self.radar_canvas.setStyleSheet("background: white; border: 1px solid #ecf0f1; border-radius: 10px;")
+
+        self.stack = QStackedWidget()
+        self.stack.addWidget(self.canvas)        # page 0: 非雷达视图
+        self.stack.addWidget(self.radar_canvas)  # page 1: 雷达专用
+        layout.addWidget(self.stack, 1)
 
         # ---- 状态栏 ----
         self.status_label = QLabel("")
@@ -397,8 +428,10 @@ class StudentEvalTab(QWidget):
         for btn in self.trend_type_btns:
             btn.setVisible(idx == 5)
         # 对比按钮仅雷达图（idx=3）显示
+        self.stack.setCurrentIndex(1 if idx == 3 else 0)
         show_compare = (idx == 3)
         self.btn_compare.setVisible(show_compare)
+        self.btn_fixed_order.setVisible(show_compare)
         if not show_compare:
             self.btn_compare.setChecked(False)
             self.combo_compare.setVisible(False)
@@ -562,6 +595,11 @@ class StudentEvalTab(QWidget):
                 self.combo_topic.setCurrentText(prev_topic)
             self.combo_topic.blockSignals(False)
 
+        # 雷达模式走独立 canvas，其他视图走共享 fig
+        if self._view_mode == 3:
+            self._draw_radar()
+            return
+
         try:
             if self._view_mode == 0:
                 self._draw_topic_analysis("obj")
@@ -569,8 +607,6 @@ class StudentEvalTab(QWidget):
                 self._draw_topic_analysis("sub")
             elif self._view_mode == 2:
                 self._draw_comparison()
-            elif self._view_mode == 3:
-                self._draw_radar()
             elif self._view_mode == 4:
                 self._draw_timeline()
             elif self._view_mode == 5:
@@ -637,9 +673,13 @@ class StudentEvalTab(QWidget):
         all_names = [s.name for s in self.dm.students[class_idx][0]]
 
         # 收集题目-知识点绑定
+        exam_type = self.exam_type_group.checkedId() if hasattr(self, 'exam_type_group') else 2
+        if exam_type < 0: exam_type = 2
         topic_qlist: dict[str, list[tuple]] = {}
         for date, meta in self.dm.exam_meta.items():
             if date_filter and date not in date_filter:
+                continue
+            if exam_type != 2 and self.dm.is_quiz(date) != (exam_type == 0):
                 continue
             if not meta.questions:
                 continue
@@ -849,14 +889,72 @@ class StudentEvalTab(QWidget):
         )
 
     # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # 绘图: 能力雷达图
     # ------------------------------------------------------------------
+    def _init_radar_axes(self, N, all_cats, angles):
+        """在 radar_fig 上创建 polar axes（仅首次或类别数/分类变化时调用）"""
+        self.radar_fig.clear()
+        ax = self.radar_fig.add_subplot(111, projection="polar")
+        ax.set_theta_offset(math.pi / 2)
+        ax.set_theta_direction(-1)
+        ax.set_ylim(0, 1)
+        ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+        ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8)
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(all_cats, fontsize=10)
+        self._radar_fills = []
+        self._radar_cats = all_cats[:]
+        self._radar_N = N
+        return ax
+
+    def _rebuild_radar_fills(self, ax, y_data_list):
+        """删除旧 fill，用新 ydata 重建（只操作 self._radar_fills，不碰网格线）"""
+        for f in self._radar_fills:
+            try: f.remove()
+            except (ValueError, RuntimeError): pass
+        self._radar_fills = []
+        if not y_data_list:
+            return
+        N = len(y_data_list[0]) - 1
+        if N < 3:
+            return
+        angles = [n / N * 2 * math.pi for n in range(N)] + [0]
+        colors = ["#3498db", "#e67e22"]
+        for i, yd in enumerate(y_data_list):
+            if i < len(colors):
+                fills = ax.fill(angles, yd, alpha=0.10, color=colors[i])
+                self._radar_fills.extend(fills)
+
+    def _run_radar_anim(self, ax, start_vals, target_vals, token, step=0):
+        """从 start_vals 平滑插值到 target_vals，token 过期自动取消"""
+        if token != self._radar_anim_token:
+            return
+        max_steps = 10
+        if step >= max_steps:
+            self._rebuild_radar_fills(ax, target_vals)
+            self.radar_canvas.draw_idle()
+            return
+
+        t = (step + 1) / max_steps
+        t_eased = t * t * (3 - 2 * t)  # smoothstep
+        for i, line in enumerate(ax.lines):
+            if i < len(target_vals):
+                sv = start_vals[i] if i < len(start_vals) else target_vals[i]
+                tv = target_vals[i]
+                line.set_ydata([s + (tg - s) * t_eased for s, tg in zip(sv, tv)])
+        self._rebuild_radar_fills(ax, [line.get_ydata() for line in ax.lines])
+        self.radar_canvas.draw_idle()
+
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(20, lambda: self._run_radar_anim(
+            ax, start_vals, target_vals, token, step + 1))
+
     def _draw_radar(self):
         date_filter = self._get_filtered_dates()
         compare_name = self.combo_compare.currentText() if self.btn_compare.isChecked() else ""
 
         def _get_radar_vals(name: str):
-            # 临时切换 student 来调用 _compute_question_topic_rates
             saved = self._current_student
             self._current_student = name
             obj_rates = self._compute_question_topic_rates(date_filter, "obj")
@@ -867,12 +965,20 @@ class StudentEvalTab(QWidget):
 
         cat_obj, cat_sub = _get_radar_vals(self._current_student)
 
-        all_cats = sorted(
-            set(cat_obj.keys()) | set(cat_sub.keys()),
-            key=lambda c: (cat_obj.get(c, {}).get("rate", 0) +
-                           cat_sub.get(c, {}).get("rate", 0)),
-            reverse=True,
-        )
+        use_fixed = self.btn_fixed_order.isChecked()
+        if use_fixed:
+            fixed_order = self.dm.category_order or list(self.dm.knowledge_pool.keys())
+            all_cats = [c for c in fixed_order
+                       if c in set(cat_obj.keys()) | set(cat_sub.keys())]
+            extra = [c for c in set(cat_obj.keys()) | set(cat_sub.keys()) if c not in fixed_order]
+            all_cats += extra
+        else:
+            all_cats = sorted(
+                set(cat_obj.keys()) | set(cat_sub.keys()),
+                key=lambda c: (cat_obj.get(c, {}).get("rate", 0) +
+                               cat_sub.get(c, {}).get("rate", 0)),
+                reverse=True,
+            )
         if len(all_cats) < 3:
             self._show_empty(f"类别数量不足3个（当前{len(all_cats)}），请先在数据维护页绑定知识点到题目。")
             return
@@ -881,65 +987,77 @@ class StudentEvalTab(QWidget):
         angles = [n / N * 2 * math.pi for n in range(N)]
         angles += angles[:1]
 
-        ax = self.fig.add_subplot(111, projection="polar")
-        ax.set_theta_offset(math.pi / 2)
-        ax.set_theta_direction(-1)
-        ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(all_cats, fontsize=10)
-        ax.set_ylim(0, 1)
-        ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
-        ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8)
-
+        # 构建 target 数据
+        new_lines = []
         if compare_name:
             cat_cmp_obj, cat_cmp_sub = _get_radar_vals(compare_name)
-
             def _pick_vals(co, cs):
                 vals = []
                 for c in all_cats:
                     o = co.get(c, {}).get("rate", 0)
                     s = cs.get(c, {}).get("rate", 0)
-                    if self._score_mode == 0:
-                        v = o
-                    elif self._score_mode == 1:
-                        v = s
-                    else:
-                        v = (o + s) / 2 if (o or s) else 0
+                    if self._score_mode == 0: v = o
+                    elif self._score_mode == 1: v = s
+                    else: v = (o + s) / 2 if (o or s) else 0
                     vals.append(v)
                 return vals + vals[:1]
-
-            v1 = _pick_vals(cat_obj, cat_sub)
-            v2 = _pick_vals(cat_cmp_obj, cat_cmp_sub)
-            ax.plot(angles, v1, "o-", color="#3498db", linewidth=2, markersize=6,
-                    label=self._current_student)
-            ax.fill(angles, v1, alpha=0.08, color="#3498db")
-            ax.plot(angles, v2, "s--", color="#e67e22", linewidth=2, markersize=6,
-                    label=compare_name)
-
-            date_info = self._date_filter_info()
-            ax.set_title(f"能力雷达图对比{date_info}", fontsize=14, fontweight="bold", pad=20)
-            ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
-            self.status_label.setText(
-                f"对比: {self._current_student} vs {compare_name} | {N}个类别{date_info}"
-            )
+            new_lines.append(_pick_vals(cat_obj, cat_sub))
+            new_lines.append(_pick_vals(cat_cmp_obj, cat_cmp_sub))
         else:
             obj_vals = [cat_obj.get(c, {}).get("rate", 0) for c in all_cats]
             sub_vals = [cat_sub.get(c, {}).get("rate", 0) for c in all_cats]
             obj_vals += obj_vals[:1]
             sub_vals += sub_vals[:1]
-
             if self._score_mode in (0, 2):
-                ax.plot(angles, obj_vals, "o-", color="#3498db", linewidth=2, markersize=6,
-                        label="客观题(选择/多选)")
-                ax.fill(angles, obj_vals, alpha=0.1, color="#3498db")
+                new_lines.append(obj_vals)
             if self._score_mode in (1, 2):
-                ax.plot(angles, sub_vals, "s--", color="#e67e22", linewidth=2, markersize=6,
-                        label="主观题(填空/解答)")
+                new_lines.append(sub_vals)
 
-            date_info = self._date_filter_info()
+        # 判断复用 vs 重建
+        current_config = (self._score_mode, bool(compare_name))
+        existing = self.radar_fig.axes
+        reuse = (existing and len(existing[0].lines) == len(new_lines) and
+                 self._radar_N == N and self._radar_cats == all_cats and
+                 self._radar_config == current_config)
+
+        if reuse:
+            ax = existing[0]
+            old_vals = [list(line.get_ydata()) for line in ax.lines]
+            # 动画过渡
+            self._radar_anim_token += 1
+            self._run_radar_anim(ax, old_vals, new_lines, self._radar_anim_token)
+        else:
+            ax = self._init_radar_axes(N, all_cats, angles)
+            self._radar_config = current_config
+            if compare_name:
+                ax.plot(angles, new_lines[0], "o-", color="#3498db", linewidth=2, markersize=6,
+                        label=self._current_student)
+                self._radar_fills.extend(ax.fill(angles, new_lines[0], alpha=0.08, color="#3498db"))
+                ax.plot(angles, new_lines[1], "s--", color="#e67e22", linewidth=2, markersize=6,
+                        label=compare_name)
+                ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
+            else:
+                line_idx = 0
+                if self._score_mode in (0, 2):
+                    ax.plot(angles, new_lines[line_idx], "o-", color="#3498db", linewidth=2, markersize=6,
+                            label="客观题(选择/多选)")
+                    self._radar_fills.extend(ax.fill(angles, new_lines[line_idx], alpha=0.1, color="#3498db"))
+                    line_idx += 1
+                if self._score_mode in (1, 2):
+                    ax.plot(angles, new_lines[line_idx], "s--", color="#e67e22", linewidth=2, markersize=6,
+                            label="主观题(填空/解答)")
+                ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
+            self.radar_canvas.draw_idle()
+
+        # 标题 & 状态栏
+        date_info = self._date_filter_info()
+        if compare_name:
+            ax.set_title(f"能力雷达图对比{date_info}", fontsize=14, fontweight="bold", pad=20)
+            self.status_label.setText(
+                f"对比: {self._current_student} vs {compare_name} | {N}个类别{date_info}")
+        else:
             ax.set_title(f"{self._current_student}  ·  能力雷达图{date_info}",
                          fontsize=14, fontweight="bold", pad=20)
-            ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
-
             best_cat = max(all_cats, key=lambda c:
                 cat_obj.get(c, {}).get("rate", 0) + cat_sub.get(c, {}).get("rate", 0))
             worst_cat = min(all_cats, key=lambda c:
@@ -950,13 +1068,8 @@ class StudentEvalTab(QWidget):
                           cat_sub.get(worst_cat, {}).get("rate", 0)) / 2
             self.status_label.setText(
                 f"雷达图：{N} 个类别 | 最强: {best_cat}({best_rate:.0%}) | "
-                f"最弱: {worst_cat}({worst_rate:.0%}){date_info}"
-            )
+                f"最弱: {worst_cat}({worst_rate:.0%}){date_info}")
 
-    # ------------------------------------------------------------------
-    # 绘图: 成绩历程
-    # ------------------------------------------------------------------
-    def _draw_timeline(self):
         obj_stu, full_stu, sub_stu = self._get_student_both(self._current_student)
         if obj_stu is None or full_stu is None:
             self._show_empty("学生数据缺失")
@@ -1338,14 +1451,16 @@ class StudentEvalTab(QWidget):
         return f" [{self._filter_start} ~ {self._filter_end}]"
 
     def _show_empty(self, msg: str):
-        self.fig.clear()
-        ax = self.fig.add_subplot(111)
+        fig = self.radar_fig if self._view_mode == 3 else self.fig
+        fig.clear()
+        ax = fig.add_subplot(111)
         ax.text(0.5, 0.5, msg, transform=ax.transAxes,
                 ha="center", va="center", fontsize=16, color="#bdc3c7")
         ax.set_xticks([])
         ax.set_yticks([])
-        self.fig.tight_layout()
-        self.canvas.draw()
+        fig.tight_layout()
+        canvas = self.radar_canvas if self._view_mode == 3 else self.canvas
+        canvas.draw()
         self.status_label.setText(msg)
 
     def _show_error(self, msg: str):

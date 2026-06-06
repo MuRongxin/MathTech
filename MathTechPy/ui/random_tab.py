@@ -602,14 +602,14 @@ class RandomTab(QWidget):
             self.chips_panel.show()
 
         # 弹跳揭示
-        anim = QPropertyAnimation(self.bouncer, b"geometry")
+        self._reveal_anim = QPropertyAnimation(self.bouncer, b"geometry")
         rect = self.bouncer.geometry()
         start_rect = rect.translated(0, -25)
-        anim.setStartValue(start_rect)
-        anim.setEndValue(rect)
-        anim.setDuration(500)
-        anim.setEasingCurve(QEasingCurve.Type.OutElastic)
-        anim.start()
+        self._reveal_anim.setStartValue(start_rect)
+        self._reveal_anim.setEndValue(rect)
+        self._reveal_anim.setDuration(500)
+        self._reveal_anim.setEasingCurve(QEasingCurve.Type.OutElastic)
+        self._reveal_anim.start()
 
         # 历史
         for r in reversed(results):
