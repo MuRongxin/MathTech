@@ -8,7 +8,7 @@ Math 教学辅助工具仓库。**当前活跃开发仅 `MathTechPy/`**（Python
 
 | 目录 | 技术栈 | 状态 |
 |------|--------|------|
-| `MathTechPy/` | Python 3 + PyQt6 + matplotlib + pandas | **活跃开发** |
+| `MathTechPy/` | Python 3 + PyQt6 + matplotlib | **活跃开发** |
 | `Auxiliary tool/` | .NET Framework 4.7.2 WinForms | 原始版本，已冻结 |
 | `AuxiliaryTool.Avalonia/` | .NET 8 Avalonia UI | 实验性重写，未完成 |
 | `AuxiliaryTool.Web/` | .NET 10 ASP.NET Core API | 实验性重写，未完成 |
@@ -95,7 +95,6 @@ ui/
 ```
 PyQt6==6.11.0       # GUI
 matplotlib==3.10.9  # 图表（QtAgg 后端，需中文字体支持）
-pandas==3.0.3       # 数据处理
 openpyxl==3.1.5     # .xlsx 读取
 ```
 

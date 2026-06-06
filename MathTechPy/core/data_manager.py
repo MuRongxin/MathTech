@@ -63,7 +63,16 @@ class DataManager:
         # 考试元数据：date_str → ExamMeta
         self.exam_meta: Dict[str, ExamMeta] = {}
 
-        self._load_all()
+        self._needs_init = False
+        try:
+            self._load_all()
+        except (FileNotFoundError, ValueError) as e:
+            print(f"[INFO] 配置缺失，需要初始化: {e}")
+            self._needs_init = True
+            self._init_knowledge()
+            self._initialized = True
+            return
+
         self._init_knowledge()
         self._load_question_scores()
         self._validate()

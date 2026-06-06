@@ -62,7 +62,6 @@ main.py                         # 入口：QApplication + matplotlib 配置 → 
 ```
 PyQt6==6.11.0       # GUI 框架
 matplotlib==3.10.9   # 图表（QtAgg 后端）
-pandas==3.0.3        # 数据处理（轻度使用）
 openpyxl==3.1.5      # Excel (.xlsx) 读取（可选，用于导入 xlsx 格式逐题分）
 ```
 

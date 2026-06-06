@@ -13,6 +13,9 @@ from .random_combined_tab import RandomCombinedTab
 from .score_tab import ScoreTab
 from .data_maintenance_tab import DataMaintenanceTab
 from .student_eval_tab import StudentEvalTab
+from .radar_qpainter_tab import RadarQPainterTab
+from .data_admin_tab import DataAdminTab
+from .init_dialog import InitDialog
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +28,22 @@ class MainWindow(QMainWindow):
         # 核心业务对象
         self.dm = DataManager()
         self.random_engine = RandomEngine(self.dm)
+
+        # 首次启动 → 初始化向导
+        if getattr(self.dm, '_needs_init', False):
+            dlg = InitDialog(self)
+            if dlg.exec() == InitDialog.DialogCode.Accepted:
+                self.dm._needs_init = False
+                try:
+                    self.dm._load_all()
+                except Exception:
+                    pass
+                self.dm._load_question_scores()
+                self.dm._validate()
+                self.dm._initialized = True
+            else:
+                # 用户取消 → 仍然继续（可能之后通过小可爱数据维护添加）
+                pass
 
         # 创建中央部件
         central = QWidget()
@@ -48,6 +67,8 @@ class MainWindow(QMainWindow):
             ScoreTab(self.dm),
             DataMaintenanceTab(self.dm),
             StudentEvalTab(self.dm),
+            RadarQPainterTab(self.dm),
+            DataAdminTab(self.dm),
         ]
         for tab in self._tabs:
             self.stack.addWidget(tab)
@@ -100,6 +121,7 @@ class MainWindow(QMainWindow):
             ("📈 成绩分析", 2),
             ("🛠️ 数据维护", 3),
             ("🔍 学生评估", 4),
+            ("🎨 雷达(QPainter)", 5),
         ]
         for text, idx in nav_items:
             btn = QPushButton(text)
@@ -107,6 +129,27 @@ class MainWindow(QMainWindow):
             btn.clicked.connect(lambda checked, i=idx: self.switch_tab(i))
             layout.addWidget(btn)
             self.nav_buttons.append(btn)
+
+        # 分割线
+        sep = QLabel("")
+        sep.setFixedHeight(1)
+        sep.setStyleSheet("background: #3d566e; margin: 8px 15px;")
+        layout.addWidget(sep)
+
+        # 底部：小可爱数据维护
+        self.btn_admin = QPushButton("📥 小可爱数据维护")
+        self.btn_admin.setCheckable(True)
+        self.btn_admin.clicked.connect(lambda checked: self.switch_tab(6))
+        self.btn_admin.setStyleSheet("""
+            QPushButton {
+                background: transparent; color: #bdc3c7;
+                border: none; padding: 10px 20px; text-align: left; font-size: 13px;
+            }
+            QPushButton:hover { background: #34495e; color: white; }
+            QPushButton:checked { background: #1abc9c; color: white; }
+        """)
+        self.nav_buttons.append(self.btn_admin)
+        layout.addWidget(self.btn_admin)
 
         layout.addStretch()
 
@@ -117,6 +160,8 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex(index)
         for i, btn in enumerate(self.nav_buttons):
             btn.setChecked(i == index)
+        # 小可爱数据维护按钮最后单独处理
+        self.btn_admin.setChecked(index == 6)
 
         # 通知当前 tab 刷新
         if 0 <= index < len(self._tabs):
