@@ -1,7 +1,7 @@
 """主窗口 - 左侧导航 + 内容区切换"""
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QPushButton, QStackedWidget, QLabel, QFrame
+    QPushButton, QStackedWidget, QLabel, QFrame, QMessageBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -36,14 +36,19 @@ class MainWindow(QMainWindow):
                 self.dm._needs_init = False
                 try:
                     self.dm._load_all()
-                except Exception:
-                    pass
+                except Exception as e:
+                    QMessageBox.critical(self, "加载失败",
+                                         f"配置文件加载出错: {e}\n请检查 data/ 目录。")
+                    import sys
+                    sys.exit(1)
                 self.dm._load_question_scores()
                 self.dm._validate()
                 self.dm._initialized = True
             else:
-                # 用户取消 → 仍然继续（可能之后通过小可爱数据维护添加）
-                pass
+                QMessageBox.warning(self, "需要初始化",
+                                    "需要先配置班级和学生数据才能使用。")
+                import sys
+                sys.exit(0)
 
         # 创建中央部件
         central = QWidget()

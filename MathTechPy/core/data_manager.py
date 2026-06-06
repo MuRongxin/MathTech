@@ -66,7 +66,7 @@ class DataManager:
         self._needs_init = False
         try:
             self._load_all()
-        except (FileNotFoundError, ValueError) as e:
+        except (FileNotFoundError, ValueError, ET.ParseError) as e:
             print(f"[INFO] 配置缺失，需要初始化: {e}")
             self._needs_init = True
             self._init_knowledge()

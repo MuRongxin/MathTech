@@ -162,7 +162,7 @@ class DataAdminTab(QWidget):
             btn = self.stu_table.cellWidget(r, 2)
             if btn:
                 btn.clicked.disconnect()
-                btn.clicked.connect(lambda checked, rr=r: self._delete_student(rr))
+                btn.clicked.connect(lambda checked, rr=int(r): self._delete_student(rr))
         self._save_students()
 
     def _save_students(self):

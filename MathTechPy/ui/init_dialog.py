@@ -279,9 +279,8 @@ class InitDialog(QDialog):
         pool_path = DATA_DIR / "knowledge_pool.xml"
         if not pool_path.exists():
             from core.data_manager import DataManager
-            dm = DataManager._instance
-            if dm:
-                dm._save_knowledge_pool(pool_path)
+            dm = DataManager()
+            dm._save_knowledge_pool(pool_path)
 
         # 确保 question_scores 目录存在
         (DATA_DIR / "question_scores").mkdir(exist_ok=True)
