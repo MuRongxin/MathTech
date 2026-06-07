@@ -1,5 +1,6 @@
 """学生评估页面 — 知识点掌握度分析"""
 import math
+import statistics
 from datetime import datetime, timedelta
 
 from PyQt6.QtWidgets import (
@@ -622,18 +623,18 @@ class StudentEvalTab(QWidget):
     # 统计摘要
     # ------------------------------------------------------------------
     def _compute_stats(self, obj_stu, full_stu, sub_stu=None) -> dict:
-        obj_scores = [float(s[1]) for s in obj_stu.scores] if obj_stu and obj_stu.scores else []
-        full_scores = [float(s[1]) for s in full_stu.scores_full] if full_stu and full_stu.scores_full else []
-        sub_scores = [float(s[1]) for s in sub_stu.scores_sub] if sub_stu and sub_stu.scores_sub else []
-        n = min(len(obj_scores), len(full_scores), len(sub_scores))
-        obj_scores = obj_scores[:n]
-        sub_scores = sub_scores[:n]
-        full_scores = full_scores[:n]
+        obj_map = {d: float(v) for d, v in (obj_stu.scores or [])} if obj_stu else {}
+        sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
+        full_map = {d: float(v) for d, v in (full_stu.scores_full or [])} if full_stu else {}
+
+        common_dates = [dt for dt in self.dm.dates
+                       if dt in obj_map or dt in sub_map or dt in full_map]
+        n = len(common_dates)
 
         return {
-            "avg_obj": round(sum(obj_scores) / n, 1) if n else None,
-            "avg_sub": round(sum(sub_scores) / n, 1) if n else None,
-            "avg_full": round(sum(full_scores) / n, 1) if n else None,
+            "avg_obj": round(sum(obj_map.values()) / len(obj_map), 1) if obj_map else None,
+            "avg_sub": round(sum(sub_map.values()) / len(sub_map), 1) if sub_map else None,
+            "avg_full": round(sum(full_map.values()) / len(full_map), 1) if full_map else None,
             "call_count": obj_stu.call_count if obj_stu else 0,
             "n_exams": n,
         }
@@ -726,7 +727,6 @@ class StudentEvalTab(QWidget):
                 if name == student:
                     s_sum, m_sum = ns_sum, nm_sum
                     n_exams = sum(1 for d, q, _, _ in qlist if q in name_qs.get(d, {}))
-            import statistics
             cat = topic_category.get(tname, "未分类")
             if m_sum > 0:
                 c_avg = round(statistics.mean(cls_rates), 3) if cls_rates else 0.0
@@ -1070,18 +1070,21 @@ class StudentEvalTab(QWidget):
                 f"雷达图：{N} 个类别 | 最强: {best_cat}({best_rate:.0%}) | "
                 f"最弱: {worst_cat}({worst_rate:.0%}){date_info}")
 
+    # ------------------------------------------------------------------
+    # 绘图: 成绩历程
+    # ------------------------------------------------------------------
+    def _draw_timeline(self):
+        self.fig.clear()
         obj_stu, full_stu, sub_stu = self._get_student_both(self._current_student)
         if obj_stu is None or full_stu is None:
             self._show_empty("学生数据缺失")
             return
 
-        # 用日期对齐替代位置索引，避免三个数据源日期不同步
         obj_map = {d: float(v) for d, v in (obj_stu.scores or [])}
         sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
         full_map = {d: float(v) for d, v in (full_stu.scores_full or [])}
 
-        dates = [dt for dt in self.dm.dates
-                 if dt in obj_map or dt in full_map]
+        dates = [dt for dt in self.dm.dates if dt in obj_map or dt in full_map]
         if not dates:
             self._show_empty("该学生暂无成绩数据")
             return
@@ -1091,7 +1094,6 @@ class StudentEvalTab(QWidget):
         full_scores = [full_map.get(dt, 0.0) for dt in dates]
         n = len(dates)
 
-        # 班级均线 — 用 date-keyed lookup 对齐
         class_idx = self.dm.current_class
         class_avg_obj, class_avg_sub, class_avg_full = [], [], []
         for dt in dates:
@@ -1113,7 +1115,6 @@ class StudentEvalTab(QWidget):
         x_labels = dates
 
         if self._score_mode == 0:
-            # 客观模式：仅客观分
             ax = self.fig.add_subplot(111)
             ax.plot(x_ticks, obj_scores, "o-", color="#3498db", linewidth=2, markersize=5, label="客观分")
             ax.plot(x_ticks, class_avg_obj, "--", color="#3498db", linewidth=1, alpha=0.4, label="班均")
@@ -1124,9 +1125,7 @@ class StudentEvalTab(QWidget):
             ax.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
             ax.set_title(f"{self._current_student}  ·  客观分历程", fontsize=14, fontweight="bold")
             self.status_label.setText(f"共 {n} 次考试 | 客观均{sum(obj_scores)/n:.1f}")
-
         elif self._score_mode == 1:
-            # 主观模式：仅主观分
             ax = self.fig.add_subplot(111)
             ax.plot(x_ticks, sub_scores, "s-", color="#e67e22", linewidth=2, markersize=5, label="主观分")
             ax.plot(x_ticks, class_avg_sub, "--", color="#e67e22", linewidth=1, alpha=0.4, label="班均")
@@ -1137,9 +1136,7 @@ class StudentEvalTab(QWidget):
             ax.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
             ax.set_title(f"{self._current_student}  ·  主观分历程", fontsize=14, fontweight="bold")
             self.status_label.setText(f"共 {n} 次考试 | 主观均{sum(sub_scores)/n:.1f}")
-
         else:
-            # 总体模式：三子图
             ax1 = self.fig.add_subplot(311)
             ax1.plot(x_ticks, obj_scores, "o-", color="#3498db", linewidth=2, markersize=5, label="客观分")
             ax1.plot(x_ticks, class_avg_obj, "--", color="#3498db", linewidth=1, alpha=0.4, label="班均")
@@ -1148,7 +1145,6 @@ class StudentEvalTab(QWidget):
             ax1.legend(fontsize=8, loc="upper left")
             ax1.set_xticks(x_ticks)
             ax1.set_xticklabels([])
-
             ax2 = self.fig.add_subplot(312)
             ax2.plot(x_ticks, sub_scores, "s-", color="#e67e22", linewidth=2, markersize=5, label="主观分")
             ax2.plot(x_ticks, class_avg_sub, "--", color="#e67e22", linewidth=1, alpha=0.4, label="班均")
@@ -1157,7 +1153,6 @@ class StudentEvalTab(QWidget):
             ax2.legend(fontsize=8, loc="upper left")
             ax2.set_xticks(x_ticks)
             ax2.set_xticklabels([])
-
             ax3 = self.fig.add_subplot(313)
             ax3.plot(x_ticks, full_scores, "D-", color="#2ecc71", linewidth=2, markersize=5, label="总分")
             ax3.plot(x_ticks, class_avg_full, "--", color="#2ecc71", linewidth=1, alpha=0.4, label="班均")
@@ -1166,7 +1161,6 @@ class StudentEvalTab(QWidget):
             ax3.legend(fontsize=8, loc="upper left")
             ax3.set_xticks(x_ticks)
             ax3.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
-
             ax1.set_title(f"{self._current_student}  ·  成绩历程", fontsize=14, fontweight="bold")
             self.status_label.setText(
                 f"共 {n} 次考试 | 客观均{sum(obj_scores)/n:.1f} | "
@@ -1198,8 +1192,6 @@ class StudentEvalTab(QWidget):
         trend_type: 0=仅客观, 1=仅主观, 2=合并
         exam_type: 0=测验, 1=考试, 2=全部
         """
-        import statistics
-
         # 从 question bindings 收集数据
         qt_map = self._build_question_topic_map(topic_name, date_filter)
         # 按测验/考试过滤

@@ -34,7 +34,12 @@ def main():
     )
 
     app = QApplication(sys.argv)
-    app.setFont(QFont("Microsoft YaHei", 10))
+    font = QFont("Microsoft YaHei", 10)
+    if not font.exactMatch():
+        font = QFont("Noto Sans CJK SC", 10)
+        if not font.exactMatch():
+            font = QFont()  # 系统默认
+    app.setFont(font)
 
     # 应用图标
     icon_path = Path(__file__).parent / "xdp-QQ图片20260114152820(1689).jpeg"

@@ -1019,13 +1019,15 @@ class DataMaintenanceTab(QWidget):
             self._question_buttons.append(btn)
 
     def _sync_toggles(self):
-        """根据当前选中题目同步所有 toggle 状态"""
+        """根据当前选中题目同步所有 toggle 状态（阻断信号避免触发 _on_toggle）"""
         target = self._question_topics.get(self._current_qid, {})
         for row in self._all_toggles():
+            row.toggle.blockSignals(True)
             is_sel = row.name in target
             if is_sel:
                 row.set_weight(target[row.name])
             row.set_checked(is_sel)
+            row.toggle.blockSignals(False)
         for g in self.cat_groups:
             count = sum(1 for r in g.toggles if r.is_checked())
             g._update_header(count)

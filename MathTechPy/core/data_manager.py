@@ -122,6 +122,7 @@ class DataManager:
         if not self._question_score_dir or not self._question_score_dir.exists():
             return
 
+        mtimes = {}
         # 按班级分组所有学生 {class_idx: {name: (obj_stu, full_stu, sub_stu)}}
         class_maps = []
         for ci in range(self.class_count):

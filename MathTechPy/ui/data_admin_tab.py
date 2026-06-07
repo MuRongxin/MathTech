@@ -184,12 +184,25 @@ class DataAdminTab(QWidget):
                         break
                 cc = old_stu.call_count if old_stu else 0
                 new_students.append(StudentData(id=sid, name=name, call_count=cc))
-        # 更新内存
+        # 更新内存：保留旧学生的成绩数据，替换列表
+        from core.models import StudentData
+        old_score_maps = []
         for mode in range(3):
-            for s_old, s_new in zip(self.dm.students[ci][mode], new_students):
-                s_old.id = s_new.id
-                s_old.name = s_new.name
-                s_old.call_count = s_new.call_count
+            maps = {}
+            for s in self.dm.students[ci][mode]:
+                maps[s.name] = (s.scores[:], s.scores_full[:], s.scores_sub[:], s.question_scores.copy())
+            old_score_maps.append(maps)
+        for mode in range(3):
+            merged = []
+            for s_new in new_students:
+                old_data = old_score_maps[mode].get(s_new.name, ([], [], [], {}))
+                copied = StudentData(s_new.id, s_new.name, s_new.call_count)
+                copied.scores = old_data[0]
+                copied.scores_full = old_data[1]
+                copied.scores_sub = old_data[2]
+                copied.question_scores = old_data[3]
+                merged.append(copied)
+            self.dm.students[ci][mode] = merged
         # 写回 XML
         xml_name = f"data_{self.dm.class_names[ci]}.xml"
         self.dm._save_xml(DATA_DIR / xml_name, new_students)
@@ -235,7 +248,7 @@ class DataAdminTab(QWidget):
                 f"文件 {path.name} 的班级 A{class_suffix} 不在已配置班级中。\n"
                 "仍要导入吗？",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            if reply != QMessageBox.StandardButton.No:
+            if reply == QMessageBox.StandardButton.No:
                 return
 
         # 复制

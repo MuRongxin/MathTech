@@ -385,7 +385,9 @@ class CardTab(QWidget):
         self.btn_roll.setText("🚀  开 始 翻 牌")
         self._set_start_style()
 
-        self.history_list.insertItem(0, f"{winner_name}  ·  第{winner_stu.call_count}次")
+        for r in reversed(results):
+            prefix = "🔄 " if r.is_new_cycle else ""
+            self.history_list.insertItem(0, f"{prefix}{r.student.name}  ·  第{r.student.call_count}次")
         self.hist_count.setText(str(self.history_list.count()))
 
     def reset_history(self):
