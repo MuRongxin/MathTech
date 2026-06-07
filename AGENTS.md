@@ -33,21 +33,11 @@ python main.py
 
 ### 测试
 
-无测试框架。唯一测试脚本直接运行：
-
-```bash
-python test_student_eval.py
-```
-
-### 数据生成
-
-```bash
-python gen_exam_meta.py   # 按教学进度生成考试元数据到 data/exam_meta.xml
-```
+无测试框架。验证靠运行应用和手动测试。
 
 ### 无 lint/格式化/typecheck
 
-项目未配置任何静态分析工具。验证靠运行应用和手动测试。
+项目未配置任何静态分析工具。
 
 ---
 
@@ -56,9 +46,9 @@ python gen_exam_meta.py   # 按教学进度生成考试元数据到 data/exam_me
 ```
 main.py                    # 入口：QApplication + matplotlib 配置
 core/
-  models.py                # @dataclass: StudentData, ClassInfo, KnowledgeTopic, ExamMeta
-  data_manager.py          # 单例。加载 XML(学生)+XLSX(成绩)，管理知识点池和考试元数据
-  random_engine.py         # 加权随机抽人，按 (班级, 模式) 隔离历史
+  models.py                # @dataclass: StudentData, ClassInfo, KnowledgeTopic, Question, ExamMeta
+  data_manager.py          # 单例。加载 XML(学生)+CSV(逐题分)，管理知识点池和考试元数据
+  random_engine.py         # 加权随机抽人，按班级隔离历史
 ui/
   main_window.py           # 左侧导航栏 + QStackedWidget
   overview_tab.py          # 班级指标卡片 + 柱状图
@@ -66,29 +56,32 @@ ui/
   score_tab.py             # 五种图表模式
   data_maintenance_tab.py  # 知识点池 CRUD + 考试元数据编辑
   student_eval_tab.py      # 单学生知识点掌握度：雷达图、趋势
+  radar_qpainter_tab.py    # QPainter 雷达图（实验性，支持动画过渡）
+  data_admin_tab.py        # 学生管理 + 成绩文件导入
+  init_dialog.py           # 首次启动初始化向导
 ```
 
-**数据流**：`data/` 下 XML+XLSX → `DataManager` 单例 → 注入各 UI 标签页。
+**数据流**：`data/` 下 XML+CSV → `DataManager` 单例 → 注入各 UI 标签页。
 
 ### 关键设计
 
 - **DataManager 单例**：用 `__new__` + `_initialized` 标志实现，不是普通 `__init__` 单例。导入 `DataManager()` 始终返回同一实例。
 - **多班级**：`data/config.xml` 列出每班一对 XML+XLSX（`classMembers[i]` 对应 `classScore[i]`）。班级名从文件名自动检测（正则 `r'[A-Za-z]*(\d+)'`），格式化为 `A01`、`A03` 等。
-- **成绩双模式**：`dm.use_full_score` 切换 40 分制（客观）/ 100 分制（整卷）。所有标签页必须遵循。**注意**：`OverviewTab` 硬编码使用 `mode=1`（满分卷），忽略 `use_full_score` 设置。
-- **成绩存储格式**：`StudentData.scores` 和 `scores_full` 均为 `List[List[str]]`，每项为 `[date_str, score_str]`。score_str 以 `f"{float(val):.2f}"` 格式化（始终两位小数）。日期格式为 `"YYYY/MM/DD"`。
+- **成绩三模式**：`StudentData` 有 `scores`（客观分）、`scores_sub`（主观分）、`scores_full`（全卷总分）三个独立列表。`_load_question_scores` 从 CSV 逐题分自动计算并填充。
+- **成绩存储格式**：`StudentData.scores`、`scores_sub`、`scores_full` 均为 `List[List[str]]`，每项为 `[date_str, score_str]`。score_str 以 `f"{float(val):.2f}"` 格式化（始终两位小数）。日期格式为 `"YYYY/MM/DD"`。
 - **标签页刷新契约**：每个标签页暴露 `refresh()` 方法，`MainWindow.switch_tab()` 和 `switch_class()` 调用。
-- **Z-score 归一化**：`dm.get_zscores()` 计算全班每次考试 Z 分（`(原始分 - μ) / σ`），返回 `[[name, [z1, z2, ...]], ...]`。Z-score 对线性缩放不变，故客观分和满分卷的 Z 分相同。
+- **Z-score 归一化**：`dm.get_zscores()` 计算全班每次考试 Z 分（`(原始分 - μ) / σ`），返回 `[[name, [z1, z2, ...]], ...]`。缺考记为 `None`，不参与统计。
 - **知识点池**：两级结构，持久化到 `data/knowledge_pool.xml`，默认值硬编码在 `DataManager.DEFAULT_POOL`（11 个一级分类，约 90 个二级知识点，覆盖高中数学）。**每次 CRUD 操作立即写回 XML**，非批量保存。
+- **mtime 缓存**：`_load_question_scores` 用 `.question_scores_cache.pkl` 缓存逐题分数据，文件 mtime 未变时跳过解析。
+- **优雅初始化**：`config.xml` 缺失时 `_needs_init=True`，`main_window` 弹出 `InitDialog` 引导用户创建班级和学生。
 - **数据定位**：`DataManager` 用 `Path(__file__).parent.parent / "data"` 定位数据。打包 exe 时需改为 `Path(sys.executable).parent / "data"`（尚未实施）。
 
 ### 易踩坑点
 
-- **ExamMeta 命名反转**：`models.py:58` 中 `ExamMeta.subjective_topics` 实际存储**客观题**知识点，`ExamMeta.objective_topics` 存储**主观题**知识点。`student_eval_tab.py` 用 `TOPIC_OBJ = "subjective_topics"` 和 `TOPIC_SUB = "objective_topics"` 映射。不要试图"修正"这个命名——整个链路已适配。
-- **Excel sheet 名**：必须有 `"40"` 和 `"100"` 两个 sheet。`"40"` = 客观分（满分 40），`"100"` = 整卷分（满分 100）。第 0 行是考试日期，第 0 列是学生姓名。
 - **权重总和校验**：`data_maintenance_tab.py` 在知识点权重总和 >100% 时拒绝保存，UI 会抖动标签变红提示。添加知识点时需注意总权重不超过 1.0。
 - **FlowLayout 跨文件导入**：`data_maintenance_tab.py` 从 `random_tab.py` 导入 `FlowLayout`（`from ui.random_tab import FlowLayout`）。修改 `random_tab.py` 的 FlowLayout 会影响数据维护页。
-- **OverviewTab 模式硬编码**：`overview_tab.py:274` 固定用 `self.dm.students[ci][1]`（满分卷），不响应 `use_full_score` 切换。
-- **config.xml 缺失会崩溃**：`DataManager.__init__` 在 `_load_all` 中直接 `ET.parse(self.config_path)`，文件不存在则抛异常。同理 Excel 文件缺失也会崩溃。
+- **OverviewTab 模式硬编码**：`overview_tab.py` 固定用 `self.dm.students[ci][1]`（满分卷），不响应模式切换。
+- **exam_meta.xml 只写 questions**：保存时只写 `<questions>` 节点，旧格式的 `<subjective>`/`<objective>` 节点不再兼容。
 
 ### 依赖
 
