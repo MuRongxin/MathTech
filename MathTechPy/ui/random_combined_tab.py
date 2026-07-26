@@ -1,9 +1,8 @@
-"""随机抽人 — 六种模式合一"""
+"""随机抽人 — 五种模式合一"""
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QStackedWidget,
     QFrame, QLabel
 )
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 from core.data_manager import DataManager
@@ -16,7 +15,7 @@ from .random_group_tab import GroupTab
 
 
 class RandomCombinedTab(QWidget):
-    """六种随机抽人模式整合在一个页面"""
+    """五种随机抽人模式整合在一个页面"""
 
     MODE_NAMES = [
         "🎲 弹跳",
@@ -103,10 +102,18 @@ class RandomCombinedTab(QWidget):
     def _switch_mode(self, idx: int):
         if idx == self._mode_index:
             return
+        # 切走前停止当前页的滚动动画
+        self.stop_rolling()
         self._mode_index = idx
         self.stack.setCurrentIndex(idx)
         self._update_label()
         self._modes[idx].refresh()
+
+    def stop_rolling(self):
+        """停止当前模式页的滚动动画（供切换模式/页签/班级时调用）"""
+        stop = getattr(self._modes[self._mode_index], "stop_rolling", None)
+        if callable(stop):
+            stop()
 
     def _update_label(self):
         hints = [

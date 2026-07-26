@@ -1,6 +1,6 @@
 """数据模型 - 替代 C# 的 StudentData 等类"""
 from dataclasses import dataclass, field
-from typing import List
+from typing import Dict, List
 
 
 @dataclass
@@ -16,21 +16,29 @@ class StudentData:
     # 全卷总分: [["2025/09/01", "75.00"], ...]
     scores_full: List[List[str]] = field(default_factory=list)
     # 逐题分: {date: {question_id: score}}
-    question_scores: dict = field(default_factory=dict)
+    question_scores: Dict[str, Dict[str, float]] = field(default_factory=dict)
 
     @property
     def avg_score(self) -> float:
-        """计算该学生客观分平均分"""
-        if not self.scores:
-            return 0.0
-        return sum(float(s[1]) for s in self.scores) / len(self.scores)
+        """计算该学生客观分平均分（跳过无法解析的畸形条目）"""
+        vals = []
+        for s in self.scores:
+            try:
+                vals.append(float(s[1]))
+            except (ValueError, TypeError, IndexError):
+                continue
+        return sum(vals) / len(vals) if vals else 0.0
 
     @property
     def avg_score_full(self) -> float:
-        """计算该学生满分卷平均分"""
-        if not self.scores_full:
-            return 0.0
-        return sum(float(s[1]) for s in self.scores_full) / len(self.scores_full)
+        """计算该学生满分卷平均分（跳过无法解析的畸形条目）"""
+        vals = []
+        for s in self.scores_full:
+            try:
+                vals.append(float(s[1]))
+            except (ValueError, TypeError, IndexError):
+                continue
+        return sum(vals) / len(vals) if vals else 0.0
 
 
 @dataclass

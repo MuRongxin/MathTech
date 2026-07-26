@@ -1,10 +1,9 @@
 """随机抽人 — 分组抽取（真正抽取，而非全班 shuffle）"""
-import math
 import random
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QSpinBox, QFrame, QListWidget, QGridLayout, QMessageBox
+    QSpinBox, QFrame, QGridLayout, QMessageBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -160,22 +159,28 @@ class GroupTab(QWidget):
         need = n_groups * n_per_group
 
         if need > n_total:
-            QMessageBox.information(
-                self, "提示",
-                f"共 {n_total} 人，{n_groups}组×{n_per_group}人需要 {need} 人，\n"
-                f"超出班级人数，自动调整为 {n_groups}组×{n_total // n_groups} 人"
-            )
+            # 先完成调整计算，再生成提示文本，保证提示与实际执行一致
+            orig_groups, orig_per = n_groups, n_per_group
             n_per_group = n_total // n_groups
-            need = n_groups * n_per_group
             if n_per_group < 1:
                 n_per_group = 1
                 n_groups = n_total
-                need = n_total
+            need = n_groups * n_per_group
+            QMessageBox.information(
+                self, "提示",
+                f"共 {n_total} 人，{orig_groups}组×{orig_per}人需要 {orig_groups * orig_per} 人，\n"
+                f"超出班级人数，自动调整为 {n_groups}组×{n_per_group} 人"
+            )
 
         use_weight = self.chk_weight.isChecked()
 
         try:
             results = self.engine.pick(group_size=need, use_weight=use_weight)
+            if results:
+                # 批量更新 call_count（内存同步 + 一次性写回 XML）
+                self.dm.update_call_counts(
+                    self.dm.current_class, [r.student.id for r in results]
+                )
         except Exception as e:
             QMessageBox.critical(self, "错误", f"抽选失败: {e}")
             return
@@ -184,11 +189,6 @@ class GroupTab(QWidget):
             return
 
         picked = results  # List[RandomResult]
-
-        # 更新 callCount
-        for r in picked:
-            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
-            r.student.call_count = new_count
 
         # 打乱后分配到各组
         names = [r.student.name for r in picked]

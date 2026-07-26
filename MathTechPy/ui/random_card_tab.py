@@ -1,5 +1,4 @@
 """随机抽人 — 翻牌（卡片网格，翻牌揭晓）"""
-import math
 import random
 
 from PyQt6.QtWidgets import (
@@ -21,10 +20,11 @@ CARD_COLORS = ["#e74c3c", "#3498db", "#2ecc71", "#e67e22",
 class CardWidget(QFrame):
     """单张卡片（显示名字的 QLabel 在中央）"""
 
-    def __init__(self, name: str, color: str, parent=None):
+    def __init__(self, name: str, color: str, student_id: int = -1, parent=None):
         super().__init__(parent)
         self.name = name
         self.color = color
+        self.student_id = student_id
         self._face_up = False
         self.setObjectName("card")
         self.setMinimumSize(50, 36)
@@ -276,7 +276,7 @@ class CardTab(QWidget):
         self._card_w, self._card_h, self._cols = card_w, card_h, cols
 
         for i, s in enumerate(students):
-            card = CardWidget(s.name, CARD_COLORS[i % len(CARD_COLORS)])
+            card = CardWidget(s.name, CARD_COLORS[i % len(CARD_COLORS)], s.id)
             card.set_card_size(card_w, card_h)
             card.flip(False)
             self._cards.append(card)
@@ -361,24 +361,41 @@ class CardTab(QWidget):
                     c.highlight(False)
                 self._do_pick(students)
 
+    def _restore_idle(self):
+        """恢复开始按钮与初始状态提示"""
+        self.btn_roll.setText("🚀  开 始 翻 牌")
+        self._set_start_style()
+        self.status_label.setText("✨ 点「开始翻牌」抽取")
+
     def _do_pick(self, students):
         if not students or not self._cards:
+            self._restore_idle()
             return
 
         group_size = self.spin_group.value()
         use_weight = self.chk_weight.isChecked()
-        results = self.engine.pick(group_size=group_size, use_weight=use_weight)
-        if not results:
+        try:
+            results = self.engine.pick(group_size=group_size, use_weight=use_weight)
+            if results:
+                # 批量更新 call_count（内存同步 + 一次性写回 XML）
+                self.dm.update_call_counts(
+                    self.dm.current_class, [r.student.id for r in results]
+                )
+        except Exception as e:
+            self._restore_idle()
+            QMessageBox.critical(self, "错误", f"抽选失败: {e}")
             return
 
-        winner_name = results[0].student.name
-        for r in results:
-            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
-            r.student.call_count = new_count
+        if not results:
+            self._restore_idle()
+            return
 
-        # 高亮引擎选中的学生的卡片
+        winner_ids = {r.student.id for r in results}
+        winner_name = results[0].student.name
+
+        # 高亮引擎选中的学生的卡片（按 id 匹配，重名不误翻）
         for c in self._cards:
-            c.flip(c.name == winner_name)
+            c.flip(c.student_id in winner_ids)
 
         self.winner_label.setText(f"🎉 {winner_name}")
         self.status_label.setText(f"🎉 {winner_name}  ·  第{results[0].student.call_count}次被抽中")
@@ -388,10 +405,13 @@ class CardTab(QWidget):
         for r in reversed(results):
             prefix = "🔄 " if r.is_new_cycle else ""
             self.history_list.insertItem(0, f"{prefix}{r.student.name}  ·  第{r.student.call_count}次")
+        # 历史保留最近 100 条，超出删最旧
+        while self.history_list.count() > 100:
+            self.history_list.takeItem(self.history_list.count() - 1)
         self.hist_count.setText(str(self.history_list.count()))
 
     def reset_history(self):
-        self.engine.reset_history()
+        self.engine.reset_history(self.dm.current_class)
         self.history_list.clear()
         self.hist_count.setText("0")
         self.winner_label.setText("")
@@ -400,7 +420,20 @@ class CardTab(QWidget):
             c.flip(False)
             c.highlight(False)
 
+    def stop_rolling(self):
+        """强制停止翻牌动画并恢复按钮状态（切换模式/页签/班级时调用）"""
+        if not self._is_rolling and not self.roll_timer.isActive():
+            return
+        self.roll_timer.stop()
+        self._is_rolling = False
+        self._restore_idle()
+        for c in self._cards:
+            c.highlight(False)
+
     def refresh(self):
         self._rebuild_cards()
         self.winner_label.setText("")
         self.status_label.setText("✨ 点「开始翻牌」抽取")
+        # 清空右侧历史（引擎历史按班级隔离，由 reset_history 负责）
+        self.history_list.clear()
+        self.hist_count.setText("0")

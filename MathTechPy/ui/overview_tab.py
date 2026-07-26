@@ -2,6 +2,9 @@
 
 使用 QPropertyAnimation 实现卡片展开/收缩的平滑过渡
 """
+import math
+import statistics
+
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton
 )
@@ -259,7 +262,6 @@ class OverviewTab(QWidget):
         else:
             theoretical_max = max(scores) if scores else 100.0
 
-        import statistics
         if theoretical_max > 0:
             rates = [sc / theoretical_max for sc in scores]
         else:
@@ -289,13 +291,10 @@ class OverviewTab(QWidget):
             name = self.dm.class_names[i] if i < len(self.dm.class_names) else f"班级{i+1}"
             row.update_data(name, all_metrics[i], get_color(i))
             should_expand = self._filter_idx == -1 or self._filter_idx == i
+            # 展开/收缩统一走 set_expanded，force 保证状态一致
+            row.set_expanded(should_expand, animate=False, force=True)
             if should_expand:
-                # 先放开限制让卡片可见，延迟再修正高度
-                row.cards_container.setMaximumHeight(16777215)
-                row._expanded = True
                 needs_finalize = True
-            else:
-                row.set_expanded(False, animate=False, force=True)
 
         # 延迟修正展开行的高度（确保布局已完成）
         if needs_finalize:
@@ -325,7 +324,8 @@ class OverviewTab(QWidget):
                     score_map = {d: float(v) for d, v in (s.scores_full or s.scores or [])}
                     if dt in score_map:
                         vals.append(score_map[dt])
-                avgs.append(round(sum(vals) / len(vals), 1) if vals else 0.0)
+                # 该日期全班无成绩（缺考/未考）用 NaN 断线，而非坠 0
+                avgs.append(round(sum(vals) / len(vals), 1) if vals else float("nan"))
 
             name = self.dm.class_names[ci] if ci < len(self.dm.class_names) else f"班级{ci+1}"
             color = get_color(ci)
@@ -379,6 +379,8 @@ class OverviewTab(QWidget):
             # 转换为像素坐标计算实际距离
             pts = ax.transData.transform(list(zip(xdata, ydata)))
             for i, (px, py) in enumerate(pts):
+                if math.isnan(py):
+                    continue  # 缺考断点不参与悬停
                 dist = ((px - event.x) ** 2 + (py - event.y) ** 2) ** 0.5
                 if dist < best_dist:
                     best_dist = dist

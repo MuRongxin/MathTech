@@ -4,7 +4,7 @@
 1. 成绩分布 - 直方图显示班级分数段分布
 2. 个人趋势 - 选择学生，显示历次考试成绩折线
 3. 最近一次 - 柱状图显示最近一次考试全班成绩
-4. 最近7次 - 折线图显示最近7次考试的班级平均分趋势
+4. 进退步榜 - 最近7次考试得分变化榜（线性回归斜率）
 5. 目标分对比 - 对比当前分与目标分差距
 
 修复的 C# bug / 本页修复：
@@ -19,7 +19,6 @@ from PyQt6.QtWidgets import (
     QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider, QCompleter, QButtonGroup
 )
 from PyQt6.QtCore import Qt, QStringListModel
-from PyQt6.QtGui import QFont
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -39,8 +38,11 @@ class ScoreTab(QWidget):
         self.dm = dm
         self._current_mode = self.MODE_DISTRIBUTION
         self._exam_index = -1
-        self._display_count = 8
+        self._display_count = 15  # 与 spin_count 初始值保持一致
         self._group_offset = 0
+        self._page_total = 0      # 绘制时缓存的分页总数（翻页按钮用）
+        self._hover_dates = []
+        self._hover_raw = []
         self._hover_annot = None
         self._setup_ui()
 
@@ -337,8 +339,13 @@ class ScoreTab(QWidget):
         best_xy = None
 
         for line in ax.lines:
+            # 跳过 axvline/axhline 等辅助线：无 label 或 x 恒定的线
+            if line.get_label().startswith("_"):
+                continue
             xdata, ydata = line.get_data()
             if len(xdata) == 0:
+                continue
+            if len(xdata) >= 2 and (xdata == xdata[0]).all():
                 continue
             pts = ax.transData.transform(list(zip(xdata, ydata)))
             for i, (px, py) in enumerate(pts):
@@ -351,7 +358,7 @@ class ScoreTab(QWidget):
                     info = f"{date_str}  {ydata[i]:.2f}"
                     if label and not label.startswith("_"):
                         info = f"{label}\n{info}"
-                    # Z 分图附上原始分
+                    # 附上原始分（得分率图的悬停值是比例）
                     if raw and 0 <= idx < len(raw):
                         info += f"\n原始分 {raw[idx]:.1f}"
                     best_info = info
@@ -420,6 +427,9 @@ class ScoreTab(QWidget):
         model = QStringListModel(names)
         self.search_completer.setModel(model)
 
+        # 重置悬停缓存，避免跨模式残留
+        self._hover_dates = []
+        self._hover_raw = []
         self._hover_annot = None
         self.fig.clear()
         try:
@@ -489,8 +499,22 @@ class ScoreTab(QWidget):
 
         ax = self.fig.add_subplot(111)
 
-        # 用最大值做归一化
-        max_sc = max(scores) if scores else 100
+        type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
+        exam_date = self.dm.dates[exam_idx] if exam_idx < len(self.dm.dates) else "未知"
+
+        # 得分率归一化：优先用理论满分（按题型过滤），meta 缺失时退化为班内最高分
+        qtype_filter = {"choice": ("choice", "multi_select"), "fill": ("fill",),
+                        "answer": ("answer",)}.get(self._score_type)
+        meta = self.dm.get_exam_meta(exam_date) if exam_idx < len(self.dm.dates) else None
+        if meta and meta.questions:
+            if qtype_filter:
+                max_sc = sum(q.max_score for q in meta.questions if q.qtype in qtype_filter)
+            else:
+                max_sc = sum(q.max_score for q in meta.questions)
+            norm_note = ""
+        else:
+            max_sc = max(scores) if scores else 100
+            norm_note = "（相对班内最高分）"
         props = [sc / max_sc for sc in scores] if max_sc > 0 else [0] * len(scores)
 
         bins = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -513,11 +537,10 @@ class ScoreTab(QWidget):
                 ax.text(bar.get_x() + bar.get_width() / 2, height + 0.5,
                         str(cnt), ha="center", va="bottom", fontsize=12, fontweight="bold")
 
-        type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
-        exam_date = self.dm.dates[exam_idx] if exam_idx < len(self.dm.dates) else "未知"
         ax.set_ylabel("人数", fontsize=12)
         ax.set_xlabel("得分率分段", fontsize=12)
-        ax.set_title(f"成绩分布 ({type_name}, {exam_date}, n={len(props)})", fontsize=14, fontweight="bold")
+        ax.set_title(f"成绩分布 ({type_name}, {exam_date}, n={len(props)}){norm_note}",
+                     fontsize=14, fontweight="bold")
         ax.set_ylim(0, max(max(counts) * 1.2, 10))
 
         self._hover_dates = self.dm.dates
@@ -537,15 +560,17 @@ class ScoreTab(QWidget):
         stype = self._score_type
         qtype_filter = {"choice": ("choice", "multi_select"),
                         "fill": ("fill",), "answer": ("answer",)}.get(stype, None)
-        dates, rates, class_rates = [], [], []
-        filtered_dates = self._filter_dates()
+        dates, rates, class_rates, raw_scores = [], [], [], []
+        filtered_set = set(self._filter_dates())
+        fallback_max = False  # 有考试缺 meta 时退化为班内最高分
+        # 按日期缓存全班题型得分，避免逐日期重复 dict 转换
+        sd_cache: dict[int, dict] = {}
         for exam_i, dt in enumerate(self.dm.dates):
-            if dt not in filtered_dates:
+            if dt not in filtered_set:
                 continue
-            data = self._get_typed_scores(students, exam_i)
-            if not data:
-                continue
-            sd = dict(data)
+            if exam_i not in sd_cache:
+                sd_cache[exam_i] = dict(self._get_typed_scores(students, exam_i) or [])
+            sd = sd_cache[exam_i]
             if name not in sd:
                 continue
             meta = self.dm.get_exam_meta(dt)
@@ -556,12 +581,14 @@ class ScoreTab(QWidget):
                 else:
                     max_score = sum(q.max_score for q in meta.questions)
             else:
-                max_score = max(v for _, v in data) if data else 100.0
+                max_score = max(sd.values()) if sd else 100.0
+                fallback_max = True
             if max_score <= 0:
                 continue
             dates.append(dt)
+            raw_scores.append(sd[name])
             rates.append(round(sd[name] / max_score, 4))
-            class_rates.append(round(sum(v for _, v in data) / len(data) / max_score, 4))
+            class_rates.append(round(sum(sd.values()) / len(sd) / max_score, 4))
 
         if not rates:
             self._show_empty(f"{name} 无该题型成绩数据")
@@ -573,6 +600,7 @@ class ScoreTab(QWidget):
             dates = dates[-n:]
             rates = rates[-n:]
             class_rates = class_rates[-n:]
+            raw_scores = raw_scores[-n:]
 
         n_pts = len(rates)
         step = max(1, n_pts // 8)
@@ -590,6 +618,8 @@ class ScoreTab(QWidget):
 
         type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
         title = f"{name} — {type_name}得分率" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
+        if fallback_max:
+            title += "（部分相对班内最高分）"
         ax.set_title(title, fontsize=13, fontweight="bold")
         ax.set_ylabel("得分率", fontsize=11)
         ax.legend(fontsize=9, loc="upper left")
@@ -602,7 +632,7 @@ class ScoreTab(QWidget):
                 ax.text(xi, r + 0.03, f"{r:.0%}", ha="center", fontsize=8, color="#8e44ad")
 
         self._hover_dates = dates
-        self._hover_raw = rates
+        self._hover_raw = raw_scores  # 真实原始分，悬停 tooltip 用
         avg = sum(rates) / n_pts
         self.status_label.setText(
             f"{name} | {type_name} | {'最近7次' if is_last7 else f'共{n_pts}次'} | "
@@ -631,6 +661,7 @@ class ScoreTab(QWidget):
         names = [d[0] for d in page_data]
         scores = [d[1] for d in page_data]
         total = len(data)
+        self._page_total = total
         start = self._group_offset + 1
         end = min(self._group_offset + len(page_data), total)
 
@@ -667,24 +698,29 @@ class ScoreTab(QWidget):
             return
 
         dates = fdates[-n:]
+        # 预建每次考试的 {name: score}，避免逐学生重复聚合全班
+        date_idx = {dt: i for i, dt in enumerate(self.dm.dates)}
+        score_maps = {}
+        for dt in dates:
+            score_maps[dt] = dict(self._get_typed_scores(students, date_idx[dt]) or [])
         changes = []
         for s in students:
             scores_n = []
+            idxs = []  # 该生在 dm.dates 中的实际考试序号（保留缺考的时间间隔）
             for dt in dates:
-                exam_i = self.dm.dates.index(dt)
-                data = self._get_typed_scores(students, exam_i)
-                sd = dict(data) if data else {}
+                sd = score_maps[dt]
                 if s.name not in sd:
                     continue  # 缺考不参与趋势计算
                 scores_n.append(sd[s.name])
+                idxs.append(date_idx[dt])
             if len(scores_n) >= 2:
                 k = len(scores_n)
-                mx = (k - 1) / 2
+                mx = sum(idxs) / k
                 my = sum(scores_n) / k
-                num = sum((i - mx) * (scores_n[i] - my) for i in range(k))
-                den = sum((i - mx) ** 2 for i in range(k))
+                num = sum((idxs[i] - mx) * (scores_n[i] - my) for i in range(k))
+                den = sum((idxs[i] - mx) ** 2 for i in range(k))
                 slope = num / den if den != 0 else 0
-                diff = slope * (k - 1)
+                diff = slope * (idxs[-1] - idxs[0])
                 changes.append((s.name, diff, scores_n[0], scores_n[-1]))
 
         if not changes:
@@ -693,6 +729,7 @@ class ScoreTab(QWidget):
 
         changes.sort(key=lambda x: x[1], reverse=True)
         total = len(changes)
+        self._page_total = total
         self._group_offset = self._group_offset % total if total > 0 else 0
         start = self._group_offset
         end = min(start + self._display_count, total)
@@ -731,7 +768,6 @@ class ScoreTab(QWidget):
 
         up = sum(1 for d in diffs if d >= 0)
         down = len(diffs) - up
-        self._hover_dates = []
         self.status_label.setText(
             f"最近{n}次 | 进步 {up} 人 | 退步 {down} 人 | "
             f"最大进步 {max(diffs):.1f} | 最大退步 {min(diffs):.1f} | {type_name}"
@@ -759,6 +795,7 @@ class ScoreTab(QWidget):
         gap_data.sort(key=lambda x: x[2], reverse=True)
 
         total = len(gap_data)
+        self._page_total = total
         self._group_offset = self._group_offset % total if total > 0 else 0
         start = self._group_offset
         end = min(start + self._display_count, total)
@@ -796,20 +833,17 @@ class ScoreTab(QWidget):
     # 分页
     # ------------------------------------------------------------------
     def prev_group(self):
-        students = self.dm.current_students
-        data = self._get_typed_scores(students)
-        if not data:
+        # 依赖绘制时缓存的总数，不再全量重算
+        total = self._page_total
+        if total <= 0:
             return
-        total = len(data)
         self._group_offset = (self._group_offset - self._display_count) % total
         self.refresh()
 
     def next_group(self):
-        students = self.dm.current_students
-        data = self._get_typed_scores(students)
-        if not data:
+        total = self._page_total
+        if total <= 0:
             return
-        total = len(data)
         self._group_offset = (self._group_offset + self._display_count) % total
         self.refresh()
 

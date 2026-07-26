@@ -1,4 +1,6 @@
 """主窗口 - 左侧导航 + 内容区切换"""
+import sys
+
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QPushButton, QStackedWidget, QLabel, QFrame, QMessageBox
@@ -32,21 +34,17 @@ class MainWindow(QMainWindow):
         if getattr(self.dm, '_needs_init', False):
             dlg = InitDialog(self)
             if dlg.exec() == InitDialog.DialogCode.Accepted:
-                self.dm._needs_init = False
                 try:
-                    self.dm._load_all()
+                    self.dm.reload()
+                    self.dm.mark_initialized()
                 except Exception as e:
+                    detail = f"\n{self.dm._load_error}" if self.dm._load_error else ""
                     QMessageBox.critical(self, "加载失败",
-                                         f"配置文件加载出错: {e}\n请检查 data/ 目录。")
-                    import sys
+                                         f"配置文件加载出错: {e}{detail}\n请检查 data/ 目录。")
                     sys.exit(1)
-                self.dm._load_question_scores()
-                self.dm._validate()
-                self.dm._initialized = True
             else:
                 QMessageBox.warning(self, "需要初始化",
                                     "需要先配置班级和学生数据才能使用。")
-                import sys
                 sys.exit(0)
 
         # 创建中央部件
@@ -159,11 +157,18 @@ class MainWindow(QMainWindow):
 
     def switch_tab(self, index: int):
         """切换内容页"""
+        # 切走前停止当前页可能进行中的滚动动画
+        current = self.stack.currentIndex()
+        if current != index and 0 <= current < len(self._tabs):
+            stop = getattr(self._tabs[current], "stop_rolling", None)
+            if callable(stop):
+                stop()
+
         self.stack.setCurrentIndex(index)
         for i, btn in enumerate(self.nav_buttons):
             btn.setChecked(i == index)
         # 小可爱数据维护按钮最后单独处理
-        self.btn_admin.setChecked(index == 6)
+        self.btn_admin.setChecked(index == 5)
 
         # 通知当前 tab 刷新
         if 0 <= index < len(self._tabs):
@@ -173,10 +178,11 @@ class MainWindow(QMainWindow):
         """切换班级"""
         self.dm.current_class = class_id
 
-        # 清空随机历史（切换班级时重置，避免混淆）
-        self.random_engine.reset_history()
-
-        # 刷新当前页面
+        # 刷新当前页面（引擎历史已按班级隔离，无需重置；
+        # 切班前停止当前页可能进行中的滚动动画）
         current = self.stack.currentIndex()
         if 0 <= current < len(self._tabs):
+            stop = getattr(self._tabs[current], "stop_rolling", None)
+            if callable(stop):
+                stop()
             self._tabs[current].refresh()

@@ -1,5 +1,5 @@
 """小可爱数据维护 — 学生管理 + 成绩导入"""
-import shutil, re
+import shutil
 from pathlib import Path
 
 from PyQt6.QtWidgets import (
@@ -11,6 +11,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QDragEnterEvent, QDropEvent
 
 from core.data_manager import DataManager
+from core.models import StudentData
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -123,13 +124,20 @@ class DataAdminTab(QWidget):
             return
         for i, s in enumerate(self.dm.students[self._current_class][0]):
             self.stu_table.insertRow(i)
-            self.stu_table.setItem(i, 0, QTableWidgetItem(str(s.id)))
-            self.stu_table.setItem(i, 1, QTableWidgetItem(s.name))
+            self.stu_table.setItem(i, 0, self._make_item(str(s.id)))
+            self.stu_table.setItem(i, 1, self._make_item(s.name))
             btn = QPushButton("✕")
             btn.setFixedSize(28, 28)
             btn.setStyleSheet("border: none; color: #bdc3c7; font-size: 14px;")
             btn.clicked.connect(lambda checked, r=i: self._delete_student(r))
             self.stu_table.setCellWidget(i, 2, btn)
+
+    @staticmethod
+    def _make_item(text: str) -> QTableWidgetItem:
+        """只读单元格：杜绝直接改名导致成绩丢失的静默路径"""
+        item = QTableWidgetItem(text)
+        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        return item
 
     def _add_student(self):
         sid = self.edit_sid.text().strip()
@@ -138,10 +146,20 @@ class DataAdminTab(QWidget):
             return
         if not sid:
             sid = str(self.stu_table.rowCount() + 1)
+        # 唯一性校验：姓名与学号均不可重复
+        for r in range(self.stu_table.rowCount()):
+            item_sid = self.stu_table.item(r, 0)
+            item_name = self.stu_table.item(r, 1)
+            if item_name and item_name.text().strip() == name:
+                QMessageBox.warning(self, "重复姓名", f"学生「{name}」已存在。")
+                return
+            if item_sid and item_sid.text().strip() == sid:
+                QMessageBox.warning(self, "重复学号", f"学号「{sid}」已存在。")
+                return
         row = self.stu_table.rowCount()
         self.stu_table.insertRow(row)
-        self.stu_table.setItem(row, 0, QTableWidgetItem(sid))
-        self.stu_table.setItem(row, 1, QTableWidgetItem(name))
+        self.stu_table.setItem(row, 0, self._make_item(sid))
+        self.stu_table.setItem(row, 1, self._make_item(name))
         btn = QPushButton("✕")
         btn.setFixedSize(28, 28)
         btn.setStyleSheet("border: none; color: #bdc3c7; font-size: 14px;")
@@ -169,23 +187,44 @@ class DataAdminTab(QWidget):
         if not self.dm.class_names:
             return
         ci = self._current_class
-        # 重建学生列表
-        from core.models import StudentData
-        new_students = []
+        # 先收集并校验：姓名与学号必须唯一，重复则拒绝保存
+        rows = []
+        seen_names, seen_sids = set(), set()
         for i in range(self.stu_table.rowCount()):
-            sid = int(self.stu_table.item(i, 0).text()) if self.stu_table.item(i, 0) else i + 1
-            name = self.stu_table.item(i, 1).text() if self.stu_table.item(i, 1) else ""
-            if name:
-                # 保留旧的 call_count
-                old_stu = None
-                for s in self.dm.students[ci][0]:
-                    if s.name == name:
-                        old_stu = s
-                        break
-                cc = old_stu.call_count if old_stu else 0
-                new_students.append(StudentData(id=sid, name=name, call_count=cc))
+            sid_text = self.stu_table.item(i, 0).text().strip() if self.stu_table.item(i, 0) else ""
+            name = self.stu_table.item(i, 1).text().strip() if self.stu_table.item(i, 1) else ""
+            if not name:
+                continue
+            if name in seen_names:
+                QMessageBox.warning(self, "重复姓名", f"姓名「{name}」重复，请修正后再保存。")
+                return
+            if sid_text and sid_text in seen_sids:
+                QMessageBox.warning(self, "重复学号", f"学号「{sid_text}」重复，请修正后再保存。")
+                return
+            seen_names.add(name)
+            if sid_text:
+                seen_sids.add(sid_text)
+            rows.append((i, sid_text, name))
+        # 重建学生列表（非法学号回退为行号并提示）
+        new_students = []
+        bad_sid = False
+        for i, sid_text, name in rows:
+            try:
+                sid = int(sid_text)
+            except ValueError:
+                sid = i + 1
+                bad_sid = True
+            # 保留旧的 call_count
+            old_stu = None
+            for s in self.dm.students[ci][0]:
+                if s.name == name:
+                    old_stu = s
+                    break
+            cc = old_stu.call_count if old_stu else 0
+            new_students.append(StudentData(id=sid, name=name, call_count=cc))
+        if bad_sid:
+            self.lbl_import_status.setText("存在非法学号，已回退为行号。")
         # 更新内存：保留旧学生的成绩数据，替换列表
-        from core.models import StudentData
         old_score_maps = []
         for mode in range(3):
             maps = {}
@@ -203,9 +242,9 @@ class DataAdminTab(QWidget):
                 copied.question_scores = old_data[3]
                 merged.append(copied)
             self.dm.students[ci][mode] = merged
-        # 写回 XML
-        xml_name = f"data_{self.dm.class_names[ci]}.xml"
-        self.dm._save_xml(DATA_DIR / xml_name, new_students)
+        # 写回 XML（使用 config 中的实际路径，而非文件名反推）
+        # TODO: _save_xml 是 DataManager 私有方法，核心层暂无公开的名册保存 API
+        self.dm._save_xml(self.dm.class_xml_path(ci), new_students)
 
     # ------------------------------------------------------------------
     # 导入成绩
@@ -254,7 +293,21 @@ class DataAdminTab(QWidget):
         # 复制
         dest = DATA_DIR / "question_scores" / path.name
         dest.parent.mkdir(exist_ok=True)
-        shutil.copy2(path, dest)
+        if path.resolve() == dest.resolve():
+            self.lbl_import_status.setText(f"{path.name} 已在导入目录中，无需重复导入。")
+            return
+        if dest.exists():
+            reply = QMessageBox.question(
+                self, "覆盖确认",
+                f"目标位置已存在同名文件 {path.name}，是否覆盖？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        try:
+            shutil.copy2(path, dest)
+        except (shutil.SameFileError, OSError) as e:
+            self.lbl_import_status.setText(f"导入失败: {path.name}（{e}）")
+            return
 
         self.lbl_import_status.setText(
             f"已导入: {path.name} → {date_str} A{class_suffix}\n"

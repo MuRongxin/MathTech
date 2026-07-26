@@ -1,11 +1,19 @@
 """为每次考试的题目分配知识点，写入 exam_meta.xml"""
 import csv
+import hashlib
+import math
 import random
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from collections import defaultdict
+
+from core.data_manager import DataManager
 
 random.seed(42)
+
+# 新高考 19 题固定结构，直接复用 DataManager._EXAM19_STRUCTURE，
+# 避免与主程序口径漂移（Q1-8单选/5, Q9-11多选/6, Q12-14填空/5, Q15-19解答/13-17）
+EXAM19_STRUCTURE = DataManager._EXAM19_STRUCTURE
 
 DATA_DIR = Path(__file__).parent / "data"
 SCORE_DIR = DATA_DIR / "question_scores"
@@ -239,59 +247,77 @@ def pick_multi_topics(qtype: str, max_score: float, cats: list[str]) -> list[dic
         return [{"category": cat, "name": topic, "weight": 1.0}]
 
 
-def detect_qtype(max_score: float, all_scores: list[float]) -> str:
-    """从满分和得分分布推断题型"""
-    if max_score <= 5:
-        return "choice"
-    if max_score <= 6:
-        # 有中间分→多选，只有0/6→单选
-        has_partial = any(0 < s < max_score for s in all_scores)
-        return "multi_select" if has_partial else "choice"
-    if max_score <= 10:
-        return "fill"
-    return "answer"
+def _qnum(qid: str) -> int:
+    """提取题号数字（与 DataManager._detect_questions 同口径）"""
+    m = re.search(r"\d+", qid)
+    return int(m.group(0)) if m else 0
 
 
-def process_file(fpath: Path, cats: list[str]) -> dict:
-    """解析一个CSV文件，返回 {qid: max_score, qtype, all_scores}"""
+def detect_qtype(max_score: float, all_scores: list[float], etype: str = "quiz") -> str:
+    """按观测得分推断题型，与 DataManager._detect_questions 的推断分支对齐"""
+    # 存在 0 与满分之外的中间分 → 多选
+    if max_score == 6 and any(0 < s < max_score for s in all_scores):
+        return "multi_select"
+    if etype == "quiz":
+        return "choice"          # 测验默认选择题
+    if max_score > 10:
+        return "answer"
+    return "fill"
+
+
+def process_file(fpath: Path, etype: str = "quiz") -> dict:
+    """解析一个CSV文件，返回 {qid: max_score, qtype, all_scores}
+
+    exam 且题号恰为 Q1-Q19 时直接套用 EXAM19_STRUCTURE（与主程序
+    DataManager._detect_questions 的固定结构分支一致）；其余按观测推断。
+    """
     with open(fpath, "r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        header = next(reader)
-        headers = [h.strip() for h in header]
+        rows = list(csv.reader(f))
+    if not rows:
+        return {}
 
+    headers = [h.strip() for h in rows[0]]
     q_cols = [(i, h) for i, h in enumerate(headers)
               if h.startswith("Q") and h[1:].isdigit()]
 
     qid_data = {}  # {qid: [scores]}
-    with open(fpath, "r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        next(reader)
-        for row in reader:
-            if not row or len(row) < 2:
-                continue
-            for idx, qid in q_cols:
-                if idx < len(row) and row[idx]:
-                    try:
-                        qid_data.setdefault(qid, []).append(float(row[idx]))
-                    except ValueError:
-                        qid_data.setdefault(qid, []).append(0.0)
+    for row in rows[1:]:
+        if not row or len(row) < 2:
+            continue
+        for idx, qid in q_cols:
+            if idx < len(row) and row[idx]:
+                try:
+                    qid_data.setdefault(qid, []).append(float(row[idx]))
+                except ValueError:
+                    qid_data.setdefault(qid, []).append(0.0)
+
+    # 新高考 19 题卷：题号恰为 1-19 时套用固定结构
+    use_fixed = (etype == "exam" and len(qid_data) == 19
+                 and sorted(_qnum(q) for q in qid_data) == list(range(1, 20)))
+    if not use_fixed:
+        print(f"  提示: {fpath.name} 的题目结构按全班最高得分推断，"
+              f"若无人得满分则满分/题型可能被低估")
 
     result = {}
     for qid in sorted(qid_data.keys(),
                       key=lambda x: (not x[1:].isdigit(), int(x[1:]) if x[1:].isdigit() else 0)):
         scores = qid_data[qid]
-        max_score = max(scores) if scores else 5.0
-        max_score = max(1.0, round(max_score))
-        qtype = detect_qtype(max_score, scores)
+        if use_fixed:
+            qtype, max_score = EXAM19_STRUCTURE[_qnum(qid)]
+        else:
+            max_seen = max(scores) if scores else 0.0
+            # 满分取不小于观测最大值的整数（ceil 避免 round 低估）
+            max_score = float(max(1, math.ceil(max_seen))) if max_seen > 0 else 5.0
+            qtype = detect_qtype(max_score, scores, etype)
         result[qid] = {"max_score": max_score, "qtype": qtype, "scores": scores}
 
     return result
 
 
-def build_exam_meta(fpath: Path, date_str: str) -> tuple[str, list[dict]]:
+def build_exam_meta(fpath: Path, date_str: str, etype: str = "quiz") -> tuple[str, list[dict]]:
     """为一个文件生成考试元数据"""
     cats = get_active_cats(date_str)
-    q_info = process_file(fpath, cats)
+    q_info = process_file(fpath, etype)
 
     questions = []
     for qid, info in q_info.items():
@@ -314,6 +340,10 @@ def build_exam_meta(fpath: Path, date_str: str) -> tuple[str, list[dict]]:
 
 
 def main():
+    if not META_PATH.exists():
+        raise SystemExit(f"错误: 未找到 {META_PATH}\n"
+                         f"请先运行主程序（它会自动生成空的 exam_meta.xml），再运行本脚本")
+
     # 扫描所有文件
     files = sorted(SCORE_DIR.glob("*.csv"))
     exam_data = {}  # date_str → questions (以 A01 为准)
@@ -330,8 +360,10 @@ def main():
         if cls != "01":
             continue
 
-        random.seed(hash(date_str) % 2**31)
-        date_str, questions = build_exam_meta(fpath, date_str)
+        # 用稳定哈希做种子，保证同一日期多次运行结果一致
+        # （字符串 hash() 受 PYTHONHASHSEED 随机化，不可复现）
+        random.seed(int(hashlib.md5(date_str.encode()).hexdigest()[:8], 16))
+        date_str, questions = build_exam_meta(fpath, date_str, etype)
         exam_data[date_str] = questions
 
         n_topics = sum(len(q["topics"]) for q in questions)
@@ -340,6 +372,10 @@ def main():
     # 读取现有 exam_meta.xml，保留已有结构
     tree = ET.parse(META_PATH)
     root = tree.getroot()
+    xml_dates = {e.get("date", "") for e in root.findall("exam")}
+
+    for dt in sorted(set(exam_data) - xml_dates):
+        print(f"[WARN] {dt} 有逐题分数据但 exam_meta.xml 中无对应 <exam> 节点，已跳过")
 
     for exam_elem in root.findall("exam"):
         dt = exam_elem.get("date", "")

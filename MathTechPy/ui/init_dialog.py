@@ -90,9 +90,11 @@ class InitDialog(QDialog):
 
         # ── 底部 ──
         layout.addStretch()
-        info = QLabel("将生成: config.xml, data_A01.xml, knowledge_pool.xml")
-        info.setStyleSheet("color: #95a5a6; font-size: 12px;")
-        layout.addWidget(info)
+        self.info_label = QLabel()
+        self.info_label.setStyleSheet("color: #95a5a6; font-size: 12px;")
+        layout.addWidget(self.info_label)
+        self.edit_code.textChanged.connect(self._update_info)
+        self._update_info()
 
         self.btn_confirm = QPushButton("✓ 确认并开始使用")
         self.btn_confirm.setStyleSheet("""
@@ -104,6 +106,10 @@ class InitDialog(QDialog):
         layout.addWidget(self.btn_confirm)
 
     # ------------------------------------------------------------------
+    def _update_info(self):
+        code = self.edit_code.text().strip() or "A01"
+        self.info_label.setText(f"将生成: config.xml, data_{code}.xml, knowledge_pool.xml")
+
     def _on_click_drop(self, event):
         path, _ = QFileDialog.getOpenFileName(
             self, "选择学生数据文件", "",
@@ -137,19 +143,20 @@ class InitDialog(QDialog):
             QMessageBox.warning(self, "数据为空", "文件中未找到数据")
             return
 
-        # 找表头行（同 data_manager 的逻辑）
-        header_row = 0
+        # 找表头行：仅当出现姓名/学号等关键字时认定为表头；
+        # 否则视为无表头的纯数据文件，首行即数据（避免丢失第一名学生）
+        header_row = -1
         for ri, row in enumerate(rows[:5]):
             candidates = [str(c).strip() for c in row if c and str(c).strip()]
             if any(c in ("姓名", "学生姓名", "name", "Name") or
-                   c in ("学号", "考号", "id", "ID", "student_id") or
-                   any(ch.isdigit() for ch in c)
+                   c in ("学号", "考号", "id", "ID", "student_id")
                    for c in candidates):
                 if len(candidates) >= 2:
                     header_row = ri
                     break
 
-        header = [str(c).strip() for c in rows[header_row]]
+        header = [str(c).strip() for c in rows[header_row if header_row >= 0 else 0]]
+        data_rows = rows[header_row + 1:] if header_row >= 0 else rows
         # 找姓名列和学号列
         name_col = id_col = None
         for i, h in enumerate(header):
@@ -170,7 +177,7 @@ class InitDialog(QDialog):
 
         # 提取学生
         students = []
-        for row in rows[header_row + 1:]:
+        for row in data_rows:
             if not row or len(row) <= max(name_col, id_col or 0):
                 continue
             name = str(row[name_col]).strip() if name_col < len(row) else ""
@@ -197,16 +204,23 @@ class InitDialog(QDialog):
         self._populate_table()
 
     def _read_csv(self, path: Path) -> list:
-        with open(path, "r", encoding="utf-8-sig") as f:
-            return list(csv.reader(f))
+        try:
+            with open(path, "r", encoding="utf-8-sig") as f:
+                return list(csv.reader(f))
+        except UnicodeDecodeError:
+            with open(path, "r", encoding="gbk") as f:
+                return list(csv.reader(f))
 
     def _read_xlsx(self, path: Path) -> list:
         import openpyxl
         wb = openpyxl.load_workbook(path, data_only=True)
-        ws = wb.active
-        rows = [[cell for cell in row] for row in ws.iter_rows(values_only=True)]
-        wb.close()
-        return rows
+        try:
+            ws = wb.active
+            # 数字单元格统一转 int 显示（如 3.0 → 3）
+            return [[int(c) if isinstance(c, float) and c.is_integer() else c
+                     for c in row] for row in ws.iter_rows(values_only=True)]
+        finally:
+            wb.close()
 
     def _populate_table(self):
         self.table.setRowCount(0)
@@ -251,15 +265,27 @@ class InitDialog(QDialog):
             class_code = "A01"
             self.edit_code.setText(class_code)
 
-        # 收集表格中的学生
+        # 收集表格中的学生（学号统一归一化为整数字符串）
         students = []
+        bad_rows = []
         for i in range(self.table.rowCount()):
             sid_item = self.table.item(i, 0)
             name_item = self.table.item(i, 1)
             sid = sid_item.text().strip() if sid_item else str(i + 1)
             name = name_item.text().strip() if name_item else ""
-            if name:
-                students.append((sid, name))
+            if not name:
+                continue
+            try:
+                sid = str(int(float(sid)))
+            except (ValueError, OverflowError):
+                bad_rows.append(f"第 {i + 1} 行: 学号「{sid}」({name})")
+                continue
+            students.append((sid, name))
+        if bad_rows:
+            QMessageBox.warning(
+                self, "学号格式错误",
+                "以下行的学号不是数字，请修正源文件后重新导入：\n" + "\n".join(bad_rows))
+            return
         if not students:
             QMessageBox.warning(self, "无学生", "请至少添加一名学生")
             return
@@ -267,8 +293,15 @@ class InitDialog(QDialog):
         # 确保 data 目录存在
         DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-        # 生成班级 XML
+        # 生成班级 XML（已存在时先确认）
         xml_path = DATA_DIR / f"data_{class_code}.xml"
+        if xml_path.exists():
+            reply = QMessageBox.question(
+                self, "覆盖确认",
+                f"文件 {xml_path.name} 已存在，覆盖后原班级名册将被替换。\n确定覆盖吗？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes:
+                return
         self._write_class_xml(xml_path, students)
 
         # 生成 config.xml（追加模式）
@@ -287,6 +320,7 @@ class InitDialog(QDialog):
 
         QMessageBox.information(self, "初始化完成",
                                 f"已创建 {class_name}({class_code})，共 {len(students)} 名学生。\n"
+                                f"（班级名称仅用于展示，系统将以代号 {class_code} 识别本班。）\n"
                                 "现在可以导入考试数据了。")
         self.accept()
 

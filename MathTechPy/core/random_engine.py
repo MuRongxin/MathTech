@@ -1,7 +1,8 @@
 """随机抽人引擎 - 替代 C# RandomView 中的抽人逻辑
 
 修复的 C# bug：
-1. 历史记录现在按 (class_id, mode) 隔离，切换班级不会互相污染
+1. 历史记录按班级隔离（_key 只用 current_class，同班各模式共享历史），
+   切换班级不会互相污染
 2. 池子不够时优雅降级（不再抛异常）
 3. 分组时最后一组自动处理人数不足
 4. 增加 weight 机制：call_count 越小的学生权重越高
@@ -23,7 +24,7 @@ class RandomResult:
 class RandomEngine:
     def __init__(self, data_manager):
         self.dm = data_manager
-        # 按 (class_id, full_score) 隔离历史，避免切换班级时污染
+        # 按 class_id 隔离历史，同班各模式共享历史，避免切换班级时污染
         self._history: Dict[int, List[int]] = {}
         self._last_group_size: int = 3
 
@@ -59,9 +60,11 @@ class RandomEngine:
             available = [s for s in students if s.id not in history]
 
             if not available:
-                # 一轮结束，清空历史重新开始
+                # 一轮结束，清空历史重新开始；
+                # 本轮已抽出的学生重新加入历史，避免同组重复抽中同一人
                 history.clear()
-                available = students[:]
+                history.extend(r.student.id for r in results)
+                available = [s for s in students if s.id not in history]
                 is_new_cycle = True
 
             if len(available) == 1:

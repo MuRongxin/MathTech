@@ -1,5 +1,6 @@
 """批量生成两个月的模拟考试数据"""
 import csv
+import hashlib
 import random
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -33,7 +34,11 @@ EXAM_MAX = [5]*8 + [6]*3 + [5]*3 + [13, 15, 15, 17, 17]
 
 
 def load_students(cls_name: str) -> list[dict]:
-    tree = ET.parse(DATA_DIR / f"data_{cls_name}.xml")
+    path = DATA_DIR / f"data_{cls_name}.xml"
+    if not path.exists():
+        raise SystemExit(f"错误: 未找到班级名册 {path}\n"
+                         f"请确认 data/config.xml 配置的班级与 {DATA_DIR} 下的文件一致")
+    tree = ET.parse(path)
     return [
         {"id": e.get("id", ""), "name": e.findtext("name", "").strip()}
         for e in tree.findall("student")
@@ -151,7 +156,12 @@ def fix_perfect(rows: list[list], score_start: int, n_score_cols: int, max_total
                     break
 
 
-def wrong_obj_questions(scores: list[int], maxs: list[int], n_obj: int) -> str:
+def _stable_seed(text: str) -> int:
+    """稳定随机种子：字符串 hash() 受 PYTHONHASHSEED 随机化不可复现，改用 md5"""
+    return int(hashlib.md5(text.encode()).hexdigest()[:8], 16)
+
+
+def wrong_obj_questions(scores: list[int], n_obj: int) -> str:
     """客观题中得0分的题号"""
     wrong = []
     for i in range(n_obj):
@@ -170,7 +180,7 @@ def generate_for_class(cls_name: str, ability_seed: int):
 
     # 测验：题数不固定，含多选
     for date in QUIZ_DATES:
-        random.seed(hash(date + cls_name) % 2**31)
+        random.seed(_stable_seed(date + cls_name))
         n_total, n_multi = gen_quiz_config()
         n_single = n_total - n_multi
         maxs = [5]*n_single + [6]*n_multi
@@ -184,7 +194,7 @@ def generate_for_class(cls_name: str, ability_seed: int):
             obj_total = sum(scores)
             row = [stu["id"], stu["name"]] + scores + \
                   [obj_total, "", obj_total,
-                   wrong_obj_questions(scores, maxs, n_total)]
+                   wrong_obj_questions(scores, n_total)]
             rows.append(row)
 
         fix_perfect(rows, 2, n_total, max_total)
@@ -193,33 +203,36 @@ def generate_for_class(cls_name: str, ability_seed: int):
             scores = row[2:2+n_total]
             row[2+n_total] = sum(scores)
             row[2+n_total+2] = row[2+n_total]
-            row[2+n_total+3] = wrong_obj_questions(scores, maxs, n_total)
+            row[2+n_total+3] = wrong_obj_questions(scores, n_total)
 
         write_csv(SCORE_DIR / f"quiz_{date}_{cls_name}.csv", header, rows)
         quiz_count += 1
 
     # 正式考试：固定19题
+    # 客观题 = Q1-11（单选+多选），主观题 = Q12-19（填空+解答），
+    # 与主程序 DataManager 的口径一致（choice/multi_select 记客观，fill/answer 记主观）
+    N_OBJ = 11
     for date in EXAM_DATES:
-        random.seed(hash(date + cls_name) % 2**31)
+        random.seed(_stable_seed(date + cls_name))
         header = ["考号", "姓名"] + [f"Q{i+1}" for i in range(19)] + \
                  ["客观总分", "主观总分", "全卷总分", "客观错题题号"]
         rows = []
         for stu, abil in zip(students, abilities):
             scores = gen_exam_row(abil)
-            obj_total = sum(scores[:14])
-            sub_total = sum(scores[14:])
+            obj_total = sum(scores[:N_OBJ])
+            sub_total = sum(scores[N_OBJ:])
             row = [stu["id"], stu["name"]] + scores + \
                   [obj_total, sub_total, obj_total + sub_total,
-                   wrong_obj_questions(scores, EXAM_MAX, 14)]
+                   wrong_obj_questions(scores, N_OBJ)]
             rows.append(row)
 
         fix_perfect(rows, 2, 19, sum(EXAM_MAX))
         for row in rows:
             scores = row[2:21]
-            row[21] = sum(scores[:14])
-            row[22] = sum(scores[14:])
+            row[21] = sum(scores[:N_OBJ])
+            row[22] = sum(scores[N_OBJ:])
             row[23] = row[21] + row[22]
-            row[24] = wrong_obj_questions(scores, EXAM_MAX, 14)
+            row[24] = wrong_obj_questions(scores, N_OBJ)
 
         write_csv(SCORE_DIR / f"exam_{date}_{cls_name}.csv", header, rows)
         exam_count += 1

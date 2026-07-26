@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QLineEdit, QFrame, QPushButton, QButtonGroup, QCompleter, QStackedWidget
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -45,6 +45,7 @@ class StudentEvalTab(QWidget):
         self._radar_N: int = 0        # 雷达分类数量
         self._radar_config = None     # (score_mode, compare)
         self._radar_anim_token: int = 0  # 动画取消令牌
+        self._completer_names = None  # 上次构建 QCompleter 的名单（仅在变化时重建）
         self._setup_ui()
 
     # ------------------------------------------------------------------
@@ -108,6 +109,11 @@ class StudentEvalTab(QWidget):
             }
             QLineEdit:focus { border-color: #1abc9c; }
         """)
+        # 搜索去抖：200ms 内连续输入只触发一次
+        self._search_timer = QTimer(self)
+        self._search_timer.setSingleShot(True)
+        self._search_timer.setInterval(200)
+        self._search_timer.timeout.connect(self._do_search)
         self.search_input.textChanged.connect(self._on_search)
         toolbar.addWidget(self.search_input)
 
@@ -343,10 +349,13 @@ class StudentEvalTab(QWidget):
                 break
         return obj_stu, full_stu, sub_stu
 
-    def _get_filtered_dates(self) -> set:
-        """返回当前日期筛选范围内的日期集合"""
+    def _get_filtered_dates(self):
+        """返回当前日期筛选范围内的日期集合
+
+        None 表示无筛选（全部日期），空集合表示筛选后为空。
+        """
         if not self._filter_start and not self._filter_end:
-            return set(self.dm.dates)  # 全部
+            return None  # 无筛选
         dates = self.dm.dates
         result = set()
         for d in dates:
@@ -355,43 +364,6 @@ class StudentEvalTab(QWidget):
             if self._filter_end and d > self._filter_end:
                 continue
             result.add(d)
-        return result
-
-    def _get_score_rates(self, student_name: str, score_type: str) -> dict:
-        """获取学生各次考试的得分率 {date: rate}
-        score_type: "obj"=客观分/40, "sub"=主观分/60, "full"=总分/100
-        """
-        obj_stu, full_stu, sub_stu = self._get_student_both(student_name)
-        if obj_stu is None:
-            return {}
-
-        # 用 date→score 字典避免缺考导致的索引错位
-        obj_map = {d: float(v) for d, v in (obj_stu.scores or [])}
-        sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
-        full_map = {d: float(v) for d, v in (full_stu.scores_full or [])} if full_stu else {}
-
-        result = {}
-        for date in self.dm.dates:
-            meta = self.dm.get_exam_meta(date)
-            # 每场考试独立计算理论满分
-            obj_max = sum(q.max_score for q in meta.questions
-                         if q.qtype in ("choice", "multi_select"))
-            sub_max = sum(q.max_score for q in meta.questions
-                         if q.qtype in ("fill", "answer"))
-            full_max = obj_max + sub_max if (obj_max + sub_max) > 0 else 100.0
-
-            if score_type == "obj":
-                score = obj_map.get(date)
-                if score is not None and obj_max > 0:
-                    result[date] = round(score / obj_max, 4)
-            elif score_type == "sub":
-                score = sub_map.get(date)
-                if score is not None and sub_max > 0:
-                    result[date] = round(score / sub_max, 4)
-            elif score_type == "full":
-                score = full_map.get(date)
-                if score is not None and full_max > 0:
-                    result[date] = round(score / full_max, 4)
         return result
 
     def _compute_category_performance(self, topic_scores: dict) -> dict:
@@ -442,9 +414,10 @@ class StudentEvalTab(QWidget):
     def _on_toggle_compare(self):
         self.combo_compare.setVisible(self.btn_compare.isChecked())
         if self.btn_compare.isChecked():
-            # 填充对比学生列表
+            # 填充对比学生列表（期间屏蔽信号，只 refresh 一次）
             names = [self.combo_student.itemText(i)
                      for i in range(self.combo_student.count())]
+            self.combo_compare.blockSignals(True)
             self.combo_compare.clear()
             self.combo_compare.addItems(names)
             # 默认选另一个
@@ -453,17 +426,27 @@ class StudentEvalTab(QWidget):
                 if n != cur:
                     self.combo_compare.setCurrentIndex(i)
                     break
+            self.combo_compare.blockSignals(False)
         self.refresh()
 
-    def _on_search(self, text: str):
+    def _on_search(self, _text: str):
+        # 去抖：重启计时器，200ms 无新输入后才真正搜索
+        self._search_timer.start()
+
+    def _do_search(self):
+        text = self.search_input.text()
         for i in range(self.combo_student.count()):
             if text.lower() in self.combo_student.itemText(i).lower():
                 self.combo_student.setCurrentIndex(i)
                 return
 
     def _on_date_changed(self):
-        self._filter_start = self.combo_start.currentText()
-        self._filter_end = self.combo_end.currentText()
+        start = self.combo_start.currentText()
+        end = self.combo_end.currentText()
+        if start and end and start > end:
+            start, end = end, start  # 起始晚于截止时自动交换，避免空区间
+        self._filter_start = start
+        self._filter_end = end
         if self._current_student:
             self.refresh()
 
@@ -549,10 +532,13 @@ class StudentEvalTab(QWidget):
         names = sorted([s.name for s in students])
         self.combo_student.addItems(names)
 
-        completer = QCompleter(names)
-        completer.setFilterMode(Qt.MatchFlag.MatchContains)
-        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        self.search_input.setCompleter(completer)
+        # 名单变化时才重建 QCompleter
+        if names != self._completer_names:
+            completer = QCompleter(names)
+            completer.setFilterMode(Qt.MatchFlag.MatchContains)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            self.search_input.setCompleter(completer)
+            self._completer_names = names
 
         if self._current_student and self._current_student in names:
             self.combo_student.setCurrentText(self._current_student)
@@ -582,7 +568,7 @@ class StudentEvalTab(QWidget):
             date_filter = self._get_filtered_dates()
             all_topics = set()
             for date, meta in self.dm.exam_meta.items():
-                if date_filter and date not in date_filter:
+                if date_filter is not None and date not in date_filter:
                     continue
                 for q in meta.questions:
                     for kt in q.topics:
@@ -598,7 +584,10 @@ class StudentEvalTab(QWidget):
 
         # 雷达模式走独立 canvas，其他视图走共享 fig
         if self._view_mode == 3:
-            self._draw_radar()
+            try:
+                self._draw_radar()
+            except Exception as e:
+                self._show_error(str(e))
             return
 
         try:
@@ -627,16 +616,11 @@ class StudentEvalTab(QWidget):
         sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
         full_map = {d: float(v) for d, v in (full_stu.scores_full or [])} if full_stu else {}
 
-        common_dates = [dt for dt in self.dm.dates
-                       if dt in obj_map or dt in sub_map or dt in full_map]
-        n = len(common_dates)
-
         return {
             "avg_obj": round(sum(obj_map.values()) / len(obj_map), 1) if obj_map else None,
             "avg_sub": round(sum(sub_map.values()) / len(sub_map), 1) if sub_map else None,
             "avg_full": round(sum(full_map.values()) / len(full_map), 1) if full_map else None,
             "call_count": obj_stu.call_count if obj_stu else 0,
-            "n_exams": n,
         }
 
     def _update_stats(self, stats: dict):
@@ -671,14 +655,17 @@ class StudentEvalTab(QWidget):
         """
         student = self._current_student
         class_idx = self.dm.current_class
-        all_names = [s.name for s in self.dm.students[class_idx][0]]
+        stu_list = self.dm.students[class_idx][0]
+        all_names = [s.name for s in stu_list]
+        # 预建 name → 逐题分映射，消除内层线性查找
+        qs_by_name = {s.name: s.question_scores for s in stu_list}
 
         # 收集题目-知识点绑定
         exam_type = self.exam_type_group.checkedId() if hasattr(self, 'exam_type_group') else 2
         if exam_type < 0: exam_type = 2
         topic_qlist: dict[str, list[tuple]] = {}
         for date, meta in self.dm.exam_meta.items():
-            if date_filter and date not in date_filter:
+            if date_filter is not None and date not in date_filter:
                 continue
             if exam_type != 2 and self.dm.is_quiz(date) != (exam_type == 0):
                 continue
@@ -699,24 +686,13 @@ class StudentEvalTab(QWidget):
             for t in topics:
                 topic_category[t] = cat
 
-        # 学生
-        stu_obj = None
-        for s in self.dm.students[class_idx][0]:
-            if s.name == student:
-                stu_obj = s
-                break
-
         result = {}
         for tname, qlist in topic_qlist.items():
             s_sum, m_sum, n_exams = 0.0, 0.0, 0
             cls_rates = []
             for name in all_names:
                 ns_sum, nm_sum = 0.0, 0.0
-                name_qs = {}
-                for s in self.dm.students[class_idx][0]:
-                    if s.name == name:
-                        name_qs = s.question_scores
-                        break
+                name_qs = qs_by_name.get(name, {})
                 for date, qid, max_score, weight in qlist:
                     qs = name_qs.get(date, {})
                     if qid in qs:
@@ -726,7 +702,8 @@ class StudentEvalTab(QWidget):
                     cls_rates.append(ns_sum / nm_sum)
                 if name == student:
                     s_sum, m_sum = ns_sum, nm_sum
-                    n_exams = sum(1 for d, q, _, _ in qlist if q in name_qs.get(d, {}))
+                    # 按 date 去重统计涉及考试次数
+                    n_exams = len({d for d, q, _, _ in qlist if q in name_qs.get(d, {})})
             cat = topic_category.get(tname, "未分类")
             if m_sum > 0:
                 c_avg = round(statistics.mean(cls_rates), 3) if cls_rates else 0.0
@@ -760,10 +737,11 @@ class StudentEvalTab(QWidget):
             self._show_empty(f"该学生在{label}的知识点数据均为空。")
             return
 
-        names = [x[0] for x in items] + [x[0] for x in null_items]
-        rates = [x[1]["rate"] for x in items] + [0.0] * len(null_items)
-        counts = [x[1]["count"] for x in items] + [0] * len(null_items)
-        class_avgs = [x[1]["class_avg"] for x in items] + [0.0] * len(null_items)
+        # 无数据知识点不参与绘图（避免画成 0% 红条），仅在状态栏说明数量
+        names = [x[0] for x in items]
+        rates = [x[1]["rate"] for x in items]
+        counts = [x[1]["count"] for x in items]
+        class_avgs = [x[1]["class_avg"] for x in items]
         colors = [color_pos if r >= 0.5 else color_neg for r in rates]
 
         ax = self.fig.add_subplot(111)
@@ -832,9 +810,8 @@ class StudentEvalTab(QWidget):
         for name in set(obj_perf.keys()) & set(sub_perf.keys()):
             o_r = obj_perf[name]["rate"]
             s_r = sub_perf[name]["rate"]
-            if o_r is not None or s_r is not None:
-                o_r = o_r if o_r is not None else 0
-                s_r = s_r if s_r is not None else 0
+            # 仅保留主客观均有数据的知识点，避免无数据侧画成 0% 柱
+            if o_r is not None and s_r is not None:
                 common.append((name, o_r, s_r, abs(o_r - s_r)))
 
         if not common:
@@ -946,7 +923,6 @@ class StudentEvalTab(QWidget):
         self._rebuild_radar_fills(ax, [line.get_ydata() for line in ax.lines])
         self.radar_canvas.draw_idle()
 
-        from PyQt6.QtCore import QTimer
         QTimer.singleShot(20, lambda: self._run_radar_anim(
             ax, start_vals, target_vals, token, step + 1))
 
@@ -956,10 +932,12 @@ class StudentEvalTab(QWidget):
 
         def _get_radar_vals(name: str):
             saved = self._current_student
-            self._current_student = name
-            obj_rates = self._compute_question_topic_rates(date_filter, "obj")
-            sub_rates = self._compute_question_topic_rates(date_filter, "sub")
-            self._current_student = saved
+            try:
+                self._current_student = name
+                obj_rates = self._compute_question_topic_rates(date_filter, "obj")
+                sub_rates = self._compute_question_topic_rates(date_filter, "sub")
+            finally:
+                self._current_student = saved
             return self._compute_category_performance(obj_rates), \
                    self._compute_category_performance(sub_rates)
 
@@ -1027,6 +1005,7 @@ class StudentEvalTab(QWidget):
             self._radar_anim_token += 1
             self._run_radar_anim(ax, old_vals, new_lines, self._radar_anim_token)
         else:
+            self._radar_anim_token += 1  # 取消在途动画，避免旧动画改写新 axes
             ax = self._init_radar_axes(N, all_cats, angles)
             self._radar_config = current_config
             if compare_name:
@@ -1074,7 +1053,6 @@ class StudentEvalTab(QWidget):
     # 绘图: 成绩历程
     # ------------------------------------------------------------------
     def _draw_timeline(self):
-        self.fig.clear()
         obj_stu, full_stu, sub_stu = self._get_student_both(self._current_student)
         if obj_stu is None or full_stu is None:
             self._show_empty("学生数据缺失")
@@ -1084,32 +1062,60 @@ class StudentEvalTab(QWidget):
         sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
         full_map = {d: float(v) for d, v in (full_stu.scores_full or [])}
 
-        dates = [dt for dt in self.dm.dates if dt in obj_map or dt in full_map]
+        # 套用日期范围与测验/考试筛选，与其他视图一致
+        date_filter = self._get_filtered_dates()
+        exam_type = self.exam_type_group.checkedId()
+        if exam_type < 0:
+            exam_type = 2
+        dates = []
+        for dt in self.dm.dates:
+            if dt not in obj_map and dt not in full_map:
+                continue
+            if date_filter is not None and dt not in date_filter:
+                continue
+            if exam_type != 2 and self.dm.is_quiz(dt) != (exam_type == 0):
+                continue
+            dates.append(dt)
         if not dates:
-            self._show_empty("该学生暂无成绩数据")
+            self._show_empty("该学生在当前筛选下暂无成绩数据")
             return
 
-        obj_scores = [obj_map.get(dt, 0.0) for dt in dates]
-        sub_scores = [sub_map.get(dt, 0.0) for dt in dates]
-        full_scores = [full_map.get(dt, 0.0) for dt in dates]
+        # 缺考用 NaN，让 matplotlib 断线而非坠 0
+        nan = float("nan")
+        obj_scores = [obj_map.get(dt, nan) for dt in dates]
+        sub_scores = [sub_map.get(dt, nan) for dt in dates]
+        full_scores = [full_map.get(dt, nan) for dt in dates]
         n = len(dates)
 
+        # 预建每个学生的 {date: score} 映射，避免逐日期重建
         class_idx = self.dm.current_class
+        obj_maps = [{d: float(v) for d, v in (s.scores or [])}
+                    for s in self.dm.students[class_idx][0]]
+        sub_maps = [{d: float(v) for d, v in (s.scores_sub or [])}
+                    for s in self.dm.students[class_idx][2]]
+        full_maps = [{d: float(v) for d, v in (s.scores_full or [])}
+                     for s in self.dm.students[class_idx][1]]
         class_avg_obj, class_avg_sub, class_avg_full = [], [], []
         for dt in dates:
-            vals_o, vals_s, vals_f = [], [], []
-            for s in self.dm.students[class_idx][0]:
-                sm = {d: float(v) for d, v in (s.scores or [])}
-                if dt in sm: vals_o.append(sm[dt])
-            for s in self.dm.students[class_idx][2]:
-                sm = {d: float(v) for d, v in (s.scores_sub or [])}
-                if dt in sm: vals_s.append(sm[dt])
-            for s in self.dm.students[class_idx][1]:
-                sm = {d: float(v) for d, v in (s.scores_full or [])}
-                if dt in sm: vals_f.append(sm[dt])
-            class_avg_obj.append(sum(vals_o) / len(vals_o) if vals_o else 0)
-            class_avg_sub.append(sum(vals_s) / len(vals_s) if vals_s else 0)
-            class_avg_full.append(sum(vals_f) / len(vals_f) if vals_f else 0)
+            vals_o = [m[dt] for m in obj_maps if dt in m]
+            vals_s = [m[dt] for m in sub_maps if dt in m]
+            vals_f = [m[dt] for m in full_maps if dt in m]
+            class_avg_obj.append(sum(vals_o) / len(vals_o) if vals_o else nan)
+            class_avg_sub.append(sum(vals_s) / len(vals_s) if vals_s else nan)
+            class_avg_full.append(sum(vals_f) / len(vals_f) if vals_f else nan)
+
+        def _mean_valid(vals):
+            """均分只统计非 NaN（参考）值"""
+            valid = [v for v in vals if not math.isnan(v)]
+            return sum(valid) / len(valid) if valid else None
+
+        def _ymax(*series):
+            """按数据动态计算 Y 轴上限"""
+            vals = [v for s in series for v in s if not math.isnan(v)]
+            return max(vals) * 1.15 + 2 if vals else None
+
+        def _fmt(v):
+            return f"{v:.1f}" if v is not None else "--"
 
         x_ticks = list(range(n))
         x_labels = dates
@@ -1119,29 +1125,29 @@ class StudentEvalTab(QWidget):
             ax.plot(x_ticks, obj_scores, "o-", color="#3498db", linewidth=2, markersize=5, label="客观分")
             ax.plot(x_ticks, class_avg_obj, "--", color="#3498db", linewidth=1, alpha=0.4, label="班均")
             ax.set_ylabel("客观分", fontsize=10, color="#3498db")
-            ax.set_ylim(0, max(obj_scores + class_avg_obj) * 1.15 + 2 if obj_scores else 42)
+            ax.set_ylim(0, _ymax(obj_scores, class_avg_obj) or 42)
             ax.legend(fontsize=9, loc="upper left")
             ax.set_xticks(x_ticks)
             ax.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
             ax.set_title(f"{self._current_student}  ·  客观分历程", fontsize=14, fontweight="bold")
-            self.status_label.setText(f"共 {n} 次考试 | 客观均{sum(obj_scores)/n:.1f}")
+            self.status_label.setText(f"共 {n} 次考试 | 客观均{_fmt(_mean_valid(obj_scores))}")
         elif self._score_mode == 1:
             ax = self.fig.add_subplot(111)
             ax.plot(x_ticks, sub_scores, "s-", color="#e67e22", linewidth=2, markersize=5, label="主观分")
             ax.plot(x_ticks, class_avg_sub, "--", color="#e67e22", linewidth=1, alpha=0.4, label="班均")
             ax.set_ylabel("主观分", fontsize=10, color="#e67e22")
-            ax.set_ylim(0, max(sub_scores + class_avg_sub) * 1.15 + 2 if sub_scores else 62)
+            ax.set_ylim(0, _ymax(sub_scores, class_avg_sub) or 62)
             ax.legend(fontsize=9, loc="upper left")
             ax.set_xticks(x_ticks)
             ax.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
             ax.set_title(f"{self._current_student}  ·  主观分历程", fontsize=14, fontweight="bold")
-            self.status_label.setText(f"共 {n} 次考试 | 主观均{sum(sub_scores)/n:.1f}")
+            self.status_label.setText(f"共 {n} 次考试 | 主观均{_fmt(_mean_valid(sub_scores))}")
         else:
             ax1 = self.fig.add_subplot(311)
             ax1.plot(x_ticks, obj_scores, "o-", color="#3498db", linewidth=2, markersize=5, label="客观分")
             ax1.plot(x_ticks, class_avg_obj, "--", color="#3498db", linewidth=1, alpha=0.4, label="班均")
             ax1.set_ylabel("客观分", fontsize=10, color="#3498db")
-            ax1.set_ylim(0, 42)
+            ax1.set_ylim(0, _ymax(obj_scores, class_avg_obj) or 42)
             ax1.legend(fontsize=8, loc="upper left")
             ax1.set_xticks(x_ticks)
             ax1.set_xticklabels([])
@@ -1149,7 +1155,7 @@ class StudentEvalTab(QWidget):
             ax2.plot(x_ticks, sub_scores, "s-", color="#e67e22", linewidth=2, markersize=5, label="主观分")
             ax2.plot(x_ticks, class_avg_sub, "--", color="#e67e22", linewidth=1, alpha=0.4, label="班均")
             ax2.set_ylabel("主观分", fontsize=10, color="#e67e22")
-            ax2.set_ylim(0, 62)
+            ax2.set_ylim(0, _ymax(sub_scores, class_avg_sub) or 62)
             ax2.legend(fontsize=8, loc="upper left")
             ax2.set_xticks(x_ticks)
             ax2.set_xticklabels([])
@@ -1157,24 +1163,24 @@ class StudentEvalTab(QWidget):
             ax3.plot(x_ticks, full_scores, "D-", color="#2ecc71", linewidth=2, markersize=5, label="总分")
             ax3.plot(x_ticks, class_avg_full, "--", color="#2ecc71", linewidth=1, alpha=0.4, label="班均")
             ax3.set_ylabel("总分", fontsize=10, color="#2ecc71")
-            ax3.set_ylim(0, max(full_scores + class_avg_full) * 1.15 + 2 if full_scores else 105)
+            ax3.set_ylim(0, _ymax(full_scores, class_avg_full) or 105)
             ax3.legend(fontsize=8, loc="upper left")
             ax3.set_xticks(x_ticks)
             ax3.set_xticklabels(x_labels, fontsize=8, rotation=35, ha="right")
             ax1.set_title(f"{self._current_student}  ·  成绩历程", fontsize=14, fontweight="bold")
             self.status_label.setText(
-                f"共 {n} 次考试 | 客观均{sum(obj_scores)/n:.1f} | "
-                f"主观均{sum(sub_scores)/n:.1f} | 总分均{sum(full_scores)/n:.1f}"
+                f"共 {n} 次考试 | 客观均{_fmt(_mean_valid(obj_scores))} | "
+                f"主观均{_fmt(_mean_valid(sub_scores))} | 总分均{_fmt(_mean_valid(full_scores))}"
             )
 
     # ------------------------------------------------------------------
     # 趋势数据: 基于逐题分的真实知识点得分率
     # ------------------------------------------------------------------
-    def _build_question_topic_map(self, topic_name: str, date_filter: set) -> dict:
+    def _build_question_topic_map(self, topic_name: str, date_filter) -> dict:
         """从 exam_meta.questions 建立 {date: [(qid, qtype, max_score, weight), ...]}"""
         result: dict[str, list[tuple]] = {}
         for date, meta in self.dm.exam_meta.items():
-            if date_filter and date not in date_filter:
+            if date_filter is not None and date not in date_filter:
                 continue
             if not meta.questions:
                 continue
@@ -1185,7 +1191,7 @@ class StudentEvalTab(QWidget):
                             (q.id, q.qtype, q.max_score, kt.weight))
         return result
 
-    def _compute_topic_trend_data(self, topic_name: str, date_filter: set,
+    def _compute_topic_trend_data(self, topic_name: str, date_filter,
                                    trend_type: int, exam_type: int = 2):
         """基于逐题分计算知识点趋势
 
@@ -1203,7 +1209,11 @@ class StudentEvalTab(QWidget):
 
         student = self._current_student
         class_idx = self.dm.current_class
-        all_names = [s.name for s in self.dm.students[class_idx][0]]
+        stu_list = self.dm.students[class_idx][0]
+        all_names = [s.name for s in stu_list]
+        # 预建 name → 逐题分映射，学生查找与班均计算移出日期循环
+        qs_by_name = {s.name: s.question_scores for s in stu_list}
+        stu_qs_all = qs_by_name.get(student)
 
         # 按趋势类型过滤题目类型
         if trend_type == 0:
@@ -1224,14 +1234,9 @@ class StudentEvalTab(QWidget):
                 continue
 
             # 获取该学生和全班的逐题分
-            stu_obj = None
-            for s in self.dm.students[class_idx][0]:
-                if s.name == student:
-                    stu_obj = s
-                    break
-            if not stu_obj or date not in stu_obj.question_scores:
+            if not stu_qs_all or date not in stu_qs_all:
                 continue
-            stu_qs = stu_obj.question_scores[date]
+            stu_qs = stu_qs_all[date]
 
             # 计算该学生在该知识点的加权得分率
             stu_score_sum = 0.0
@@ -1248,11 +1253,7 @@ class StudentEvalTab(QWidget):
             # 计算全班平均
             class_rates = []
             for name in all_names:
-                name_qs = {}
-                for s in self.dm.students[class_idx][0]:
-                    if s.name == name:
-                        name_qs = s.question_scores.get(date, {})
-                        break
+                name_qs = qs_by_name.get(name, {}).get(date, {})
                 if not name_qs:
                     continue
                 ns_sum = 0.0
@@ -1289,17 +1290,21 @@ class StudentEvalTab(QWidget):
 
         date_filter = self._get_filtered_dates()
 
-        # 统计知识点在题目绑定中的出现次数
+        exam_type = self.exam_type_group.checkedId()
+        if exam_type < 0:
+            exam_type = 2
+
+        # 统计知识点在题目绑定中的出现次数（在测验/考试过滤之后）
         qt_map = self._build_question_topic_map(topic_name, date_filter)
+        if exam_type != 2:
+            qt_map = {dt: v for dt, v in qt_map.items()
+                      if (self.dm.is_quiz(dt) == (exam_type == 0))}
         total_n = len(qt_map)
 
         if total_n == 0:
             self._show_empty(f"知识点「{topic_name}」在当前日期范围内无考试数据（需先在数据维护页绑定知识点到题目）")
             return
 
-        exam_type = self.exam_type_group.checkedId()
-        if exam_type < 0:
-            exam_type = 2
         student_points, class_avg_points = self._compute_topic_trend_data(
             topic_name, date_filter, trend_type, exam_type
         )

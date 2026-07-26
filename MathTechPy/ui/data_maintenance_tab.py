@@ -10,6 +10,7 @@ from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent, QPain
 
 from core.data_manager import DataManager
 from core.models import KnowledgeTopic, Question
+from ui.widgets import FlowLayout
 
 MIME_CATEGORY = "application/x-category-drag"
 
@@ -162,13 +163,6 @@ class ToggleRow(QWidget):
             self._update_label()
 
         edit.editingFinished.connect(finish)
-        # 失焦也触发
-        def on_focus_out(e):
-            if e.type() == e.Type.FocusOut:
-                finish()
-            return False
-        edit.installEventFilter(self)
-        self._active_edit = edit
 
     def _show_menu(self, pos):
         menu = QMenu(self)
@@ -218,13 +212,17 @@ class ToggleRow(QWidget):
 
     def set_weight(self, w: float):
         self.slider.blockSignals(True)
-        self.slider.setValue(max(1, min(100, int(w * 100))))
+        self.slider.setValue(max(1, min(100, round(w * 100))))
         self.slider.blockSignals(False)
         self._update_label()
 
 
 class CategoryGroup(QWidget):
     """一类知识点的折叠组（支持拖拽排序）"""
+
+    _DRAG_HINT_STYLE = """
+        CategoryGroup { border: 2px dashed #1abc9c; border-radius: 6px; }
+    """
 
     def __init__(self, cat_name: str, topics: list[str], on_weight_change=None, on_menu=None, parent=None):
         super().__init__(parent)
@@ -275,7 +273,6 @@ class CategoryGroup(QWidget):
         self.body = QWidget()
         self.body.setStyleSheet("background: transparent;")
         self.body.setVisible(False)
-        from ui.random_tab import FlowLayout
         self.body_layout = FlowLayout(self.body, 6)
         self.body_layout.setContentsMargins(8, 2, 8, 2)
         self.toggles: list[ToggleRow] = []
@@ -289,7 +286,9 @@ class CategoryGroup(QWidget):
         self._update_header()
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+        # 只有按在标题栏上才允许发起分类拖拽，避免分组空白处误触发
+        if (event.button() == Qt.MouseButton.LeftButton
+                and self.header_frame.geometry().contains(event.position().toPoint())):
             self._drag_start = event.position().toPoint()
         super().mousePressEvent(event)
 
@@ -362,13 +361,12 @@ class CategoryGroup(QWidget):
         if event.mimeData().hasFormat(MIME_CATEGORY):
             src = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
             if src != self.cat_name:
-                self.setStyleSheet(self.styleSheet() + """
-                    CategoryGroup { border: 2px dashed #1abc9c; border-radius: 6px; }
-                """)
+                self.setStyleSheet(self.styleSheet() + self._DRAG_HINT_STYLE)
                 event.acceptProposedAction()
 
     def dragLeaveEvent(self, event):
-        self.setStyleSheet("")  # 清除非正常样式，但保留原始样式...
+        # 只移除拖拽高亮边框，保留原有样式
+        self.setStyleSheet(self.styleSheet().replace(self._DRAG_HINT_STYLE, ""))
 
     def dropEvent(self, event):
         if event.mimeData().hasFormat(MIME_CATEGORY):
@@ -481,6 +479,11 @@ class DataMaintenanceTab(QWidget):
         self._search_timer.setSingleShot(True)
         self._search_timer.timeout.connect(self._apply_search)
 
+        # 自动保存防抖：滑块等高频操作合并为一次写盘
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.timeout.connect(self._do_save)
+
         self._setup_ui()
 
     def _setup_ui(self):
@@ -555,7 +558,6 @@ class DataMaintenanceTab(QWidget):
         edit_layout.setSpacing(10)
 
         # ---- 题目选择器（FlowLayout 按钮排） ----
-        from ui.random_tab import FlowLayout
         qbtn_frame = QFrame()
         qbtn_frame.setStyleSheet("background: transparent;")
         self.qbtn_layout = FlowLayout(qbtn_frame, 4)
@@ -565,7 +567,6 @@ class DataMaintenanceTab(QWidget):
         # ---- 已选标签 ----
         tags_frame = QFrame()
         tags_frame.setStyleSheet("background: white; border-radius: 8px;")
-        from ui.random_tab import FlowLayout
         self.tags_layout = FlowLayout(tags_frame, 8)
         self.tags_layout.setContentsMargins(12, 10, 12, 10)
         edit_layout.addWidget(tags_frame)
@@ -736,9 +737,16 @@ class DataMaintenanceTab(QWidget):
                             border-radius: 12px; padding: 3px 10px; font-size: 12px;
                         }
                     """)
-                    from PyQt6.QtCore import QTimer
-                    QTimer.singleShot(600, lambda r=row: r.toggle._update_style())
+                    QTimer.singleShot(600, lambda r=row: self._restore_toggle_style(r))
                     return
+
+    @staticmethod
+    def _restore_toggle_style(row):
+        """singleShot 回调：row 可能已被销毁，防御 RuntimeError"""
+        try:
+            row.toggle._update_style()
+        except RuntimeError:
+            pass
 
     def _on_tag_remove(self, name: str):
         if self._current_qid not in self._question_topics:
@@ -796,19 +804,23 @@ class DataMaintenanceTab(QWidget):
         if name not in target:
             return
         others = [n for n in target if n != name]
-        weight = max(0.01, min(0.99, weight))
-        target[name] = weight
+        if not others:
+            # 单知识点题目：必须占满权重
+            target[name] = 1.0
+        else:
+            weight = max(0.01, min(0.99, weight))
+            target[name] = weight
 
-        # 总和偏离 1.0 的部分，从其他知识点按比例吸收
-        other_total = sum(target[n] for n in others)
-        total = weight + other_total
-        if total != 1.0 and others:
-            diff = 1.0 - total
-            for n in others:
-                share = target[n] / other_total if other_total > 0 else 1.0 / len(others)
-                target[n] = round(max(0.01, target[n] + diff * share), 2)
-            # 尾差修正
-            target[others[-1]] = round(max(0.01, 1.0 - sum(target[n] for n in others if n != others[-1]) - weight), 2)
+            # 总和偏离 1.0 的部分，从其他知识点按比例吸收
+            other_total = sum(target[n] for n in others)
+            total = weight + other_total
+            if total != 1.0:
+                diff = 1.0 - total
+                for n in others:
+                    share = target[n] / other_total if other_total > 0 else 1.0 / len(others)
+                    target[n] = round(max(0.01, target[n] + diff * share), 2)
+                # 尾差修正
+                target[others[-1]] = round(max(0.01, 1.0 - sum(target[n] for n in others if n != others[-1]) - weight), 2)
 
         # 同步各 toggle 滑块
         for row in self._all_toggles():
@@ -932,24 +944,26 @@ class DataMaintenanceTab(QWidget):
         for dt in reversed(self.dm.dates):
             if search and search not in dt:
                 continue
-            meta = self.dm.get_exam_meta(dt)
-            n_topics = sum(1 for q in meta.questions for _ in q.topics)
-            total = f"{len(meta.questions)}题"
+            # 只读访问，避免驻留空 ExamMeta 被写出空 <exam> 节点
+            meta = self.dm.exam_meta.get(dt)
+            questions = meta.questions if meta else []
+            n_topics = sum(1 for q in questions for _ in q.topics)
+            total = f"{len(questions)}题"
             if n_topics > 0:
                 total += f" {n_topics}个知识点"
             item = QListWidgetItem(f"{dt}  ({total})")
             item.setData(Qt.ItemDataRole.UserRole, dt)
             self.exam_list.addItem(item)
+        # 按当前考试恢复选中行
+        if self._current_date:
+            for i in range(self.exam_list.count()):
+                if self.exam_list.item(i).data(Qt.ItemDataRole.UserRole) == self._current_date:
+                    self.exam_list.setCurrentRow(i)
+                    break
         self.exam_list.blockSignals(False)
 
     def _apply_search(self):
-        current = self._current_date
         self._refresh_exam_list()
-        if current:
-            for i in range(self.exam_list.count()):
-                if self.exam_list.item(i).data(Qt.ItemDataRole.UserRole) == current:
-                    self.exam_list.setCurrentRow(i)
-                    break
 
     def _on_exam_selected(self, current, previous):
         if not current:
@@ -957,8 +971,8 @@ class DataMaintenanceTab(QWidget):
         dt = current.data(Qt.ItemDataRole.UserRole)
         if dt == self._current_date:
             return
-        # 先保存当前考试，再加载新考试
-        self._auto_save()
+        # 先保存当前考试，再加载新考试（立即落盘，避免防抖定时器跨考试写入）
+        self._flush_save()
         self._current_date = dt
         self.edit_area.setEnabled(True)
         self._load_exam(dt)
@@ -1120,7 +1134,7 @@ class DataMaintenanceTab(QWidget):
         search = text.strip()
         for g in self.cat_groups:
             if not search:
-                g.body.setVisible(False)
+                # 清空搜索：仅恢复全部知识点可见，不改变用户已展开/折叠状态
                 g._update_header(sum(1 for r in g.toggles if r.is_checked()))
                 for btn in g.toggles:
                     btn.setVisible(True)
@@ -1139,21 +1153,44 @@ class DataMaintenanceTab(QWidget):
     # 自动保存
     # ------------------------------------------------------------------
     def _auto_save(self):
-        """保存当前考试的题目知识点到 exam_meta.xml"""
+        """收集当前题目绑定并调度延迟保存（防抖，避免滑块高频写盘）"""
+        if not self._current_date:
+            return
+        self._collect_current_question()
+        self._save_timer.start(500)
+
+    def _flush_save(self):
+        """立即停止防抖并同步落盘（切换考试/标签页前调用）"""
+        self._save_timer.stop()
+        if not self._current_date:
+            return
+        self._collect_current_question()
+        self._do_save()
+
+    def _collect_current_question(self):
+        """把当前正在编辑的题目绑定写回 _question_topics"""
+        current_qid = self._current_qid
+        if not current_qid:
+            return
+        topics = {}
+        for row in self._all_toggles():
+            if row.is_checked():
+                topics[row.name] = row.get_weight()
+        if topics:
+            self._question_topics[current_qid] = topics
+        elif current_qid in self._question_topics:
+            del self._question_topics[current_qid]
+
+    def _do_save(self):
+        """实际写盘：校验权重总和后保存到 exam_meta.xml"""
         if not self._current_date:
             return
 
-        # 先保存当前正在编辑的题目
-        current_qid = self._current_qid
-        if current_qid:
-            topics = {}
-            for row in self._all_toggles():
-                if row.is_checked():
-                    topics[row.name] = row.get_weight()
-            if topics:
-                self._question_topics[current_qid] = topics
-            elif current_qid in self._question_topics:
-                del self._question_topics[current_qid]
+        # 权重总和校验：任一题偏离 1.0（容差 0.001）则提示并跳过本次保存
+        for topics in self._question_topics.values():
+            if topics and abs(sum(topics.values()) - 1.0) > 0.001:
+                self._shake_all_tags()
+                return
 
         # 构建 Question 列表
         meta = self.dm.get_exam_meta(self._current_date)
@@ -1171,13 +1208,16 @@ class DataMaintenanceTab(QWidget):
             questions.append(Question(id=q.id, qtype=q.qtype, max_score=q.max_score, topics=kt_list))
         self.dm.update_exam_questions(self._current_date, questions)
 
-        # 更新考试列表中的题目数标记
-        total = len(meta.questions)
+        # 更新考试列表中的题目数标记（格式与 _refresh_exam_list 一致）
+        n_topics = sum(len(topics) for topics in self._question_topics.values())
+        total = f"{len(meta.questions)}题"
+        if n_topics > 0:
+            total += f" {n_topics}个知识点"
         for i in range(self.exam_list.count()):
             item = self.exam_list.item(i)
             if item.data(Qt.ItemDataRole.UserRole) == self._current_date:
                 self.exam_list.blockSignals(True)
-                item.setText(f"{self._current_date}  ({total}题)")
+                item.setText(f"{self._current_date}  ({total})")
                 self.exam_list.blockSignals(False)
                 break
 
@@ -1242,6 +1282,10 @@ class DataMaintenanceTab(QWidget):
         self._build_cat_groups()
 
     def refresh(self):
-        self._auto_save()
+        self._flush_save()
         self._refresh_exam_list()
         self._rebuild_cat_groups()
+        # 重建组件后恢复当前题目的绑定选中态，否则下次保存会误判为全部解绑
+        if self._current_date:
+            self._sync_toggles()
+            self._refresh_tags()

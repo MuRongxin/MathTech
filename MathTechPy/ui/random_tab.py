@@ -9,13 +9,19 @@ import random
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QListWidget, QSpinBox, QFrame, QMessageBox, QLayout, QLayoutItem
+    QListWidget, QSpinBox, QFrame, QMessageBox
 )
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QSize, QRect, QPoint
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont
 
 from core.data_manager import DataManager
 from core.random_engine import RandomEngine
+# FlowLayout 已迁移至 ui.widgets；保留此 import 以兼容旧的
+# `from ui.random_tab import FlowLayout` 引用
+from ui.widgets import FlowLayout  # noqa: F401
+
+# Qt 的 QWIDGETSIZE_MAX：setFixedWidth 传入此值即解除固定宽度限制
+QWIDGETSIZE_MAX = 16777215
 
 BOUNCE_COLORS = [
     "#e74c3c", "#e67e22", "#f39c12", "#2ecc71", "#1abc9c",
@@ -36,102 +42,35 @@ class BouncingLabel(QLabel):
 
     def __init__(self, parent=None):
         super().__init__("准备开始", parent)
+        self._color = "#2c3e50"
+        self._font_size = 42
         self.setFont(QFont("Microsoft YaHei", 42, QFont.Weight.Bold))
-        self.setStyleSheet(_bouncer_style("#2c3e50"))
+        self.set_style(self._color, self._font_size)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.adjustSize()
+
+    def set_style(self, color: str, size: int = 42):
+        """记录当前颜色/字号并重设样式表（样式表会覆盖 setFont 的字号）"""
+        self._color = color
+        self._font_size = size
+        self.setStyleSheet(_bouncer_style(color, size))
 
     def move_to(self, x: int, y: int):
         self.move(x, y)
 
     def fit_width(self, max_w: int):
-        """限制最大宽度，长名字缩放字号"""
+        """限制最大宽度，长名字逐级缩字号（须改样式表，setFont 无效）"""
         if self.width() <= max_w:
             self.setFixedWidth(self.width())  # 用自身宽度
             return
         # 缩字号直到适配
-        for size in range(42, 16, -4):
-            self.setFont(QFont("Microsoft YaHei", size, QFont.Weight.Bold))
+        for size in range(self._font_size, 16, -4):
+            self.set_style(self._color, size)
             self.adjustSize()
             if self.width() <= max_w:
                 self.setFixedWidth(self.width())
                 return
         self.setFixedWidth(max_w)
-
-
-class FlowLayout(QLayout):
-    """自动换行的流式布局"""
-
-    def __init__(self, parent=None, spacing=8):
-        QLayout.__init__(self, parent)
-        self._items: list[QLayoutItem] = []
-        self._spacing = spacing
-        self.setContentsMargins(0, 0, 0, 0)
-
-    def addItem(self, item: QLayoutItem):
-        self._items.append(item)
-
-    def count(self) -> int:
-        return len(self._items)
-
-    def itemAt(self, index: int):
-        if 0 <= index < len(self._items):
-            return self._items[index]
-        return None
-
-    def takeAt(self, index: int):
-        if 0 <= index < len(self._items):
-            return self._items.pop(index)
-        return None
-
-    def expandingDirections(self):
-        return Qt.Orientation(0)
-
-    def hasHeightForWidth(self):
-        return True
-
-    def heightForWidth(self, width: int):
-        return self._do_layout(QRect(0, 0, width, 0), dry_run=True)
-
-    def minimumSize(self):
-        s = QSize(0, 0)
-        for item in self._items:
-            s = s.expandedTo(item.minimumSize())
-        return s
-
-    def sizeHint(self):
-        if self._items and self.parentWidget():
-            w = self.parentWidget().width()
-            if w > 0:
-                h = self._do_layout(QRect(0, 0, w, 0), dry_run=True)
-                return QSize(w, h)
-        return self.minimumSize()
-
-    def setGeometry(self, rect: QRect):
-        super().setGeometry(rect)
-        self._do_layout(rect, dry_run=False)
-
-    def _do_layout(self, rect: QRect, dry_run: bool):
-        x = rect.x()
-        y = rect.y()
-        line_height = 0
-
-        for item in self._items:
-            hint = item.sizeHint()
-            next_x = x + hint.width() + self._spacing
-            if next_x > rect.right() + 1 and x > rect.x():
-                x = rect.x()
-                y += line_height + self._spacing
-                line_height = 0
-                next_x = x + hint.width() + self._spacing
-
-            if not dry_run:
-                item.setGeometry(QRect(QPoint(x, y), hint))
-
-            x = next_x
-            line_height = max(line_height, hint.height())
-
-        return y + line_height - rect.y()
 
 
 class ResultChip(QFrame):
@@ -155,7 +94,7 @@ class ResultChip(QFrame):
         layout.setContentsMargins(14, 6, 14, 6)
         layout.setSpacing(10)
 
-        avatar = QLabel(name[0])
+        avatar = QLabel(name[:1] or "?")
         avatar.setFixedSize(34, 34)
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         avatar.setFont(QFont("Microsoft YaHei", 14, QFont.Weight.Bold))
@@ -429,13 +368,12 @@ class RandomTab(QWidget):
         self._bx = random.uniform(0, max(sw - bw, 1))
         self._by = random.uniform(0, max(sh - bh, 1))
 
-        angle = random.uniform(0.3, 0.7) if random.random() > 0.5 else random.uniform(2.0, 2.5)
         self._vx = self._speed * 1.6 * random.choice([-1, 1])
         self._vy = self._speed * random.choice([-1, 1])
 
         # 初始颜色
         color = random.choice(BOUNCE_COLORS)
-        self.bouncer.setStyleSheet(_bouncer_style(color))
+        self.bouncer.set_style(color)
 
         self.roll_timer.start(35)
 
@@ -506,7 +444,7 @@ class RandomTab(QWidget):
         if hit_any or self._tick_count % 3 == 0:
             name = random.choice(students).name
             self.bouncer.setText(name)
-            self.bouncer.setFixedWidth(16777215)
+            self.bouncer.setFixedWidth(QWIDGETSIZE_MAX)
             self.bouncer.adjustSize()
             if self.bouncer.width() > sw - 4:
                 self.bouncer.fit_width(sw - 4)
@@ -514,14 +452,14 @@ class RandomTab(QWidget):
         # 碰到东西换颜色
         if hit_any:
             color = random.choice(BOUNCE_COLORS)
-            self.bouncer.setStyleSheet(_bouncer_style(color))
+            self.bouncer.set_style(color)
 
     def _button_rects(self):
-        """返回按钮在 stage 坐标系中的矩形列表"""
+        """返回按钮在 stage 坐标系中的矩形列表（含分组设置控件，避免穿越）"""
         rects = []
-        for btn in (self.btn_roll, self.btn_reset):
+        for btn in (self.btn_roll, self.btn_reset, self.spin_group, self.chk_weight):
             r = btn.geometry()
-            # geometry 是相对于直接父容器；btn 在 stage_layout 内，坐标即 stage 坐标
+            # geometry 是相对于直接父容器；控件在 stage_layout 内，坐标即 stage 坐标
             rects.append((r.x(), r.y(), r.width(), r.height()))
         return rects
 
@@ -561,6 +499,11 @@ class RandomTab(QWidget):
 
         try:
             results = self.engine.pick(group_size=group_size, use_weight=use_weight)
+            if results:
+                # 批量更新 call_count（内存同步 + 一次性写回 XML）
+                self.dm.update_call_counts(
+                    self.dm.current_class, [r.student.id for r in results]
+                )
         except Exception as e:
             QMessageBox.critical(self, "错误", f"抽选失败: {e}")
             return
@@ -568,15 +511,11 @@ class RandomTab(QWidget):
         if not results:
             return
 
-        for r in results:
-            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
-            r.student.call_count = new_count
-
         if len(results) == 1:
             s = results[0].student
-            self.bouncer.setStyleSheet(_bouncer_style("#2c3e50", 52))
+            self.bouncer.set_style("#2c3e50", 52)
             self.bouncer.setText(s.name)
-            self.bouncer.setFixedWidth(16777215)
+            self.bouncer.setFixedWidth(QWIDGETSIZE_MAX)
             self.bouncer.adjustSize()
             self.bouncer.fit_width(self.stage.width() - 40)
             self._center_bouncer()
@@ -601,21 +540,25 @@ class RandomTab(QWidget):
             )
             self.chips_panel.show()
 
-        # 弹跳揭示
-        self._reveal_anim = QPropertyAnimation(self.bouncer, b"geometry")
-        rect = self.bouncer.geometry()
-        start_rect = rect.translated(0, -25)
-        self._reveal_anim.setStartValue(start_rect)
-        self._reveal_anim.setEndValue(rect)
-        self._reveal_anim.setDuration(500)
-        self._reveal_anim.setEasingCurve(QEasingCurve.Type.OutElastic)
-        self._reveal_anim.start()
+        # 弹跳揭示（bouncer 隐藏时跳过）
+        if not self.bouncer.isHidden():
+            self._reveal_anim = QPropertyAnimation(self.bouncer, b"geometry")
+            rect = self.bouncer.geometry()
+            start_rect = rect.translated(0, -25)
+            self._reveal_anim.setStartValue(start_rect)
+            self._reveal_anim.setEndValue(rect)
+            self._reveal_anim.setDuration(500)
+            self._reveal_anim.setEasingCurve(QEasingCurve.Type.OutElastic)
+            self._reveal_anim.start()
 
         # 历史
         for r in reversed(results):
             prefix = "🔄 " if r.is_new_cycle else ""
             text = f"{prefix}{r.student.name}  ·  第{r.student.call_count}次"
             self.history_list.insertItem(0, text)
+        # 历史保留最近 100 条，超出删最旧
+        while self.history_list.count() > 100:
+            self.history_list.takeItem(self.history_list.count() - 1)
         self.hist_count.setText(str(self.history_list.count()))
 
     def _clear_chips(self):
@@ -627,24 +570,37 @@ class RandomTab(QWidget):
         self.bouncer.show()
 
     def reset_history(self):
-        self.engine.reset_history()
+        self.engine.reset_history(self.dm.current_class)
         self.history_list.clear()
         self.hist_count.setText("0")
         self.bouncer.setText("准备开始")
-        self.bouncer.setFixedWidth(16777215)
+        self.bouncer.setFixedWidth(QWIDGETSIZE_MAX)
         self.bouncer.adjustSize()
-        self.bouncer.setStyleSheet(_bouncer_style("#2c3e50"))
+        self.bouncer.set_style("#2c3e50")
         self._center_bouncer()
         self.status_label.setText("✨ 点「开始滚动」抽取")
         self.stage.setStyleSheet("background: #f5f6fa;")
         self._clear_chips()
 
+    def stop_rolling(self):
+        """强制停止滚动动画并恢复按钮状态（切换模式/页签/班级时调用）"""
+        if not self._is_rolling and not self.roll_timer.isActive():
+            return
+        self.roll_timer.stop()
+        self._is_rolling = False
+        self.btn_roll.setText("🚀  开 始 滚 动")
+        self._set_roll_btn_green()
+        self.status_label.setText("✨ 点「开始滚动」抽取")
+
     def refresh(self):
         self.bouncer.setText("准备开始")
-        self.bouncer.setFixedWidth(16777215)
+        self.bouncer.setFixedWidth(QWIDGETSIZE_MAX)
         self.bouncer.adjustSize()
-        self.bouncer.setStyleSheet(_bouncer_style("#2c3e50"))
+        self.bouncer.set_style("#2c3e50")
         self._center_bouncer()
         self.status_label.setText("✨ 点「开始滚动」抽取")
         self.stage.setStyleSheet("background: #f5f6fa;")
         self._clear_chips()
+        # 清空右侧历史（引擎历史按班级隔离，由 reset_history 负责）
+        self.history_list.clear()
+        self.hist_count.setText("0")

@@ -47,10 +47,11 @@ python main.py
 main.py                    # 入口：QApplication + matplotlib 配置
 core/
   models.py                # @dataclass: StudentData, ClassInfo, KnowledgeTopic, Question, ExamMeta
-  data_manager.py          # 单例。加载 XML(学生)+CSV(逐题分)，管理知识点池和考试元数据
-  random_engine.py         # 加权随机抽人，按班级隔离历史
+  data_manager.py          # 单例。加载 XML(学生)+CSV/XLSX(逐题分)，管理知识点池和考试元数据
+  random_engine.py         # 加权随机抽人，历史按班级隔离、同班各模式共享
 ui/
   main_window.py           # 左侧导航栏 + QStackedWidget
+  widgets.py               # 共用组件（FlowLayout 等）
   overview_tab.py          # 班级指标卡片 + 柱状图
   random_combined_tab.py   # 五种随机抽人模式合一
   score_tab.py             # 五种图表模式
@@ -65,22 +66,26 @@ ui/
 ### 关键设计
 
 - **DataManager 单例**：用 `__new__` + `_initialized` 标志实现，不是普通 `__init__` 单例。导入 `DataManager()` 始终返回同一实例。
-- **多班级**：`data/config.xml` 列出每班一对 XML+XLSX（`classMembers[i]` 对应 `classScore[i]`）。班级名从文件名自动检测（正则 `r'[A-Za-z]*(\d+)'`），格式化为 `A01`、`A03` 等。
-- **成绩三模式**：`StudentData` 有 `scores`（客观分）、`scores_sub`（主观分）、`scores_full`（全卷总分）三个独立列表。`_load_question_scores` 从 CSV 逐题分自动计算并填充。
+- **公开生命周期接口**：`reload()` 重载全部数据（名册+逐题分+校验）；`mark_initialized()` 标记初始化完成；`class_xml_path(ci)` 返回该班名册 XML 路径。加载错误存于 `dm._load_error`——仅 `config.xml` 缺失才触发初始化向导，其余加载错误（班级 XML 缺失、解析失败等）只记录不弹向导。
+- **多班级**：`data/config.xml` 用多个 `classMembers` 节点列出每班名册 XML（不再有 `classScore` 配对）；逐题分从固定目录 `data/question_scores/` 扫描，按文件名 `quiz|exam_YYYY_MM_DD_班级` 的班级后缀匹配。班级名从名册文件名自动检测（正则 `r'[A-Za-z]*(\d+)'`），格式化为 `A01`、`A03` 等。
+- **成绩三模式**：`StudentData` 有 `scores`（客观分）、`scores_sub`（主观分）、`scores_full`（全卷总分）三个独立列表。`_load_question_scores` 从 CSV/XLSX 逐题分自动计算并填充。
 - **成绩存储格式**：`StudentData.scores`、`scores_sub`、`scores_full` 均为 `List[List[str]]`，每项为 `[date_str, score_str]`。score_str 以 `f"{float(val):.2f}"` 格式化（始终两位小数）。日期格式为 `"YYYY/MM/DD"`。
 - **标签页刷新契约**：每个标签页暴露 `refresh()` 方法，`MainWindow.switch_tab()` 和 `switch_class()` 调用。
+- **切班不重置抽人历史**：`switch_class()` 不再调用 `reset_history()`；`RandomEngine._history` 以班级索引为键，切换班级各自保留进度。
 - **Z-score 归一化**：`dm.get_zscores()` 计算全班每次考试 Z 分（`(原始分 - μ) / σ`），返回 `[[name, [z1, z2, ...]], ...]`。缺考记为 `None`，不参与统计。
 - **知识点池**：两级结构，持久化到 `data/knowledge_pool.xml`，默认值硬编码在 `DataManager.DEFAULT_POOL`（11 个一级分类，约 90 个二级知识点，覆盖高中数学）。**每次 CRUD 操作立即写回 XML**，非批量保存。
-- **mtime 缓存**：`_load_question_scores` 用 `.question_scores_cache.pkl` 缓存逐题分数据，文件 mtime 未变时跳过解析。
+- **mtime 缓存**：`_load_question_scores` 把每个逐题分文件的解析结果按文件 mtime 缓存到 `.question_scores_cache.pkl`（tmp+`os.replace` 原子写回）；仅新增/修改过的文件重新解析，已删除文件的缓存条目自动丢弃。
+- **题目结构检测**：`_detect_questions` 仅当 etype=exam、题号恰为 1-19 且各题 max_seen 与假设满分吻合时，套用固定结构 `_EXAM19_STRUCTURE`（Q1-8 单选/5、Q9-11 多选/6、Q12-14 填空/5、Q15-19 解答/13-17）；其余按观测推断（满分取 ceil(max_seen)，无人满分时会低估）并 WARN 提示人工核对。
+- **callCount 批量写回**：`update_call_counts(class_idx, ids)` 内存更新后一次性写回该班 XML（`update_call_count` 为兼容包装）。所有 XML 写回（班级名册/knowledge_pool/exam_meta/逐题分缓存）均为 tmp+`os.replace` 原子写。
 - **优雅初始化**：`config.xml` 缺失时 `_needs_init=True`，`main_window` 弹出 `InitDialog` 引导用户创建班级和学生。
 - **数据定位**：`DataManager` 用 `Path(__file__).parent.parent / "data"` 定位数据。打包 exe 时需改为 `Path(sys.executable).parent / "data"`（尚未实施）。
 
 ### 易踩坑点
 
-- **权重总和校验**：`data_maintenance_tab.py` 在知识点权重总和 >100% 时拒绝保存，UI 会抖动标签变红提示。添加知识点时需注意总权重不超过 1.0。
-- **FlowLayout 跨文件导入**：`data_maintenance_tab.py` 从 `random_tab.py` 导入 `FlowLayout`（`from ui.random_tab import FlowLayout`）。修改 `random_tab.py` 的 FlowLayout 会影响数据维护页。
+- **权重总和校验**：`data_maintenance_tab.py` 的 `_auto_save()`（防抖 500ms）在知识点权重总和 >100% 时拒绝保存，并调用 `_shake_all_tags()` 抖动标签变红提示。添加知识点时需注意总权重不超过 1.0。
+- **FlowLayout 跨文件导入**：`FlowLayout` 已移到 `ui/widgets.py`，`random_tab.py` 保留 re-export（旧导入路径 `from ui.random_tab import FlowLayout` 仍可用）。修改 `widgets.py` 的 FlowLayout 会影响所有使用方。
 - **OverviewTab 模式硬编码**：`overview_tab.py` 固定用 `self.dm.students[ci][1]`（满分卷），不响应模式切换。
-- **exam_meta.xml 只写 questions**：保存时只写 `<questions>` 节点，旧格式的 `<subjective>`/`<objective>` 节点不再兼容。
+- **exam_meta.xml 只写 questions**：保存时只写 `<questions>` 节点，旧格式的 `<subjective>`/`<objective>` 节点不再兼容。题型结构由 `_detect_questions` 检测（见"关键设计"），手写 exam_meta 时题型取值限 `choice`/`multi_select`/`fill`/`answer`。
 
 ### 依赖
 

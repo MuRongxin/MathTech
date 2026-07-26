@@ -27,7 +27,8 @@ class WheelWidget(QWidget):
         super().__init__(parent)
         self._students = []
         self._angle = 0.0
-        self._highlight = -1
+        # 抽中学生的 id 集合（按 id 高亮，重名不误标）
+        self._highlights: set[int] = set()
         self._draw_text = True
         self.setMinimumSize(400, 400)
 
@@ -52,13 +53,14 @@ class WheelWidget(QWidget):
         painter.setPen(Qt.PenStyle.NoPen)
         for i in range(n):
             color = QColor(WHEEL_COLORS[i % len(WHEEL_COLORS)])
-            if i == self._highlight:
+            if self._students[i].id in self._highlights:
                 color = color.lighter(130)
             painter.setBrush(QBrush(color))
 
-            qt_start = int((90 - (self._angle + i * aps)) * 16)
-            qt_span = int(-aps * 16)
-            painter.drawPie(rect, qt_start, qt_span)
+            # 累计角度 round 取整，相邻扇区共享取整后的边界，消除 int() 截断缝隙
+            qt_start = round((90 - (self._angle + i * aps)) * 16)
+            qt_end = round((90 - (self._angle + (i + 1) * aps)) * 16)
+            painter.drawPie(rect, qt_start, qt_end - qt_start)
 
         # 扇形分隔线
         painter.setPen(QPen(QColor("#ffffff"), 1.5))
@@ -316,7 +318,7 @@ class RandomWheelTab(QWidget):
 
         self._is_rolling = True
         self.wheel._students = students
-        self.wheel._highlight = -1
+        self.wheel._highlights = set()
         self._speed = 8 + random.uniform(2, 8)
         self.winner_label.setText("")
         n = len(students)
@@ -350,9 +352,16 @@ class RandomWheelTab(QWidget):
     # ------------------------------------------------------------------
     # 抽取
     # ------------------------------------------------------------------
+    def _restore_idle(self):
+        """恢复开始按钮与初始状态提示"""
+        self.btn_roll.setText("🚀  开 始 转 动")
+        self._set_roll_btn_start()
+        self.status_label.setText("✨ 点击「开始转动」")
+
     def _do_pick(self):
         students = self.dm.current_students
         if not students:
+            self._restore_idle()
             return
 
         group_size = self.spin_group.value()
@@ -360,25 +369,26 @@ class RandomWheelTab(QWidget):
 
         try:
             results = self.engine.pick(group_size=group_size, use_weight=use_weight)
+            if results:
+                # 批量更新 call_count（内存同步 + 一次性写回 XML）
+                self.dm.update_call_counts(
+                    self.dm.current_class, [r.student.id for r in results]
+                )
         except Exception as e:
+            self._restore_idle()
             QMessageBox.critical(self, "错误", f"抽选失败: {e}")
             return
 
         if not results:
+            self._restore_idle()
             return
 
-        for r in results:
-            new_count = self.dm.update_call_count(self.dm.current_class, r.student.id)
-            r.student.call_count = new_count
-
-        # 用引擎选中的第一个学生作为转盘高亮目标
+        # 按 id 高亮所有抽中者（重名不误标；不在名单内则不高亮）
+        student_ids = {s.id for s in students}
+        self.wheel._highlights = {r.student.id for r in results} & student_ids
+        # 大班（>30 人）不绘制全部名字，与 _start_roll 的阈值逻辑一致
+        self.wheel._draw_text = len(students) <= 30
         winner_name = results[0].student.name
-        try:
-            winner_idx = [s.name for s in students].index(winner_name)
-        except ValueError:
-            winner_idx = 0
-        self.wheel._highlight = winner_idx
-        self.wheel._draw_text = True
         self.winner_label.setText(f"🎉 {winner_name}")
         self.status_label.setText("✨ 点击「开始转动」")
         self.btn_roll.setText("🚀  开 始 转 动")
@@ -389,24 +399,39 @@ class RandomWheelTab(QWidget):
             prefix = "🔄 " if r.is_new_cycle else ""
             text = f"{prefix}{r.student.name}  ·  第{r.student.call_count}次"
             self.history_list.insertItem(0, text)
+        # 历史保留最近 100 条，超出删最旧
+        while self.history_list.count() > 100:
+            self.history_list.takeItem(self.history_list.count() - 1)
         self.hist_count.setText(str(self.history_list.count()))
 
     def reset_history(self):
-        self.engine.reset_history()
+        self.engine.reset_history(self.dm.current_class)
         self.history_list.clear()
         self.hist_count.setText("0")
         self._angle = 0
         self.wheel._angle = 0
-        self.wheel._highlight = -1
+        self.wheel._highlights = set()
         self.winner_label.setText("")
         self.status_label.setText("✨ 点击「开始转动」")
         self.wheel.update()
+
+    def stop_rolling(self):
+        """强制停止转动并恢复按钮状态（切换模式/页签/班级时调用）"""
+        if not self._is_rolling and not self.roll_timer.isActive():
+            return
+        self.roll_timer.stop()
+        self._is_rolling = False
+        self._speed = 0.0
+        self._restore_idle()
 
     def refresh(self):
         self.wheel._students = self.dm.current_students
         self._angle = 0
         self.wheel._angle = 0
-        self.wheel._highlight = -1
+        self.wheel._highlights = set()
         self.winner_label.setText("")
         self.status_label.setText("✨ 点击「开始转动」")
         self.wheel.update()
+        # 清空右侧历史（引擎历史按班级隔离，由 reset_history 负责）
+        self.history_list.clear()
+        self.hist_count.setText("0")
