@@ -56,7 +56,6 @@ ui/
   score_tab.py             # 五种图表模式
   data_maintenance_tab.py  # 知识点池 CRUD + 考试元数据编辑
   student_eval_tab.py      # 单学生知识点掌握度：雷达图、趋势
-  radar_qpainter_tab.py    # QPainter 雷达图（实验性，支持动画过渡）
   data_admin_tab.py        # 学生管理 + 成绩文件导入
   init_dialog.py           # 首次启动初始化向导
 ```

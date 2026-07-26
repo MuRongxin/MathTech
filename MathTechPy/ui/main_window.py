@@ -13,7 +13,6 @@ from .random_combined_tab import RandomCombinedTab
 from .score_tab import ScoreTab
 from .data_maintenance_tab import DataMaintenanceTab
 from .student_eval_tab import StudentEvalTab
-from .radar_qpainter_tab import RadarQPainterTab
 from .data_admin_tab import DataAdminTab
 from .init_dialog import InitDialog
 
@@ -72,7 +71,6 @@ class MainWindow(QMainWindow):
             ScoreTab(self.dm),
             DataMaintenanceTab(self.dm),
             StudentEvalTab(self.dm),
-            RadarQPainterTab(self.dm),
             DataAdminTab(self.dm),
         ]
         for tab in self._tabs:
@@ -126,7 +124,6 @@ class MainWindow(QMainWindow):
             ("📈 成绩分析", 2),
             ("🛠️ 数据维护", 3),
             ("🔍 学生评估", 4),
-            ("🎨 雷达(QPainter)", 5),
         ]
         for text, idx in nav_items:
             btn = QPushButton(text)
@@ -144,7 +141,7 @@ class MainWindow(QMainWindow):
         # 底部：小可爱数据维护
         self.btn_admin = QPushButton("📥 小可爱数据维护")
         self.btn_admin.setCheckable(True)
-        self.btn_admin.clicked.connect(lambda checked: self.switch_tab(6))
+        self.btn_admin.clicked.connect(lambda checked: self.switch_tab(5))
         self.btn_admin.setStyleSheet("""
             QPushButton {
                 background: transparent; color: #bdc3c7;
