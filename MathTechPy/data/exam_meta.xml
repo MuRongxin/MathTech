@@ -255,11 +255,11 @@
         <topic category="向量" weight="0.53">数量积</topic>
         <topic category="向量" weight="0.47">坐标表示</topic>
       </question>
-      <question id="Q18" type="answer" max="16.0">
-        <topic category="向量" weight="0.52">空间向量</topic>
+      <question id="Q18" type="answer" max="17.0">
         <topic category="立体几何" weight="0.48">空间角计算</topic>
+        <topic category="向量" weight="0.52">空间向量</topic>
       </question>
-      <question id="Q19" type="answer" max="15.0">
+      <question id="Q19" type="answer" max="17.0">
         <topic category="向量" weight="0.46">数量积</topic>
         <topic category="向量" weight="0.54">坐标表示</topic>
       </question>
@@ -838,7 +838,8 @@
   <exam date="2025/09/25">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="三角函数">三角函数图像</topic>
+        <topic category="三角函数" weight="0.18">三角函数图像</topic>
+        <topic category="立体几何" weight="0.82">线面平行判定</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
         <topic category="三角函数">正弦型函数 y=Asin(ωx+φ)</topic>
@@ -1261,8 +1262,8 @@
   <exam date="2025/10/21">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量" weight="0.55">空间向量</topic>
         <topic category="立体几何" weight="0.45">体积</topic>
+        <topic category="向量" weight="0.55">空间向量</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
         <topic category="向量" weight="0.45">数量积</topic>
@@ -1560,8 +1561,8 @@
         <topic category="向量" weight="0.48">坐标表示</topic>
       </question>
       <question id="Q10" type="multi_select" max="6.0">
-        <topic category="向量" weight="0.47">空间向量</topic>
         <topic category="立体几何" weight="0.53">空间角计算</topic>
+        <topic category="向量" weight="0.47">空间向量</topic>
       </question>
     </questions>
   </exam>
