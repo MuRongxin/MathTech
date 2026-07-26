@@ -4,7 +4,7 @@
 1. 成绩分布 - 直方图显示班级分数段分布
 2. 个人趋势 - 选择学生，显示历次考试成绩折线
 3. 最近一次 - 柱状图显示最近一次考试全班成绩
-4. 进退步榜 - 最近7次考试得分变化榜（线性回归斜率）
+4. 进退步榜 - 最近7次考试 Z 分变化榜（线性回归斜率，班内相对位置）
 5. 目标分对比 - 对比当前分与目标分差距
 
 修复的 C# bug / 本页修复：
@@ -14,11 +14,13 @@
 4. 添加客观分/满分模式切换
 5. 刷新时按需更新控件，避免冗余信号
 """
+import statistics
+
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QPushButton, QSpinBox, QLineEdit, QGroupBox, QSlider, QCompleter, QButtonGroup
 )
-from PyQt6.QtCore import Qt, QStringListModel
+from PyQt6.QtCore import Qt, QStringListModel, QSettings
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -210,10 +212,11 @@ class ScoreTab(QWidget):
         row2.addWidget(self.btn_next)
         self._paged_ctrls = [self.lbl_count, self.spin_count, self.btn_prev, self.btn_next]
 
-        # 目标分对比：目标分输入
+        # 目标分对比：目标分输入（QSettings 记忆上次输入，默认 60 及格线）
+        self._settings = QSettings("MathTech", "MathTechPy")
         self.lbl_target = QLabel("目标分:")
         row2.addWidget(self.lbl_target)
-        self.edit_target = QLineEdit("0")
+        self.edit_target = QLineEdit(str(self._settings.value("target_score", "60")))
         self.edit_target.setMaximumWidth(55)
         self.edit_target.textChanged.connect(self.refresh)
         row2.addWidget(self.edit_target)
@@ -260,6 +263,8 @@ class ScoreTab(QWidget):
 
     def _on_exam_type_changed(self):
         self._exam_type = self.exam_type_group.checkedId()
+        # 筛选变化后重置分布图滑块到最新一场，避免停留在旧索引位置
+        self._exam_index = -1
         self.refresh()
 
     def _filter_dates(self):
@@ -398,16 +403,17 @@ class ScoreTab(QWidget):
             self._show_empty("当前班级没有学生数据")
             return
 
-        # 更新日期滑块范围（成绩分布模式）
+        # 更新日期滑块范围（成绩分布模式，范围跟随测验/考试筛选）
         if self._current_mode == self.MODE_DISTRIBUTION and self.dm.dates:
-            n = len(self.dm.dates)
-            self.slider_exam.blockSignals(True)
-            self.slider_exam.setRange(0, n - 1)
-            if self._exam_index < 0 or self._exam_index >= n:
-                self._exam_index = n - 1
-            self.slider_exam.setValue(self._exam_index)
-            self._update_exam_label()
-            self.slider_exam.blockSignals(False)
+            n = len(self._filter_dates())
+            if n > 0:
+                self.slider_exam.blockSignals(True)
+                self.slider_exam.setRange(0, n - 1)
+                if self._exam_index < 0 or self._exam_index >= n:
+                    self._exam_index = n - 1
+                self.slider_exam.setValue(self._exam_index)
+                self._update_exam_label()
+                self.slider_exam.blockSignals(False)
 
         # 只在个人模式需要时更新学生下拉框
         if self._current_mode in (self.MODE_PERSONAL,):
@@ -486,10 +492,16 @@ class ScoreTab(QWidget):
     # 图表绘制
     # ------------------------------------------------------------------
     def _draw_distribution(self, students):
-        """成绩分布直方图"""
-        exam_idx = self.slider_exam.value()
-        if exam_idx < 0:
-            exam_idx = len(self.dm.dates) - 1
+        """成绩分布直方图（考试范围跟随测验/考试筛选）"""
+        fdates = self._filter_dates()
+        if not fdates:
+            self._show_empty("无符合筛选条件的考试")
+            return
+        exam_pos = self.slider_exam.value()
+        if exam_pos < 0 or exam_pos >= len(fdates):
+            exam_pos = len(fdates) - 1
+        exam_date = fdates[exam_pos]
+        exam_idx = self.dm.dates.index(exam_date)
 
         data = self._get_typed_scores(students, exam_idx)
         if not data:
@@ -500,7 +512,6 @@ class ScoreTab(QWidget):
         ax = self.fig.add_subplot(111)
 
         type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
-        exam_date = self.dm.dates[exam_idx] if exam_idx < len(self.dm.dates) else "未知"
 
         # 得分率归一化：优先用理论满分（按题型过滤），meta 缺失时退化为班内最高分
         qtype_filter = {"choice": ("choice", "multi_select"), "fill": ("fill",),
@@ -614,7 +625,9 @@ class ScoreTab(QWidget):
                 label="班级平均得分率", zorder=4, alpha=0.9)
 
         ax.set_ylim(-0.05, 1.05)
-        ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
+        ax.axhline(y=0.6, color="#999", linewidth=0.8, linestyle="--", alpha=0.6)
+        if x:
+            ax.text(x[-1], 0.62, "及格线", fontsize=8, color="#999", ha="right")
 
         type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
         title = f"{name} — {type_name}得分率" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
@@ -690,7 +703,11 @@ class ScoreTab(QWidget):
         )
 
     def _draw_last7(self, students):
-        """进退步榜：最近 N 次考试题型得分变化"""
+        """进退步榜：最近 N 次考试 Z 分变化（班内相对位置）
+
+        Z = (得分 - 班均) / σ，每次考试独立标准化，天然免疫满分差异与
+        试卷难度波动；缺考不参与。回归自变量为实际考试序号，保留时间间隔。
+        """
         fdates = self._filter_dates()
         n = min(7, len(fdates))
         if n < 2:
@@ -698,30 +715,36 @@ class ScoreTab(QWidget):
             return
 
         dates = fdates[-n:]
-        # 预建每次考试的 {name: score}，避免逐学生重复聚合全班
+        # 预建每次考试的 {name: 得分}，并按考试标准化为 Z 分
         date_idx = {dt: i for i, dt in enumerate(self.dm.dates)}
-        score_maps = {}
+        z_maps = {}  # dt -> (raw_scores dict, mean, std)
         for dt in dates:
-            score_maps[dt] = dict(self._get_typed_scores(students, date_idx[dt]) or [])
+            sd = dict(self._get_typed_scores(students, date_idx[dt]) or [])
+            vals = list(sd.values())
+            if len(vals) >= 2:
+                mu, std = statistics.mean(vals), statistics.stdev(vals)
+            else:
+                mu, std = 0.0, 0.0
+            z_maps[dt] = (sd, mu, std)
+
         changes = []
         for s in students:
-            scores_n = []
-            idxs = []  # 该生在 dm.dates 中的实际考试序号（保留缺考的时间间隔）
+            pts = []  # (考试序号, z)
             for dt in dates:
-                sd = score_maps[dt]
+                sd, mu, std = z_maps[dt]
                 if s.name not in sd:
                     continue  # 缺考不参与趋势计算
-                scores_n.append(sd[s.name])
-                idxs.append(date_idx[dt])
-            if len(scores_n) >= 2:
-                k = len(scores_n)
-                mx = sum(idxs) / k
-                my = sum(scores_n) / k
-                num = sum((idxs[i] - mx) * (scores_n[i] - my) for i in range(k))
-                den = sum((idxs[i] - mx) ** 2 for i in range(k))
-                slope = num / den if den != 0 else 0
-                diff = slope * (idxs[-1] - idxs[0])
-                changes.append((s.name, diff, scores_n[0], scores_n[-1]))
+                z = 0.0 if std == 0 else (sd[s.name] - mu) / std
+                pts.append((date_idx[dt], z))
+            if len(pts) >= 2:
+                k = len(pts)
+                mx = sum(p[0] for p in pts) / k
+                my = sum(p[1] for p in pts) / k
+                num = sum((p[0] - mx) * (p[1] - my) for p in pts)
+                den = sum((p[0] - mx) ** 2 for p in pts)
+                slope = num / den if den != 0 else 0.0
+                diff = slope * (pts[-1][0] - pts[0][0])
+                changes.append((s.name, diff, pts[0][1], pts[-1][1]))
 
         if not changes:
             self._show_empty("数据不足")
@@ -746,13 +769,13 @@ class ScoreTab(QWidget):
 
         for i, (d, fv, lv) in enumerate(zip(diffs, firsts, lasts)):
             sign = "+" if d >= 0 else ""
-            text = f"{sign}{d:.1f}  ({fv:.1f} → {lv:.1f})"
-            offset = max(abs(d) * 0.02, 0.5)
+            text = f"{sign}{d:.2f}  ({fv:+.2f} → {lv:+.2f})"
+            offset = max(abs(d) * 0.02, 0.05)
             x_pos = d + offset if d >= 0 else d - offset
             ha = "left" if d >= 0 else "right"
             ax.text(x_pos, i, text, va="center", ha=ha, fontsize=10)
 
-        base = max(abs(min(diffs)), abs(max(diffs)), 1.0)
+        base = max(abs(min(diffs)), abs(max(diffs)), 0.5)
         ax.set_xlim(-base * 1.5, base * 1.5)
         ax.axvline(x=0, color="#999", linewidth=0.8, alpha=0.5)
         ax.spines["right"].set_visible(False)
@@ -761,22 +784,23 @@ class ScoreTab(QWidget):
         ax.invert_yaxis()
 
         type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
-        ax.set_xlabel(f"{type_name}得分变化", fontsize=12)
-        ax.set_title(f"最近 {n} 次考试进退步榜 ({dates[0]} → {dates[-1]}) "
+        ax.set_xlabel("Z 分变化（班内相对位置）", fontsize=12)
+        ax.set_title(f"最近 {n} 次考试进退步榜（Z 分口径）({dates[0]} → {dates[-1]}) "
                      f"第 {start+1}-{end}/{total} 名 | {type_name}",
                      fontsize=13, fontweight="bold")
 
         up = sum(1 for d in diffs if d >= 0)
         down = len(diffs) - up
         self.status_label.setText(
-            f"最近{n}次 | 进步 {up} 人 | 退步 {down} 人 | "
-            f"最大进步 {max(diffs):.1f} | 最大退步 {min(diffs):.1f} | {type_name}"
+            f"最近{n}次 | Z 分口径（班内相对位置变化）| 进步 {up} 人 | 退步 {down} 人 | "
+            f"最大进步 {max(diffs):+.2f} | 最大退步 {min(diffs):+.2f} | {type_name}"
         )
 
     def _draw_target(self, students):
         """目标分对比 — 最新一次考试的题型得分距目标分差距"""
         try:
             target = float(self.edit_target.text())
+            self._settings.setValue("target_score", self.edit_target.text())
         except ValueError:
             target = 0
 
@@ -898,5 +922,6 @@ class ScoreTab(QWidget):
 
     def _update_exam_label(self):
         idx = self.slider_exam.value()
-        if 0 <= idx < len(self.dm.dates):
-            self.lbl_exam_date.setText(self.dm.dates[idx])
+        fdates = self._filter_dates()
+        if 0 <= idx < len(fdates):
+            self.lbl_exam_date.setText(fdates[idx])
