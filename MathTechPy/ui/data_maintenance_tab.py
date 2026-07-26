@@ -3,9 +3,9 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QListWidget, QListWidgetItem, QFrame, QMessageBox,
     QInputDialog, QScrollArea, QButtonGroup, QSlider, QMenu,
-    QGraphicsOpacityEffect
+    QGraphicsOpacityEffect, QWidgetAction, QDoubleSpinBox
 )
-from PyQt6.QtCore import Qt, QTimer, QMimeData, QPropertyAnimation, QPoint, QEasingCurve
+from PyQt6.QtCore import Qt, QTimer, QMimeData, QPropertyAnimation, QPoint, QEasingCurve, QEvent
 from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent, QPainter, QPixmap
 
 from core.data_manager import DataManager
@@ -564,6 +564,11 @@ class DataMaintenanceTab(QWidget):
         self.qbtn_layout.setContentsMargins(0, 0, 0, 0)
         edit_layout.addWidget(qbtn_frame)
 
+        # 本场理论满分（随题目分值/题型修改实时更新）
+        self.lbl_full_score = QLabel("")
+        self.lbl_full_score.setStyleSheet("color: #7f8c8d; font-size: 12px; padding: 0 2px;")
+        edit_layout.addWidget(self.lbl_full_score)
+
         # ---- 已选标签 ----
         tags_frame = QFrame()
         tags_frame.setStyleSheet("background: white; border-radius: 8px;")
@@ -697,19 +702,10 @@ class DataMaintenanceTab(QWidget):
             qid = btn.property("qid")
             btn.setChecked(qid == self._current_qid)
             count = len(self._question_topics.get(qid, {}))
-            if count == 0:
-                indicator = "-"
-            elif count == 1:
-                indicator = "❶"
-            elif count == 2:
-                indicator = "❷"
-            else:
-                indicator = str(count)
             qtype = btn.property("qtype")
             is_obj = qtype in ("choice", "multi_select")
             border_color = self.OBJ_COLOR if is_obj else self.SUB_COLOR
-            abbrev = self.TYPE_ABBREV.get(qtype, "?")
-            btn.setText(f"Q{qid} {abbrev} {indicator}")
+            btn.setText(self._qbtn_text(qid, qtype, btn.property("max_score")))
             if count > 0:
                 btn.setStyleSheet(bound_style)
             else:
@@ -987,6 +983,7 @@ class DataMaintenanceTab(QWidget):
                 self._question_topics[q.id] = {kt.name: kt.weight for kt in q.topics}
         # 构建题目按钮
         self._build_question_buttons(meta.questions)
+        self._update_full_score_label(meta.questions)
         # 选中第一个题目
         if meta.questions:
             self._current_qid = meta.questions[0].id
@@ -1006,12 +1003,13 @@ class DataMaintenanceTab(QWidget):
             self.qbtn_layout.takeAt(0)
 
         for q in questions:
-            abbrev = self.TYPE_ABBREV.get(q.qtype, "?")
             is_obj = q.qtype in ("choice", "multi_select")
             border_color = self.OBJ_COLOR if is_obj else self.SUB_COLOR
-            btn = QPushButton(f"Q{q.id} {abbrev} -")
+            btn = QPushButton()
             btn.setProperty("qid", q.id)
             btn.setProperty("qtype", q.qtype)
+            btn.setProperty("max_score", q.max_score)
+            btn.setText(self._qbtn_text(q.id, q.qtype, q.max_score))
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.setMinimumHeight(32)
@@ -1029,8 +1027,33 @@ class DataMaintenanceTab(QWidget):
             btn.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             btn.customContextMenuRequested.connect(
                 lambda pos, qid=q.id, b=btn: self._on_question_menu(pos, qid, b))
+            # 双击题目按钮同样打开编辑菜单（与右键一致）
+            btn.installEventFilter(self)
             self.qbtn_layout.addWidget(btn)
             self._question_buttons.append(btn)
+
+    def _qbtn_text(self, qid: str, qtype: str, max_score: float) -> str:
+        """题目按钮文本：Q号 题型缩写 分值 绑定数"""
+        count = len(self._question_topics.get(qid, {}))
+        if count == 0:
+            indicator = "-"
+        elif count == 1:
+            indicator = "❶"
+        elif count == 2:
+            indicator = "❷"
+        else:
+            indicator = str(count)
+        abbrev = self.TYPE_ABBREV.get(qtype, "?")
+        # qid 本身已带 Q 前缀（来自逐题分表头 Q1..Qn），不再重复添加
+        return f"{qid} {abbrev} {max_score:g}分 {indicator}"
+
+    def eventFilter(self, obj, event):
+        """题目按钮双击 → 打开与右键相同的编辑菜单"""
+        if (event.type() == QEvent.Type.MouseButtonDblClick
+                and isinstance(obj, QPushButton) and obj.property("qid") is not None):
+            self._on_question_menu(obj.rect().center(), obj.property("qid"), obj)
+            return True
+        return super().eventFilter(obj, event)
 
     def _sync_toggles(self):
         """根据当前选中题目同步所有 toggle 状态（阻断信号避免触发 _on_toggle）"""
@@ -1065,12 +1088,30 @@ class DataMaintenanceTab(QWidget):
         act_fill = menu.addAction("🟠 填空题")
         act_answer = menu.addAction("🔴 解答题")
         menu.addSeparator()
-        act_max = menu.addAction("✏️ 修改满分...")
+
+        # 修改分值：菜单内直接编辑（QWidgetAction 内嵌 spinbox），不弹窗
+        meta = self.dm.get_exam_meta(self._current_date)
+        cur = next((q.max_score for q in meta.questions if q.id == qid), 5.0)
+        score_action = QWidgetAction(menu)
+        score_widget = QWidget()
+        score_layout = QHBoxLayout(score_widget)
+        score_layout.setContentsMargins(16, 2, 12, 2)
+        score_layout.setSpacing(8)
+        score_layout.addWidget(QLabel("✏️ 修改分值"))
+        spin = QDoubleSpinBox()
+        spin.setRange(0.5, 50.0)
+        spin.setSingleStep(1.0)
+        spin.setDecimals(1)
+        spin.blockSignals(True)  # 避免 setValue 触发一次无效保存
+        spin.setValue(cur)
+        spin.blockSignals(False)
+        spin.valueChanged.connect(lambda v, q=qid: self._change_question_max(q, v))
+        score_layout.addWidget(spin)
+        score_action.setDefaultWidget(score_widget)
+        menu.addAction(score_action)
+
         act = menu.exec(btn.mapToGlobal(pos))
-        if not act:
-            return
-        if act == act_max:
-            self._change_question_max(qid)
+        if not act or act is score_action:
             return
         type_map = {act_choice: "choice", act_multi: "multi_select",
                     act_fill: "fill", act_answer: "answer"}
@@ -1078,23 +1119,20 @@ class DataMaintenanceTab(QWidget):
         if new_type:
             self._change_question_type(qid, new_type)
 
-    def _change_question_max(self, qid: str):
+    def _change_question_max(self, qid: str, val: float):
+        """修改题目分值：更新 meta、按钮文本与理论满分标签，防抖落盘"""
         meta = self.dm.get_exam_meta(self._current_date)
-        cur = 5.0
         for q in meta.questions:
             if q.id == qid:
-                cur = q.max_score
+                q.max_score = val
                 break
-        val, ok = QInputDialog.getDouble(self, "修改满分", f"题目 Q{qid} 满分:",
-                                         cur, 0.5, 50.0, 1)
-        if ok:
-            for q in meta.questions:
-                if q.id == qid:
-                    q.max_score = val
-                    break
-            self._build_question_buttons(meta.questions)
-            self._update_question_buttons()
-            self._auto_save()
+        for btn in self._question_buttons:
+            if btn.property("qid") == qid:
+                btn.setProperty("max_score", val)
+                btn.setText(self._qbtn_text(qid, btn.property("qtype"), val))
+                break
+        self._update_full_score_label(meta.questions)
+        self._auto_save()
 
     def _change_question_type(self, qid: str, new_type: str):
         meta = self.dm.get_exam_meta(self._current_date)
@@ -1104,7 +1142,18 @@ class DataMaintenanceTab(QWidget):
                 break
         self._build_question_buttons(meta.questions)
         self._update_question_buttons()
+        self._update_full_score_label(meta.questions)
         self._auto_save()
+
+    def _update_full_score_label(self, questions):
+        """更新本场理论满分标签（客观=单选+多选，主观=填空+解答）"""
+        if not questions:
+            self.lbl_full_score.setText("")
+            return
+        obj = sum(q.max_score for q in questions if q.qtype in ("choice", "multi_select"))
+        sub = sum(q.max_score for q in questions if q.qtype not in ("choice", "multi_select"))
+        self.lbl_full_score.setText(
+            f"本场理论满分：{obj + sub:g} 分（客观 {obj:g} / 主观 {sub:g}）")
 
     def _all_toggles(self):
         for g in self.cat_groups:

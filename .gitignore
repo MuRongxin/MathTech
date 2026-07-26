@@ -21,3 +21,4 @@ obj/
 *.bak
 .aider*
 *.pkl
+.superpowers/
