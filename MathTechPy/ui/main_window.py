@@ -74,8 +74,17 @@ class MainWindow(QMainWindow):
         for tab in self._tabs:
             self.stack.addWidget(tab)
 
+        # 成绩分析页搜索学生 → 跳转学生评估页并选中（个人趋势已迁入该页）
+        self._tabs[2].on_search_student = self._goto_student_eval
+
         # 默认显示概览
         self.switch_tab(0)
+
+    def _goto_student_eval(self, name: str):
+        """跳转到学生评估页并选中指定学生（成绩历程视图）"""
+        eval_tab = self._tabs[4]
+        eval_tab.select_student(name, view="成绩历程")
+        self.switch_tab(4)
 
     def _build_sidebar(self) -> QFrame:
         """构建左侧导航栏"""

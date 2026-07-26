@@ -156,6 +156,33 @@ class StudentEvalTab(QWidget):
 
         toolbar.addSpacing(12)
 
+        # ---- 原始分/得分率切换（成绩历程专用，默认隐藏）----
+        self._timeline_rate = False
+        self.rate_mode_btns: list[QPushButton] = []
+        self.rate_mode_group = QButtonGroup(self)
+        for i, label in enumerate(["原始分", "得分率"]):
+            btn = QPushButton(label)
+            btn.setCheckable(True)
+            btn.setChecked(i == 0)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setFixedHeight(30)
+            r_left = "8px" if i == 0 else "0px"
+            r_right = "8px" if i == 1 else "0px"
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: white; border: 2px solid #8e44ad;
+                    border-radius: {r_left} {r_right} {r_right} {r_left};
+                    padding: 4px 12px; font-size: 12px; color: #8e44ad; font-weight: bold;
+                }}
+                QPushButton:hover {{ background: #ecf0f1; }}
+                QPushButton:checked {{ background: #8e44ad; color: white; }}
+            """)
+            self.rate_mode_group.addButton(btn, i)
+            toolbar.addWidget(btn)
+            self.rate_mode_btns.append(btn)
+            btn.setVisible(False)
+        self.rate_mode_group.buttonClicked.connect(self._on_rate_mode_changed)
+
         # ---- 知识点下拉（趋势视图专用，默认隐藏）----
         self.combo_topic = QComboBox()
         self.combo_topic.setMinimumWidth(150)
@@ -397,6 +424,9 @@ class StudentEvalTab(QWidget):
         show_score = (idx in (3, 4))
         for btn in self.score_btns:
             btn.setVisible(show_score)
+        # 原始分/得分率切换仅成绩历程（idx=4）显示
+        for btn in self.rate_mode_btns:
+            btn.setVisible(idx == 4)
         self.combo_topic.setVisible(idx == 5)
         for btn in self.trend_type_btns:
             btn.setVisible(idx == 5)
@@ -432,6 +462,22 @@ class StudentEvalTab(QWidget):
     def _on_search(self, _text: str):
         # 去抖：重启计时器，200ms 无新输入后才真正搜索
         self._search_timer.start()
+
+    def _on_rate_mode_changed(self):
+        self._timeline_rate = self.rate_mode_group.checkedId() == 1
+        self.refresh()
+
+    def select_student(self, name: str, view: str = None):
+        """公开接口：选中学生（可选同时切换视图），供其他页面跳转"""
+        for i in range(self.combo_student.count()):
+            if self.combo_student.itemText(i) == name:
+                self.combo_student.setCurrentIndex(i)  # 触发 _on_student_changed
+                break
+        if view in VIEW_LABELS:
+            self.combo_mode.setCurrentIndex(VIEW_LABELS.index(view))
+        self.search_input.blockSignals(True)
+        self.search_input.setText(name)
+        self.search_input.blockSignals(False)
 
     def _do_search(self):
         text = self.search_input.text()
@@ -1080,6 +1126,11 @@ class StudentEvalTab(QWidget):
             self._show_empty("该学生在当前筛选下暂无成绩数据")
             return
 
+        # 得分率模式：归一化到理论满分（来自 exam_meta），与原始分共用筛选
+        if self._timeline_rate:
+            self._draw_timeline_rates(dates, full_stu)
+            return
+
         # 缺考用 NaN，让 matplotlib 断线而非坠 0
         nan = float("nan")
         obj_scores = [obj_map.get(dt, nan) for dt in dates]
@@ -1172,6 +1223,99 @@ class StudentEvalTab(QWidget):
                 f"共 {n} 次考试 | 客观均{_fmt(_mean_valid(obj_scores))} | "
                 f"主观均{_fmt(_mean_valid(sub_scores))} | 总分均{_fmt(_mean_valid(full_scores))}"
             )
+
+    def _draw_timeline_rates(self, dates, full_stu):
+        """成绩历程·得分率模式：得分 ÷ 理论满分（exam_meta），含班均对比
+
+        分子分母同口径：客观=单选+多选逐题分，主观=填空+解答逐题分，
+        总体=全卷总分列。缺元数据（无题目结构）的场次跳过并在标题注明。
+        """
+        nan = float("nan")
+        mode = self._score_mode  # 0 客观 / 1 主观 / 2 总体
+        scope = {0: ("choice", "multi_select"), 1: ("fill", "answer"), 2: None}[mode]
+        mode_name = {0: "客观", 1: "主观", 2: "总体"}[mode]
+        color = {0: "#3498db", 1: "#e67e22", 2: "#2ecc71"}[mode]
+
+        def _den(meta):
+            if scope is None:
+                return sum(q.max_score for q in meta.questions)
+            return sum(q.max_score for q in meta.questions if q.qtype in scope)
+
+        def _num(qs, meta):
+            if scope is None:
+                return sum(qs.values())
+            return sum(qs.get(q.id, 0.0) for q in meta.questions if q.qtype in scope)
+
+        class_idx = self.dm.current_class
+        cls_students = self.dm.students[class_idx][1]  # 全卷副本（逐题分共享）
+        full_map_stu = {d: float(v) for d, v in (full_stu.scores_full or [])}
+        full_maps_cls = [{d: float(v) for d, v in (s.scores_full or [])}
+                         for s in cls_students]
+
+        stu_rates, cls_rates, valid_dates = [], [], []
+        skipped = 0
+        for dt in dates:
+            meta = self.dm.exam_meta.get(dt)
+            den = _den(meta) if meta and meta.questions else 0
+            if den <= 0:
+                skipped += 1
+                continue
+            valid_dates.append(dt)
+            # 学生得分率（缺考 NaN 断线）
+            if mode == 2:
+                v = full_map_stu.get(dt)
+                stu_rates.append(v / den if v is not None else nan)
+            else:
+                stu_qs = full_stu.question_scores.get(dt)
+                stu_rates.append(_num(stu_qs, meta) / den if stu_qs else nan)
+            # 班均得分率（仅计实考学生）
+            rs = []
+            if mode == 2:
+                rs = [fm[dt] / den for fm in full_maps_cls if dt in fm]
+            else:
+                for s in cls_students:
+                    s_qs = s.question_scores.get(dt)
+                    if s_qs:
+                        rs.append(_num(s_qs, meta) / den)
+            cls_rates.append(sum(rs) / len(rs) if rs else nan)
+
+        if not valid_dates:
+            self._show_empty("当前筛选下缺少题目结构元数据，无法计算得分率")
+            return
+
+        n = len(valid_dates)
+        x = list(range(n))
+        ax = self.fig.add_subplot(111)
+        ax.plot(x, stu_rates, "o-", color=color, linewidth=2.5, markersize=6,
+                label=self._current_student, zorder=3)
+        ax.plot(x, cls_rates, "--", color="#e74c3c", linewidth=2, alpha=0.85,
+                label="班级平均得分率", zorder=2)
+        ax.set_ylim(-0.05, 1.05)
+        ax.axhline(y=0.6, color="#999", linewidth=0.8, linestyle="--", alpha=0.6)
+        ax.text(x[-1], 0.62, "及格线", fontsize=8, color="#999", ha="right")
+        ax.set_ylabel("得分率", fontsize=11)
+        ax.legend(fontsize=9, loc="upper left")
+        ax.grid(True, linestyle="--", alpha=0.4)
+        step = max(1, n // 12)
+        tick_pos = list(range(0, n, step))
+        ax.set_xticks(tick_pos)
+        ax.set_xticklabels([valid_dates[i] for i in tick_pos],
+                           fontsize=8, rotation=35, ha="right")
+
+        title = f"{self._current_student}  ·  {mode_name}得分率历程"
+        if skipped:
+            title += f"（{skipped} 场缺元数据已跳过）"
+        ax.set_title(title, fontsize=14, fontweight="bold")
+
+        valid = [v for v in stu_rates if not math.isnan(v)]
+        if valid:
+            avg = sum(valid) / len(valid)
+            self.status_label.setText(
+                f"{mode_name}得分率 | 共 {n} 场 | 均 {avg:.0%} | "
+                f"最高 {max(valid):.0%} | 最低 {min(valid):.0%}"
+            )
+        else:
+            self.status_label.setText(f"{mode_name}得分率 | 该学生无有效数据")
 
     # ------------------------------------------------------------------
     # 趋势数据: 基于逐题分的真实知识点得分率

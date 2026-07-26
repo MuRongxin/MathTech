@@ -1,11 +1,13 @@
-"""成绩分析页 - 多种图表模式
+"""成绩分析页 - 多种图表模式（班级层面）
 
 图表模式：
 1. 成绩分布 - 直方图显示班级分数段分布
-2. 个人趋势 - 选择学生，显示历次考试成绩折线
-3. 最近一次 - 柱状图显示最近一次考试全班成绩
-4. 进退步榜 - 最近7次考试 Z 分变化榜（线性回归斜率，班内相对位置）
-5. 目标分对比 - 对比当前分与目标分差距
+2. 最近一次 - 柱状图显示最近一次考试全班成绩
+3. 进退步榜 - 最近7次考试 Z 分变化榜（线性回归斜率，班内相对位置）
+4. 目标分对比 - 对比当前分与目标分差距
+
+个体层面的「个人趋势」已合并到学生评估页的「成绩历程」视图
+（原始分/得分率切换）。本页搜索框会跳转到学生评估页选中该学生。
 
 修复的 C# bug / 本页修复：
 1. 切换模式时正确更新控件可见性
@@ -30,7 +32,6 @@ from core.data_manager import DataManager
 
 class ScoreTab(QWidget):
     MODE_DISTRIBUTION = "📊 成绩分布"
-    MODE_PERSONAL = "👤 个人趋势"
     MODE_LATEST = "📋 最近一次"
     MODE_LAST7 = "📈 进退步榜"
     MODE_TARGET = "🎯 目标分对比"
@@ -61,7 +62,6 @@ class ScoreTab(QWidget):
         self.combo_mode = QComboBox()
         self.combo_mode.addItems([
             self.MODE_DISTRIBUTION,
-            self.MODE_PERSONAL,
             self.MODE_LATEST,
             self.MODE_LAST7,
             self.MODE_TARGET,
@@ -182,19 +182,8 @@ class ScoreTab(QWidget):
         self._dist_ctrls = [self.lbl_exam, self.btn_exam_prev, self.slider_exam,
                             self.btn_exam_next, self.lbl_exam_date]
 
-        # 个人趋势：学生 + 最近7次
-        self.lbl_student = QLabel("学生:")
-        row2.addWidget(self.lbl_student)
-        self.combo_student = QComboBox()
-        self.combo_student.setMinimumWidth(130)
-        self.combo_student.currentIndexChanged.connect(self.refresh)
-        row2.addWidget(self.combo_student)
-        self.chk_last7 = QPushButton("📅 仅最近7次")
-        self.chk_last7.setCheckable(True)
-        self.chk_last7.setChecked(False)
-        self.chk_last7.clicked.connect(self.refresh)
-        row2.addWidget(self.chk_last7)
-        self._personal_ctrls = [self.lbl_student, self.combo_student, self.chk_last7]
+        # 个人趋势已迁移至学生评估页；此处仅保留分布图考试导航
+        self._personal_ctrls = []
 
         # 最近一次 & 目标对比：显示人数 + 翻页
         self.lbl_count = QLabel("显示人数:")
@@ -315,14 +304,13 @@ class ScoreTab(QWidget):
     def _update_toolbar_visibility(self):
         """根据模式显示/隐藏第二行控件"""
         is_dist = self._current_mode == self.MODE_DISTRIBUTION
-        is_personal = self._current_mode == self.MODE_PERSONAL
         is_paged = self._current_mode in (self.MODE_LATEST, self.MODE_TARGET, self.MODE_LAST7)
         is_target = self._current_mode == self.MODE_TARGET
 
         for c in self._dist_ctrls:
             c.setVisible(is_dist)
         for c in self._personal_ctrls:
-            c.setVisible(is_personal)
+            c.setVisible(False)
         for c in self._paged_ctrls:
             c.setVisible(is_paged)
         for c in self._target_ctrls:
@@ -415,19 +403,6 @@ class ScoreTab(QWidget):
                 self._update_exam_label()
                 self.slider_exam.blockSignals(False)
 
-        # 只在个人模式需要时更新学生下拉框
-        if self._current_mode in (self.MODE_PERSONAL,):
-            current_name = self.combo_student.currentText()
-            self.combo_student.blockSignals(True)
-            self.combo_student.clear()
-            for s in students:
-                self.combo_student.addItem(s.name)
-            if current_name:
-                idx = self.combo_student.findText(current_name)
-                if idx >= 0:
-                    self.combo_student.setCurrentIndex(idx)
-            self.combo_student.blockSignals(False)
-
         # 始终更新搜索补全的模型
         names = [s.name for s in students]
         model = QStringListModel(names)
@@ -441,8 +416,6 @@ class ScoreTab(QWidget):
         try:
             if self._current_mode == self.MODE_DISTRIBUTION:
                 self._draw_distribution(students)
-            elif self._current_mode == self.MODE_PERSONAL:
-                self._draw_personal(students)
             elif self._current_mode == self.MODE_LATEST:
                 self._draw_latest(students)
             elif self._current_mode == self.MODE_LAST7:
@@ -558,99 +531,6 @@ class ScoreTab(QWidget):
         self.status_label.setText(
             f"日期: {exam_date}  |  平均分: {sum(scores)/len(scores):.1f}  |  "
             f"最高分: {max(scores):.1f}  |  最低分: {min(scores):.1f}  |  {type_name}"
-        )
-
-    def _draw_personal(self, students):
-        """个人成绩趋势 — 按题型过滤的逐次考试得分"""
-        name = self.combo_student.currentText()
-        if not name:
-            self._show_empty("请从下拉框选择学生")
-            return
-
-        # 收集该学生所有考试的题型得分 + 理论满分
-        stype = self._score_type
-        qtype_filter = {"choice": ("choice", "multi_select"),
-                        "fill": ("fill",), "answer": ("answer",)}.get(stype, None)
-        dates, rates, class_rates, raw_scores = [], [], [], []
-        filtered_set = set(self._filter_dates())
-        fallback_max = False  # 有考试缺 meta 时退化为班内最高分
-        # 按日期缓存全班题型得分，避免逐日期重复 dict 转换
-        sd_cache: dict[int, dict] = {}
-        for exam_i, dt in enumerate(self.dm.dates):
-            if dt not in filtered_set:
-                continue
-            if exam_i not in sd_cache:
-                sd_cache[exam_i] = dict(self._get_typed_scores(students, exam_i) or [])
-            sd = sd_cache[exam_i]
-            if name not in sd:
-                continue
-            meta = self.dm.get_exam_meta(dt)
-            if meta.questions:
-                if qtype_filter:
-                    max_score = sum(q.max_score for q in meta.questions
-                                    if q.qtype in qtype_filter)
-                else:
-                    max_score = sum(q.max_score for q in meta.questions)
-            else:
-                max_score = max(sd.values()) if sd else 100.0
-                fallback_max = True
-            if max_score <= 0:
-                continue
-            dates.append(dt)
-            raw_scores.append(sd[name])
-            rates.append(round(sd[name] / max_score, 4))
-            class_rates.append(round(sum(sd.values()) / len(sd) / max_score, 4))
-
-        if not rates:
-            self._show_empty(f"{name} 无该题型成绩数据")
-            return
-
-        is_last7 = self.chk_last7.isChecked()
-        if is_last7:
-            n = min(7, len(rates))
-            dates = dates[-n:]
-            rates = rates[-n:]
-            class_rates = class_rates[-n:]
-            raw_scores = raw_scores[-n:]
-
-        n_pts = len(rates)
-        step = max(1, n_pts // 8)
-        tick_pos = list(range(0, n_pts, step))
-        x = list(range(n_pts))
-
-        ax = self.fig.add_subplot(111)
-        ax.plot(x, rates, marker="o", linewidth=2.5,
-                color="#8e44ad", markersize=7, zorder=3, label=name)
-        ax.plot(x, class_rates, color="#e74c3c", linestyle="--", linewidth=2.2,
-                label="班级平均得分率", zorder=4, alpha=0.9)
-
-        ax.set_ylim(-0.05, 1.05)
-        ax.axhline(y=0.6, color="#999", linewidth=0.8, linestyle="--", alpha=0.6)
-        if x:
-            ax.text(x[-1], 0.62, "及格线", fontsize=8, color="#999", ha="right")
-
-        type_name = {"choice": "选择题", "fill": "填空题", "answer": "解答题", "total": "总分"}[self._score_type]
-        title = f"{name} — {type_name}得分率" + (" (最近7次)" if is_last7 else f" (共{n_pts}次)")
-        if fallback_max:
-            title += "（部分相对班内最高分）"
-        ax.set_title(title, fontsize=13, fontweight="bold")
-        ax.set_ylabel("得分率", fontsize=11)
-        ax.legend(fontsize=9, loc="upper left")
-        ax.grid(True, linestyle="--", alpha=0.4)
-        ax.set_xticks(tick_pos)
-        ax.set_xticklabels([dates[i] for i in tick_pos], rotation=45, ha="right")
-
-        if is_last7:
-            for xi, r in zip(x, rates):
-                ax.text(xi, r + 0.03, f"{r:.0%}", ha="center", fontsize=8, color="#8e44ad")
-
-        self._hover_dates = dates
-        self._hover_raw = raw_scores  # 真实原始分，悬停 tooltip 用
-        avg = sum(rates) / n_pts
-        self.status_label.setText(
-            f"{name} | {type_name} | {'最近7次' if is_last7 else f'共{n_pts}次'} | "
-            f"均得分率 {avg:.0%} | "
-            f"最高 {max(rates):.0%} | 最低 {min(rates):.0%}"
         )
 
     def _draw_latest(self, students):
@@ -875,7 +755,7 @@ class ScoreTab(QWidget):
     # 学生搜索
     # ------------------------------------------------------------------
     def _on_search(self):
-        """搜索框回车或被选择：切到个人趋势模式并选中该学生"""
+        """搜索学生：经 on_search_student 回调跳转到学生评估页选中该学生"""
         text = self.search_input.text().strip()
         if not text:
             return
@@ -890,17 +770,10 @@ class ScoreTab(QWidget):
                     text = name
                     break
 
-        # 切到个人模式
-        if self._current_mode != self.MODE_PERSONAL:
-            self.combo_mode.setCurrentText(self.MODE_PERSONAL)
-            self._current_mode = self.MODE_PERSONAL
-            self._update_toolbar_visibility()
-
-        # 选中学生
-        idx = self.combo_student.findText(text)
-        if idx >= 0:
-            self.combo_student.setCurrentIndex(idx)
-        self.refresh()
+        # 个人趋势已迁移至学生评估页，由 MainWindow 接线此回调
+        cb = getattr(self, "on_search_student", None)
+        if cb:
+            cb(text)
 
     # ------------------------------------------------------------------
     # 考试日期导航
