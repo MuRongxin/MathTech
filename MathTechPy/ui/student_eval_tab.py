@@ -56,9 +56,11 @@ class StudentEvalTab(QWidget):
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(10)
 
-        # ---- 工具栏 ----
+        # ---- 工具栏（两行：行1=对象与视图，行2=数据筛选口径）----
         toolbar = QHBoxLayout()
         toolbar.setSpacing(8)
+        toolbar2 = QHBoxLayout()
+        toolbar2.setSpacing(6)
 
         toolbar.addWidget(QLabel("学生:"))
         self.combo_student = QComboBox()
@@ -129,7 +131,7 @@ class StudentEvalTab(QWidget):
 
         toolbar.addSpacing(8)
 
-        # ---- 分数模式: 三段式分段按钮 ----
+        # ---- 分数模式: 三段式分段按钮（统计卡行：数据筛选口径）----
         self.score_btns: list[QPushButton] = []
         self.score_group = QButtonGroup(self)
         for i, (label, color) in enumerate(zip(SCORE_MODES, MODE_COLORS)):
@@ -150,11 +152,11 @@ class StudentEvalTab(QWidget):
                 QPushButton:checked {{ background: {color}; color: white; }}
             """)
             self.score_group.addButton(btn, i)
-            toolbar.addWidget(btn)
+            toolbar2.addWidget(btn)
             self.score_btns.append(btn)
         self.score_group.buttonClicked.connect(lambda btn: self.refresh())
 
-        toolbar.addSpacing(12)
+        toolbar2.addSpacing(8)
 
         # ---- 原始分/得分率切换（成绩历程专用，默认隐藏）----
         self._timeline_rate = False
@@ -220,6 +222,7 @@ class StudentEvalTab(QWidget):
         self.trend_type_group.buttonClicked.connect(lambda: self.refresh())
 
         # ---- 测验/考试切换 ----
+        toolbar2.addSpacing(8)
         self.exam_type_btns: list[QPushButton] = []
         self.exam_type_group = QButtonGroup(self)
         for i, label in enumerate(["测验", "考试", "全部"]):
@@ -240,7 +243,7 @@ class StudentEvalTab(QWidget):
                 QPushButton:checked {{ background: #95a5a6; color: white; }}
             """)
             self.exam_type_group.addButton(btn, i)
-            toolbar.addWidget(btn)
+            toolbar2.addWidget(btn)
             self.exam_type_btns.append(btn)
         self.exam_type_group.buttonClicked.connect(lambda: self.refresh())
 
@@ -261,20 +264,21 @@ class StudentEvalTab(QWidget):
         self.btn_fixed_order.setVisible(False)
         toolbar.addWidget(self.btn_fixed_order)
 
-        # ---- 日期范围筛选 ----
-        toolbar.addWidget(QLabel("起始:"))
+        # ---- 日期范围筛选（左=起始，右=截止）----
+        toolbar2.addSpacing(8)
         self.combo_start = QComboBox()
-        self.combo_start.setMinimumWidth(100)
+        self.combo_start.setMinimumWidth(92)
+        self.combo_start.setToolTip("起始日期")
         self.combo_start.setStyleSheet(self.combo_student.styleSheet())
         self.combo_start.currentIndexChanged.connect(self._on_date_changed)
-        toolbar.addWidget(self.combo_start)
+        toolbar2.addWidget(self.combo_start)
 
-        toolbar.addWidget(QLabel("截止:"))
         self.combo_end = QComboBox()
-        self.combo_end.setMinimumWidth(100)
+        self.combo_end.setMinimumWidth(92)
+        self.combo_end.setToolTip("截止日期")
         self.combo_end.setStyleSheet(self.combo_student.styleSheet())
         self.combo_end.currentIndexChanged.connect(self._on_date_changed)
-        toolbar.addWidget(self.combo_end)
+        toolbar2.addWidget(self.combo_end)
 
         self.btn_recent7 = QPushButton("📅 近7次")
         self.btn_recent7.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -282,12 +286,12 @@ class StudentEvalTab(QWidget):
         self.btn_recent7.setStyleSheet("""
             QPushButton {
                 background: #d5f5e3; border: none; border-radius: 8px;
-                padding: 4px 14px; font-size: 12px; color: #1e8449;
+                padding: 4px 10px; font-size: 12px; color: #1e8449;
             }
             QPushButton:hover { background: #a9dfbf; color: #145a32; }
         """)
         self.btn_recent7.clicked.connect(self._on_show_recent7)
-        toolbar.addWidget(self.btn_recent7)
+        toolbar2.addWidget(self.btn_recent7)
 
         self.btn_all = QPushButton("↺ 全部")
         self.btn_all.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -295,25 +299,25 @@ class StudentEvalTab(QWidget):
         self.btn_all.setStyleSheet("""
             QPushButton {
                 background: #ecf0f1; border: none; border-radius: 8px;
-                padding: 4px 14px; font-size: 12px; color: #636e72;
+                padding: 4px 10px; font-size: 12px; color: #636e72;
             }
             QPushButton:hover { background: #dfe6e9; color: #2d3436; }
         """)
         self.btn_all.clicked.connect(self._on_show_all)
-        toolbar.addWidget(self.btn_all)
+        toolbar2.addWidget(self.btn_all)
 
         toolbar.addStretch()
         layout.addLayout(toolbar)
 
-        # ---- 统计摘要卡片 ----
+        # ---- 统计摘要卡片（右侧空间容纳筛选控件）----
         self.stats_frame = QFrame()
         self.stats_frame.setFixedHeight(68)
         self.stats_frame.setStyleSheet("""
             QFrame { background: white; border: 1px solid #ecf0f1; border-radius: 10px; }
         """)
         stats_layout = QHBoxLayout(self.stats_frame)
-        stats_layout.setContentsMargins(20, 8, 20, 8)
-        stats_layout.setSpacing(30)
+        stats_layout.setContentsMargins(16, 8, 16, 8)
+        stats_layout.setSpacing(16)
 
         self.lbl_avg_obj = self._make_stat_label("客观分: --")
         self.lbl_avg_sub = self._make_stat_label("主观分: --")
@@ -323,6 +327,13 @@ class StudentEvalTab(QWidget):
         stats_layout.addWidget(self.lbl_avg_sub)
         stats_layout.addWidget(self.lbl_avg_full)
         stats_layout.addWidget(self.lbl_call)
+
+        # 分隔线 + 第二行筛选控件（口径/类型/日期范围）嵌入本行
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.VLine)
+        sep.setStyleSheet("color: #dfe6e9;")
+        stats_layout.addWidget(sep)
+        stats_layout.addLayout(toolbar2)
         stats_layout.addStretch()
         layout.addWidget(self.stats_frame)
 
