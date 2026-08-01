@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QLineEdit, QFrame, QPushButton, QButtonGroup, QCompleter, QStackedWidget
 )
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QVariantAnimation, QEasingCurve
 from PyQt6.QtGui import QFont
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -47,8 +47,15 @@ class StudentEvalTab(QWidget):
         self._radar_fills: list = []  # 雷达填充对象引用
         self._radar_cats: list[str] = []  # 雷达分类顺序（用于复用判断）
         self._radar_N: int = 0        # 雷达分类数量
-        self._radar_config = None     # (score_mode, compare)
-        self._radar_anim_token: int = 0  # 动画取消令牌
+        # 雷达动画：QVariantAnimation 驱动（250ms OutCubic），lazy 创建
+        self._radar_anim = None
+        self._radar_ax = None         # 动画作用的 axes
+        self._anim_start: list = []   # 插值起点（NaN 已按 0 处理）
+        self._anim_target: list = []  # 插值终点（NaN 已按 0 处理）
+        self._anim_final: list = []   # 末帧真实值（含 NaN）
+        self._anim_alpha_s: list = [] # 各线 alpha 起点（模式显隐渐变）
+        self._anim_alpha_t: list = [] # 各线 alpha 终点
+        self._anim_on_finish = None   # 末帧回调（坐标系过渡第二阶段）
         self._completer_names = None  # 上次构建 QCompleter 的名单（仅在变化时重建）
         self._setup_ui()
 
@@ -1123,8 +1130,11 @@ class StudentEvalTab(QWidget):
         self._radar_N = N
         return ax
 
-    def _rebuild_radar_fills(self, ax, y_data_list):
-        """删除旧 fill，用新 ydata 重建（只操作 self._radar_fills，不碰网格线）"""
+    def _rebuild_radar_fills(self, ax, y_data_list, alphas=None):
+        """删除旧 fill，用新 ydata 重建（只操作 self._radar_fills，不碰网格线）
+
+        alphas: 各线当前透明度（填充 alpha 随之缩放），None 视为全显。
+        """
         for f in self._radar_fills:
             try: f.remove()
             except (ValueError, RuntimeError): pass
@@ -1137,32 +1147,125 @@ class StudentEvalTab(QWidget):
         angles = [n / N * 2 * math.pi for n in range(N)] + [0]
         colors = ["#3498db", "#e67e22"]
         for i, yd in enumerate(y_data_list):
-            if i < len(colors):
-                fills = ax.fill(angles, yd, alpha=0.10, color=colors[i])
-                self._radar_fills.extend(fills)
+            if i >= len(colors):
+                continue
+            a = alphas[i] if alphas and i < len(alphas) else 1.0
+            if a <= 0.03:
+                continue  # 隐藏线不填充
+            fills = ax.fill(angles, yd, alpha=0.10 * a, color=colors[i])
+            self._radar_fills.extend(fills)
 
-    def _run_radar_anim(self, ax, start_vals, target_vals, token, step=0):
-        """从 start_vals 平滑插值到 target_vals，token 过期自动取消"""
-        if token != self._radar_anim_token:
-            return
-        max_steps = 10
-        if step >= max_steps:
-            self._rebuild_radar_fills(ax, target_vals)
-            self.radar_canvas.draw_idle()
-            return
+    # ------------------------------------------------------------------
+    # 雷达动画：QVariantAnimation 驱动，250ms OutCubic
+    # 所有切换（学生/模式/对比/筛选）都走同一条插值路径，零跳变
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _finite(vals):
+        """NaN 按 0 处理（顶点从中心长出/缩回中心）"""
+        return [0.0 if (isinstance(v, float) and math.isnan(v)) else v for v in vals]
 
-        t = (step + 1) / max_steps
-        t_eased = t * t * (3 - 2 * t)  # smoothstep
+    def _start_radar_anim(self, ax, final_lines, alpha_targets,
+                          duration=250, on_finish=None):
+        """启动/接续一次雷达过渡动画
+
+        final_lines: 末帧真实数据（含 NaN）；alpha_targets: 各线 alpha 目标；
+        on_finish: 末帧回调（坐标系过渡的第二阶段用，替代正常收尾）。
+        在途动画被 stop() 截断，从当前帧位置继续插值，不排队不堆积。
+        """
+        if self._radar_anim is None:
+            self._radar_anim = QVariantAnimation(self)
+            self._radar_anim.setStartValue(0.0)
+            self._radar_anim.setEndValue(1.0)
+            self._radar_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+            self._radar_anim.valueChanged.connect(self._radar_anim_step)
+            self._radar_anim.finished.connect(self._radar_anim_finish)
+
+        self._radar_anim.stop()
+        self._radar_anim.setDuration(duration)
+        self._anim_on_finish = on_finish
+        self._radar_ax = ax
+        self._anim_start = [self._finite(line.get_ydata()) for line in ax.lines]
+        self._anim_target = [self._finite(vals) for vals in final_lines]
+        self._anim_final = final_lines
+        self._anim_alpha_s = [line.get_alpha() if line.get_alpha() is not None else 1.0
+                              for line in ax.lines]
+        self._anim_alpha_t = list(alpha_targets)
+        self._radar_anim.start()
+
+    def _radar_anim_step(self, p: float):
+        ax = self._radar_ax
+        if ax is None:
+            return
+        alphas = []
         for i, line in enumerate(ax.lines):
-            if i < len(target_vals):
-                sv = start_vals[i] if i < len(start_vals) else target_vals[i]
-                tv = target_vals[i]
-                line.set_ydata([s + (tg - s) * t_eased for s, tg in zip(sv, tv)])
-        self._rebuild_radar_fills(ax, [line.get_ydata() for line in ax.lines])
+            if i >= len(self._anim_target):
+                continue
+            sv = self._anim_start[i] if i < len(self._anim_start) else self._anim_target[i]
+            tv = self._anim_target[i]
+            line.set_ydata([s + (t - s) * p for s, t in zip(sv, tv)])
+            sa = self._anim_alpha_s[i] if i < len(self._anim_alpha_s) else 1.0
+            ta = self._anim_alpha_t[i] if i < len(self._anim_alpha_t) else 1.0
+            a = sa + (ta - sa) * p
+            line.set_alpha(a)
+            alphas.append(a)
+        self._rebuild_radar_fills(ax, [line.get_ydata() for line in ax.lines], alphas)
         self.radar_canvas.draw_idle()
 
-        QTimer.singleShot(20, lambda: self._run_radar_anim(
-            ax, start_vals, target_vals, token, step + 1))
+    def _radar_anim_finish(self):
+        """末帧：有 on_finish 回调则转入第二阶段（坐标系重建），
+        否则写入真实值（含 NaN），隐藏线 alpha 归零"""
+        if self._anim_on_finish:
+            cb, self._anim_on_finish = self._anim_on_finish, None
+            cb()
+            return
+        ax = self._radar_ax
+        if ax is None:
+            return
+        alphas = []
+        for i, line in enumerate(ax.lines):
+            if i >= len(self._anim_final):
+                continue
+            line.set_ydata(self._anim_final[i])
+            a = self._anim_alpha_t[i] if i < len(self._anim_alpha_t) else 1.0
+            line.set_alpha(a)
+            alphas.append(a)
+        self._rebuild_radar_fills(ax, self._anim_final, alphas)
+        self.radar_canvas.draw_idle()
+
+    def _morph_radar_axes(self, all_cats, angles, new_lines, alpha_targets,
+                          on_rebuilt=None):
+        """坐标系变化过渡：旧图 120ms 坍缩到中心 → 重建 axes → 250ms 生长到目标"""
+        N = len(all_cats)
+
+        def _rebuild_and_grow():
+            ax = self._init_radar_axes(N, all_cats, angles)
+            zeros = [[0.0] * (N + 1), [0.0] * (N + 1)]
+            ax.plot(angles, zeros[0], "o-", color="#3498db",
+                    linewidth=2, markersize=6)
+            ax.plot(angles, zeros[1], "s--", color="#e67e22",
+                    linewidth=2, markersize=6)
+            for i, a in enumerate(alpha_targets):
+                ax.lines[i].set_alpha(a)
+            self._radar_fills = []
+            if on_rebuilt:
+                on_rebuilt(ax)
+            self.radar_canvas.draw_idle()
+            self._start_radar_anim(ax, new_lines, alpha_targets)
+
+        if self._radar_anim is not None:
+            self._radar_anim.stop()
+        existing = self.radar_fig.axes
+        if existing and existing[0].lines:
+            # 坍缩阶段：旧坐标系的所有线缩到中心，完成后重建并生长
+            ax = existing[0]
+            zeros = [[0.0] * len(line.get_ydata()) for line in ax.lines]
+            cur_alpha = [line.get_alpha() if line.get_alpha() is not None else 1.0
+                         for line in ax.lines]
+            self._start_radar_anim(ax, zeros, cur_alpha,
+                                   duration=120, on_finish=_rebuild_and_grow)
+        else:
+            # 首次进入：直接从中心生长（入场动画）
+            _rebuild_and_grow()
 
     def _draw_radar(self):
         date_filter = self._get_filtered_dates()
@@ -1207,95 +1310,82 @@ class StudentEvalTab(QWidget):
                                cat_sub.get(c, {}).get("rate", 0)),
                 reverse=True,
             )
-        # 无数据分类不画：仅保留当前学生在当前模式下有值的顶点
-        all_cats = [c for c in all_cats
-                    if _cat_val(cat_obj, cat_sub, c) is not None]
+        # 恒定双线取值：line0=客观(蓝) / line1=主观(橙)；对比模式下为 学生/对比人
+        nan = float("nan")
+        if compare_name:
+            cat_cmp_obj, cat_cmp_sub = _get_radar_vals(compare_name)
+            stu_vals = [(v if v is not None else nan) for v in
+                        (_cat_val(cat_obj, cat_sub, c) for c in all_cats)]
+            cmp_vals = [(v if v is not None else nan) for v in
+                        (_cat_val(cat_cmp_obj, cat_cmp_sub, c) for c in all_cats)]
+            lines_raw = [stu_vals, cmp_vals]
+            alpha_targets = [1.0, 1.0]
+            legend_labels = [self._current_student, compare_name]
+        else:
+            obj_vals = [(cat_obj[c]["rate"] if c in cat_obj else nan) for c in all_cats]
+            sub_vals = [(cat_sub[c]["rate"] if c in cat_sub else nan) for c in all_cats]
+            lines_raw = [obj_vals, sub_vals]
+            # 单模式隐藏另一条线（alpha 渐变，不跳变）
+            alpha_targets = {0: [1.0, 0.0], 1: [0.0, 1.0], 2: [1.0, 1.0]}[self._score_mode]
+            legend_labels = {0: ["客观题(选择/多选)"], 1: ["主观题(填空/解答)"],
+                             2: ["客观题(选择/多选)", "主观题(填空/解答)"]}[self._score_mode]
+
+        # 按当前可见线（模式）裁剪类别：所有可见线都无数据的顶点连同
+        # 坐标槽一并移除；坐标系变化由 _morph_radar_axes 做过渡动画
+        keep = [i for i in range(len(all_cats))
+                if any(alpha_targets[j] > 0
+                       and not (isinstance(lines_raw[j][i], float)
+                                and math.isnan(lines_raw[j][i]))
+                       for j in range(len(lines_raw)))]
+        all_cats = [all_cats[i] for i in keep]
+        lines_trim = [[lines_raw[j][i] for i in keep] for j in range(len(lines_raw))]
         if len(all_cats) < 3:
-            self._show_empty(f"类别数量不足3个（当前{len(all_cats)}），请先在数据维护页绑定知识点到题目。")
+            self._show_empty(f"当前模式下有数据的类别不足3个，请切换口径或日期范围。")
             return
 
         N = len(all_cats)
         angles = [n / N * 2 * math.pi for n in range(N)]
         angles += angles[:1]
+        new_lines = [vals + vals[:1] for vals in lines_trim]
 
-        # 构建 target 数据（对比学生缺数据的顶点用 NaN 断线，不画成 0）
-        nan = float("nan")
-        new_lines = []
-        if compare_name:
-            cat_cmp_obj, cat_cmp_sub = _get_radar_vals(compare_name)
-            def _pick_vals(co, cs):
-                vals = []
-                for c in all_cats:
-                    v = _cat_val(co, cs, c)
-                    vals.append(v if v is not None else nan)
-                return vals + vals[:1]
-            new_lines.append(_pick_vals(cat_obj, cat_sub))
-            new_lines.append(_pick_vals(cat_cmp_obj, cat_cmp_sub))
-        else:
-            if self._score_mode in (0, 2):
-                vals = [(cat_obj[c]["rate"] if c in cat_obj else nan) for c in all_cats]
-                new_lines.append(vals + vals[:1])
-            if self._score_mode in (1, 2):
-                vals = [(cat_sub[c]["rate"] if c in cat_sub else nan) for c in all_cats]
-                new_lines.append(vals + vals[:1])
+        def _finalize(ax):
+            """图例/标题/状态栏收尾（复用路径立即执行，坐标系过渡在重建后执行）"""
+            if ax.get_legend() is not None:
+                ax.get_legend().remove()
+            ax.legend(legend_labels, fontsize=11, loc="upper right",
+                      bbox_to_anchor=(1.3, 1.1))
+            date_info = self._date_filter_info()
+            if compare_name:
+                ax.set_title(f"能力雷达图对比{date_info}", fontsize=14, fontweight="bold", pad=20)
+                self.status_label.setText(
+                    f"对比: {self._current_student} vs {compare_name} | {N}个类别{date_info}")
+            else:
+                ax.set_title(f"{self._current_student}  ·  能力雷达图{date_info}",
+                             fontsize=14, fontweight="bold", pad=20)
+                best_cat = max(all_cats, key=lambda c:
+                    cat_obj.get(c, {}).get("rate", 0) + cat_sub.get(c, {}).get("rate", 0))
+                worst_cat = min(all_cats, key=lambda c:
+                    cat_obj.get(c, {}).get("rate", 0) + cat_sub.get(c, {}).get("rate", 0))
+                best_rate = (cat_obj.get(best_cat, {}).get("rate", 0) +
+                             cat_sub.get(best_cat, {}).get("rate", 0)) / 2
+                worst_rate = (cat_obj.get(worst_cat, {}).get("rate", 0) +
+                              cat_sub.get(worst_cat, {}).get("rate", 0)) / 2
+                self.status_label.setText(
+                    f"雷达图：{N} 个类别 | 最强: {best_cat}({best_rate:.0%}) | "
+                    f"最弱: {worst_cat}({worst_rate:.0%}){date_info}")
 
-        # 判断复用 vs 重建
-        current_config = (self._score_mode, bool(compare_name))
+        # 复用条件：axes 存在且类别集合不变
         existing = self.radar_fig.axes
-        reuse = (existing and len(existing[0].lines) == len(new_lines) and
-                 self._radar_N == N and self._radar_cats == all_cats and
-                 self._radar_config == current_config)
+        reuse = (existing and self._radar_N == N and
+                 self._radar_cats == all_cats and len(existing[0].lines) == 2)
 
         if reuse:
             ax = existing[0]
-            old_vals = [list(line.get_ydata()) for line in ax.lines]
-            # 动画过渡
-            self._radar_anim_token += 1
-            self._run_radar_anim(ax, old_vals, new_lines, self._radar_anim_token)
+            self._start_radar_anim(ax, new_lines, alpha_targets)
+            _finalize(ax)
         else:
-            self._radar_anim_token += 1  # 取消在途动画，避免旧动画改写新 axes
-            ax = self._init_radar_axes(N, all_cats, angles)
-            self._radar_config = current_config
-            if compare_name:
-                ax.plot(angles, new_lines[0], "o-", color="#3498db", linewidth=2, markersize=6,
-                        label=self._current_student)
-                self._radar_fills.extend(ax.fill(angles, new_lines[0], alpha=0.08, color="#3498db"))
-                ax.plot(angles, new_lines[1], "s--", color="#e67e22", linewidth=2, markersize=6,
-                        label=compare_name)
-                ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
-            else:
-                line_idx = 0
-                if self._score_mode in (0, 2):
-                    ax.plot(angles, new_lines[line_idx], "o-", color="#3498db", linewidth=2, markersize=6,
-                            label="客观题(选择/多选)")
-                    self._radar_fills.extend(ax.fill(angles, new_lines[line_idx], alpha=0.1, color="#3498db"))
-                    line_idx += 1
-                if self._score_mode in (1, 2):
-                    ax.plot(angles, new_lines[line_idx], "s--", color="#e67e22", linewidth=2, markersize=6,
-                            label="主观题(填空/解答)")
-                ax.legend(fontsize=11, loc="upper right", bbox_to_anchor=(1.3, 1.1))
-            self.radar_canvas.draw_idle()
-
-        # 标题 & 状态栏
-        date_info = self._date_filter_info()
-        if compare_name:
-            ax.set_title(f"能力雷达图对比{date_info}", fontsize=14, fontweight="bold", pad=20)
-            self.status_label.setText(
-                f"对比: {self._current_student} vs {compare_name} | {N}个类别{date_info}")
-        else:
-            ax.set_title(f"{self._current_student}  ·  能力雷达图{date_info}",
-                         fontsize=14, fontweight="bold", pad=20)
-            best_cat = max(all_cats, key=lambda c:
-                cat_obj.get(c, {}).get("rate", 0) + cat_sub.get(c, {}).get("rate", 0))
-            worst_cat = min(all_cats, key=lambda c:
-                cat_obj.get(c, {}).get("rate", 0) + cat_sub.get(c, {}).get("rate", 0))
-            best_rate = (cat_obj.get(best_cat, {}).get("rate", 0) +
-                         cat_sub.get(best_cat, {}).get("rate", 0)) / 2
-            worst_rate = (cat_obj.get(worst_cat, {}).get("rate", 0) +
-                          cat_sub.get(worst_cat, {}).get("rate", 0)) / 2
-            self.status_label.setText(
-                f"雷达图：{N} 个类别 | 最强: {best_cat}({best_rate:.0%}) | "
-                f"最弱: {worst_cat}({worst_rate:.0%}){date_info}")
+            self._morph_radar_axes(all_cats, angles, new_lines, alpha_targets,
+                                   on_rebuilt=_finalize)
 
     # ------------------------------------------------------------------
     # 绘图: 成绩历程
