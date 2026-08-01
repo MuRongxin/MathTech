@@ -22,3 +22,4 @@ obj/
 .aider*
 *.pkl
 .superpowers/
+MathTechPy/data/logs/

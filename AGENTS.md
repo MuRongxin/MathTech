@@ -49,6 +49,7 @@ core/
   models.py                # @dataclass: StudentData, ClassInfo, KnowledgeTopic, Question, ExamMeta
   data_manager.py          # 单例。加载 XML(学生)+CSV/XLSX(逐题分)，管理知识点池和考试元数据
   random_engine.py         # 加权随机抽人，历史按班级隔离、同班各模式共享
+  logging_setup.py         # 轻量日志：控制台+滚动文件双通道，get_logger(模块名) 获取
 ui/
   main_window.py           # 左侧导航栏 + QStackedWidget
   widgets.py               # 共用组件（FlowLayout 等）
@@ -75,6 +76,7 @@ ui/
 - **Z-score 归一化**：`dm.get_zscores()` 计算全班每次考试 Z 分（`(原始分 - μ) / σ`），返回 `[[name, [z1, z2, ...]], ...]`。缺考记为 `None`，不参与统计。
 - **知识点池**：两级结构，持久化到 `data/knowledge_pool.xml`，默认值硬编码在 `DataManager.DEFAULT_POOL`（11 个一级分类，约 90 个二级知识点，覆盖高中数学）。**每次 CRUD 操作立即写回 XML**，非批量保存。
 - **mtime 缓存**：`_load_question_scores` 把每个逐题分文件的解析结果按文件 mtime 缓存到 `.question_scores_cache.pkl`（tmp+`os.replace` 原子写回）；仅新增/修改过的文件重新解析，已删除文件的缓存条目自动丢弃。
+- **日志体系**：`core/logging_setup.py`（stdlib，无依赖）。控制台 + `data/logs/mathtech.log`（1MB×3 滚动）双通道，默认 INFO，`MATHTECH_DEBUG=1` 开 DEBUG（含数据写回审计）。`main.py` 启动时初始化并挂 `sys.excepthook`（未捕获异常入日志）。各模块 `get_logger(模块名)` 获取子日志器；UI 层基本不用，主要覆盖 `data_manager` 的加载/写回路径。
 - **题目结构检测**：`_detect_questions` 仅当 etype=exam、题号恰为 1-19 且各题 max_seen 与假设满分吻合时，套用固定结构 `_EXAM19_STRUCTURE`（Q1-8 单选/5、Q9-11 多选/6、Q12-14 填空/5、Q15-19 解答/13-17）；其余按观测推断（满分取 ceil(max_seen)，无人满分时会低估）并 WARN 提示人工核对。
 - **callCount 批量写回**：`update_call_counts(class_idx, ids)` 内存更新后一次性写回该班 XML（`update_call_count` 为兼容包装）。所有 XML 写回（班级名册/knowledge_pool/exam_meta/逐题分缓存）均为 tmp+`os.replace` 原子写。
 - **优雅初始化**：`config.xml` 缺失时 `_needs_init=True`，`main_window` 弹出 `InitDialog` 引导用户创建班级和学生。

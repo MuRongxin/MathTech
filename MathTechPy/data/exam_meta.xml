@@ -1465,8 +1465,9 @@
   <exam date="2025/10/29">
     <questions>
       <question id="Q1" type="choice" max="5.0">
-        <topic category="向量" weight="0.41">数量积</topic>
-        <topic category="向量" weight="0.59">坐标表示</topic>
+        <topic category="三角函数" weight="0.11">任意角与弧度</topic>
+        <topic category="向量" weight="0.39">数量积</topic>
+        <topic category="向量" weight="0.50">坐标表示</topic>
       </question>
       <question id="Q2" type="choice" max="5.0">
         <topic category="向量">数量积</topic>

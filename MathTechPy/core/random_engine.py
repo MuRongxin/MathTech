@@ -12,6 +12,9 @@ from typing import List, Dict
 from dataclasses import dataclass, field
 
 from .models import StudentData
+from .logging_setup import get_logger
+
+_log = get_logger("random_engine")
 
 
 @dataclass
@@ -79,6 +82,12 @@ class RandomEngine:
             is_new_cycle = False  # 只有第一个触发 new_cycle
 
         self._last_group_size = group_size
+        if results:
+            names = "、".join(r.student.name for r in results)
+            _log.info("班级 %s 抽中 %d 人: %s",
+                      self.dm.class_names[self._key()]
+                      if self._key() < len(self.dm.class_names) else self._key(),
+                      len(results), names)
         return results
 
     def _weighted_pick(self, students: List[StudentData]) -> StudentData:

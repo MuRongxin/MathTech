@@ -12,6 +12,9 @@ from PyQt6.QtGui import QFont, QDragEnterEvent, QDropEvent
 
 from core.data_manager import DataManager
 from core.models import StudentData
+from core.logging_setup import get_logger
+
+_log = get_logger("data_admin")
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -245,6 +248,7 @@ class DataAdminTab(QWidget):
         # 写回 XML（使用 config 中的实际路径，而非文件名反推）
         # TODO: _save_xml 是 DataManager 私有方法，核心层暂无公开的名册保存 API
         self.dm._save_xml(self.dm.class_xml_path(ci), new_students)
+        _log.info("学生名册已保存: 班级 %s，%d 名学生", self.dm.class_names[ci], len(new_students))
 
     # ------------------------------------------------------------------
     # 导入成绩
@@ -307,8 +311,10 @@ class DataAdminTab(QWidget):
             shutil.copy2(path, dest)
         except (shutil.SameFileError, OSError) as e:
             self.lbl_import_status.setText(f"导入失败: {path.name}（{e}）")
+            _log.error("成绩文件导入失败: %s（%s）", path.name, e)
             return
 
+        _log.info("成绩文件已导入: %s → %s A%s", path.name, date_str, class_suffix)
         self.lbl_import_status.setText(
             f"已导入: {path.name} → {date_str} A{class_suffix}\n"
             "重启应用后生效。")

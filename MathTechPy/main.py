@@ -24,10 +24,14 @@ import matplotlib.pyplot as plt
 plt.rcParams["font.sans-serif"] = ["Noto Serif CJK SC", "WenQuanYi Micro Hei", "AR PL UMing CN", "SimHei"]
 plt.rcParams["axes.unicode_minus"] = False  # 解决负号显示问题
 
+from core.logging_setup import setup_logging, hook_uncaught_exceptions
 from ui import MainWindow
 
 
 def main():
+    # 日志系统（先于任何数据加载）
+    setup_logging()
+    hook_uncaught_exceptions()
     # 启用高分屏支持
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough

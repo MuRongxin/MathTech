@@ -208,6 +208,22 @@ class StudentEvalTab(QWidget):
             btn.setVisible(False)
         self.rate_mode_group.buttonClicked.connect(self._on_rate_mode_changed)
 
+        # ---- 知识点筛选（客观/主观知识点视图专用，默认隐藏）----
+        self.combo_topic_cat = QComboBox()
+        self.combo_topic_cat.setMinimumWidth(110)
+        self.combo_topic_cat.setStyleSheet(self.combo_student.styleSheet())
+        self.combo_topic_cat.currentIndexChanged.connect(lambda: self.refresh())
+        self.combo_topic_cat.setVisible(False)
+        toolbar.addWidget(self.combo_topic_cat)
+
+        self.search_topic = QLineEdit()
+        self.search_topic.setPlaceholderText("筛选知识点...")
+        self.search_topic.setMaximumWidth(130)
+        self.search_topic.setStyleSheet(self.search_input.styleSheet())
+        self.search_topic.textChanged.connect(lambda: self.refresh())
+        self.search_topic.setVisible(False)
+        toolbar.addWidget(self.search_topic)
+
         # ---- 知识点下拉（趋势视图专用，默认隐藏）----
         self.combo_topic = QComboBox()
         self.combo_topic.setMinimumWidth(150)
@@ -366,9 +382,15 @@ class StudentEvalTab(QWidget):
         self.canvas.setStyleSheet("background: white; border: 1px solid #ecf0f1; border-radius: 10px;")
         # 悬浮数据提示：各绘图函数填充 _hover_points（点吸附）
         # 与 _hover_bars（柱体矩形命中，整条柱都响应）
+        # 鼠标静止 0.4s 后才命中检测并绘制，避免移动中实时重绘卡顿
         self._hover_points: list = []
         self._hover_bars: list = []
         self._hover_annot = None
+        self._hover_pending = None          # 待处理鼠标位置
+        self._hover_timer = QTimer(self)
+        self._hover_timer.setSingleShot(True)
+        self._hover_timer.setInterval(400)
+        self._hover_timer.timeout.connect(self._show_pending_hover)
         self.canvas.mpl_connect("motion_notify_event", self._on_chart_hover)
 
         # 雷达图独立画布（不被其他视图的 fig.clear() 影响）
@@ -474,6 +496,9 @@ class StudentEvalTab(QWidget):
         # 原始分/得分率切换仅成绩历程（idx=4）显示
         for btn in self.rate_mode_btns:
             btn.setVisible(idx == 4)
+        # 知识点筛选仅客观/主观知识点视图（idx 0/1）显示
+        self.combo_topic_cat.setVisible(idx in (0, 1))
+        self.search_topic.setVisible(idx in (0, 1))
         self.combo_topic.setVisible(idx == 5)
         for btn in self.trend_type_btns:
             btn.setVisible(idx == 5)
@@ -632,6 +657,18 @@ class StudentEvalTab(QWidget):
             completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
             self.search_input.setCompleter(completer)
             self._completer_names = names
+
+        # 知识点分类筛选下拉（视图 0/1）：按 category_order 填充，保留选择
+        if self._view_mode in (0, 1):
+            prev_cat = self.combo_topic_cat.currentText()
+            cats = self.dm.category_order or list(self.dm.knowledge_pool.keys())
+            self.combo_topic_cat.blockSignals(True)
+            self.combo_topic_cat.clear()
+            self.combo_topic_cat.addItem("全部分类")
+            self.combo_topic_cat.addItems(cats)
+            if prev_cat and prev_cat != "全部分类" and prev_cat in cats:
+                self.combo_topic_cat.setCurrentText(prev_cat)
+            self.combo_topic_cat.blockSignals(False)
 
         if self._current_student and self._current_student in names:
             self.combo_student.setCurrentText(self._current_student)
@@ -892,8 +929,18 @@ class StudentEvalTab(QWidget):
         )
         null_items = [(n, d) for n, d in perf.items() if d["rate"] is None]
 
+        # 分类筛选 + 名称搜索（视图专属控件）
+        cat_sel = self.combo_topic_cat.currentText()
+        if cat_sel and cat_sel != "全部分类":
+            items = [(n, d) for n, d in items if d["category"] == cat_sel]
+            null_items = [(n, d) for n, d in null_items if d["category"] == cat_sel]
+        search = self.search_topic.text().strip().lower()
+        if search:
+            items = [(n, d) for n, d in items if search in n.lower()]
+            null_items = [(n, d) for n, d in null_items if search in n.lower()]
+
         if not items:
-            self._show_empty(f"该学生在{label}的知识点数据均为空。")
+            self._show_empty(f"该学生在{label}的知识点数据均为空（当前筛选条件下）。")
             return
 
         # 无数据知识点不参与绘图（避免画成 0% 红条），仅在状态栏说明数量
@@ -1854,20 +1901,42 @@ class StudentEvalTab(QWidget):
         return f" [{self._filter_start} ~ {self._filter_end}]"
 
     def _on_chart_hover(self, event):
-        """鼠标悬停：柱体矩形命中优先，其次最近数据点吸附，深色气泡提示"""
+        """鼠标移动：只记录位置并重启 0.8s 静止计时器，不即时绘制。
+
+        气泡已显示时移动立即隐藏（仅此时才重绘一次）；静止 0.4s 后
+        由 _show_pending_hover 做命中检测与绘制。
+        """
+        # 移动时若气泡可见则立即隐藏（这是唯一一次即时重绘）
+        if self._hover_annot and self._hover_annot.get_visible():
+            self._hover_annot.set_visible(False)
+            self.canvas.draw_idle()
+
         if not event.inaxes:
-            if self._hover_annot:
-                self._hover_annot.set_visible(False)
-                self.canvas.draw_idle()
+            self._hover_pending = None
+            self._hover_timer.stop()
             return
 
-        ax = event.inaxes
+        # 只存标量，MotionEvent 对象本身不保留
+        self._hover_pending = (event.inaxes, event.x, event.y,
+                               event.xdata, event.ydata)
+        self._hover_timer.start()  # 重启计时
+
+    def _show_pending_hover(self):
+        """鼠标静止 0.4s 后：命中检测并绘制气泡"""
+        if not self._hover_pending:
+            return
+        ax, ex, ey, xdata, ydata = self._hover_pending
+
+        class _Ev:  # rect.contains 需要的事件鸭子类型
+            pass
+        ev = _Ev()
+        ev.x, ev.y, ev.xdata, ev.ydata, ev.inaxes = ex, ey, xdata, ydata, ax
 
         # 1) 柱体矩形命中：鼠标在柱内任意位置都提示
         for rect, text in self._hover_bars:
-            contains, _ = rect.contains(event)
+            contains, _ = rect.contains(ev)
             if contains:
-                self._show_hover_annot(ax, (event.xdata, event.ydata), text)
+                self._show_hover_annot(ax, (xdata, ydata), text)
                 return
 
         # 2) 数据点吸附（菱形/圆点/方块等）
@@ -1876,16 +1945,12 @@ class StudentEvalTab(QWidget):
             if math.isnan(y):
                 continue
             px, py = ax.transData.transform((x, y))
-            dist = ((px - event.x) ** 2 + (py - event.y) ** 2) ** 0.5
+            dist = ((px - ex) ** 2 + (py - ey) ** 2) ** 0.5
             if dist < best_dist:
                 best_dist, best_text, best_xy = dist, text, (x, y)
 
-        if best_dist > 20 or best_xy is None:
-            if self._hover_annot:
-                self._hover_annot.set_visible(False)
-                self.canvas.draw_idle()
-            return
-        self._show_hover_annot(ax, best_xy, best_text)
+        if best_dist <= 20 and best_xy is not None:
+            self._show_hover_annot(ax, best_xy, best_text)
 
     def _show_hover_annot(self, ax, xy, text):
         """显示/移动悬浮气泡"""

@@ -14,6 +14,9 @@ import os
 import pickle
 import re
 from .models import StudentData, ClassInfo, KnowledgeTopic, Question, ExamMeta
+from .logging_setup import get_logger
+
+_log = get_logger("data_manager")
 
 # 非题目列的常见字段名（这些列不会被识别为题目）
 KNOWN_META_COLUMNS = {
@@ -77,18 +80,18 @@ class DataManager:
         except FileNotFoundError as e:
             # 仅 config.xml 缺失才视为首次启动；班级 XML 缺失属于数据错误
             if e.filename and Path(e.filename) == self.config_path:
-                print(f"[INFO] 配置缺失，需要初始化: {e}")
+                _log.info(f" 配置缺失，需要初始化: {e}")
                 self._needs_init = True
             else:
                 self._load_error = f"数据文件缺失: {e}"
-                print(f"[ERROR] {self._load_error}")
+                _log.error(f" {self._load_error}")
             self._init_knowledge()
             self._initialized = True
             return
         except (ET.ParseError, ValueError) as e:
             # 配置损坏/格式错误不是"需要初始化"，记录后交由 UI 提示
             self._load_error = f"{type(e).__name__}: {e}"
-            print(f"[ERROR] 数据加载失败（非初始化问题）: {self._load_error}")
+            _log.error(f" 数据加载失败（非初始化问题）: {self._load_error}")
             self._init_knowledge()
             self._initialized = True
             return
@@ -168,7 +171,7 @@ class DataManager:
             names = [s.name for s in self.students[ci][0]]
             dups = sorted({n for n in names if names.count(n) > 1})
             if dups:
-                print(f"[WARN] 班级 {self.class_names[ci]} 存在重名学生 {dups}，"
+                _log.warning(f" 班级 {self.class_names[ci]} 存在重名学生 {dups}，"
                       f"逐题分将同时匹配所有同名者")
             obj_map = {s.name: s for s in self.students[ci][0]}
             full_map = {s.name: s for s in self.students[ci][1]}
@@ -195,7 +198,7 @@ class DataManager:
             # 解析文件名: quiz_2025_09_01_A01.csv 或 exam_2025_09_07_A01.xlsx
             m = fname_re.match(fpath.stem)
             if not m:
-                print(f"[WARN] 逐题分文件名格式不符"
+                _log.warning(f" 逐题分文件名格式不符"
                       f"（应为 quiz|exam_YYYY_MM_DD_班级），已跳过: {fpath.name}")
                 continue
             etype = m.group(1)                                    # quiz or exam
@@ -212,7 +215,7 @@ class DataManager:
             # 同一班级同一日期同时存在 quiz_ 与 exam_ 文件时后者覆盖前者
             date_key = (class_idx, date_str)
             if date_key in seen_dates and seen_dates[date_key] != etype:
-                print(f"[WARN] 班级 {self.class_names[class_idx]} {date_str} 同时存在 "
+                _log.warning(f" 班级 {self.class_names[class_idx]} {date_str} 同时存在 "
                       f"{seen_dates[date_key]} 与 {etype} 文件，后者成绩将覆盖前者")
             seen_dates[date_key] = etype
 
@@ -220,14 +223,14 @@ class DataManager:
             try:
                 mtime = fpath.stat().st_mtime
             except OSError as e:
-                print(f"[WARN] 无法读取 {fpath.name}: {e}")
+                _log.warning(f" 无法读取 {fpath.name}: {e}")
                 continue
             cached = cache.get(str(fpath))
             if (cached and isinstance(cached, (tuple, list)) and len(cached) == 2
                     and cached[0] == mtime):
                 q_rows, obj_total_col, sub_total_col, full_total_col = cached[1]
             else:
-                print(f"[INFO] 解析逐题分: {fpath.name} → 日期={date_str}, "
+                _log.info(f" 解析逐题分: {fpath.name} → 日期={date_str}, "
                       f"班级={m.group(5)}, 类型={etype}")
                 try:
                     if fpath.suffix.lower() == ".csv":
@@ -235,7 +238,7 @@ class DataManager:
                     else:
                         result = self._parse_question_xlsx(fpath)
                 except Exception as e:
-                    print(f"[WARN] 无法解析 {fpath.name}: {e}")
+                    _log.warning(f" 无法解析 {fpath.name}: {e}")
                     continue
                 q_rows, obj_total_col, sub_total_col, full_total_col = result
             new_cache[str(fpath)] = (mtime,
@@ -313,7 +316,7 @@ class DataManager:
                             sub_val = sub_sum
                         self._upsert_score(stu_sub.scores_sub, date_str, f"{sub_val:.2f}")
 
-            print(f"[INFO]   匹配 {matched}/{len(q_rows)} 名学生")
+            _log.info(f"   匹配 {matched}/{len(q_rows)} 名学生")
 
             # 将新日期加入 dates 列表
             if date_str not in self.dates:
@@ -329,11 +332,11 @@ class DataManager:
                     if questions:
                         meta = self.get_exam_meta(date_str)
                         meta.questions = questions
-                        print(f"[INFO]   自动检测 {len(questions)} 道题")
+                        _log.info(f"   自动检测 {len(questions)} 道题")
 
         if unknown_class:
             summary = ", ".join(f"{k}({v}个)" for k, v in sorted(unknown_class.items()))
-            print(f"[WARN] {sum(unknown_class.values())} 个逐题分文件属于未配置班级，"
+            _log.warning(f" {sum(unknown_class.values())} 个逐题分文件属于未配置班级，"
                   f"已跳过: {summary}")
 
         # 仅在 exam_meta 内容实际变化时写回
@@ -363,7 +366,7 @@ class DataManager:
                 pickle.dump(cache, f)
             os.replace(tmp, cache_path)
         except Exception as e:
-            print(f"[WARN] 逐题分缓存写入失败: {e}")
+            _log.warning(f" 逐题分缓存写入失败: {e}")
 
     def _exam_meta_snapshot(self) -> list:
         """考试元数据的轻量指纹，用于判断内容是否实际变化"""
@@ -395,7 +398,7 @@ class DataManager:
             with open(path, "r", encoding="utf-8-sig") as f:
                 all_rows = list(csv.reader(f))
         except UnicodeDecodeError:
-            print(f"[WARN] {path.name}: UTF-8 解码失败，改用 GBK 编码重试")
+            _log.warning(f" {path.name}: UTF-8 解码失败，改用 GBK 编码重试")
             with open(path, "r", encoding="gbk") as f:
                 all_rows = list(csv.reader(f))
 
@@ -469,7 +472,7 @@ class DataManager:
                     pass
 
             if name in q_rows:
-                print(f"[WARN] {path.name}: 重名学生行 \"{name}\"，后者覆盖前者")
+                _log.warning(f" {path.name}: 重名学生行 \"{name}\"，后者覆盖前者")
             q_rows[name] = {
                 "questions": q_scores,
                 "obj_total": obj_total,
@@ -478,7 +481,7 @@ class DataManager:
             }
 
         if bad_cells:
-            print(f"[WARN] {path.name}: {bad_cells} 个单元格无法解析为数字，已记 0")
+            _log.warning(f" {path.name}: {bad_cells} 个单元格无法解析为数字，已记 0")
 
         # 检查主观/全卷总分列是否有数据（全量扫描所有行）
         has_sub = any(r.get("sub_total") is not None for r in q_rows.values())
@@ -556,7 +559,7 @@ class DataManager:
                     return None
 
                 if name in q_rows:
-                    print(f"[WARN] {path.name}: 重名学生行 \"{name}\"，后者覆盖前者")
+                    _log.warning(f" {path.name}: 重名学生行 \"{name}\"，后者覆盖前者")
                 q_rows[name] = {
                     "questions": q_scores,
                     "obj_total": _get(obj_total_idx),
@@ -637,7 +640,7 @@ class DataManager:
             questions.append(QModel(id=qid, qtype=qtype, max_score=max_score))
 
         if not use_fixed:
-            print(f"[WARN] {etype} 题目结构按观测数据推断（共 {len(questions)} 题），"
+            _log.warning(f" {etype} 题目结构按观测数据推断（共 {len(questions)} 题），"
                   f"满分/题型可能不准确（无人满分时会低估），请到数据维护页核对")
         return questions
 
@@ -650,7 +653,7 @@ class DataManager:
                 sid = int(elem.get("id", 0))
                 call = int(elem.findtext("callCount", "0"))
             except ValueError:
-                print(f"[WARN] {path.name}: 跳过脏数据学生 "
+                _log.warning(f" {path.name}: 跳过脏数据学生 "
                       f"(id={elem.get('id')!r}, callCount={elem.findtext('callCount')!r})")
                 continue
             name = elem.findtext("name", "").strip()
@@ -665,7 +668,7 @@ class DataManager:
                 attr = ["scores", "scores_full", "scores_sub"][mi]
                 no_score = [s.name for s in students if not getattr(s, attr)]
                 if no_score:
-                    print(f"[WARN] 班级{ci}({self.class_names[ci]})-{mode_name}: {len(no_score)} 名学生无成绩")
+                    _log.warning(f" 班级{ci}({self.class_names[ci]})-{mode_name}: {len(no_score)} 名学生无成绩")
 
     # ------------------------------------------------------------------
     # 查询接口
@@ -748,6 +751,8 @@ class DataManager:
         # 一次性写回 XML（路径来自 _load_all 时的缓存，不再重复解析 config）
         if class_idx < len(self._class_xml_paths):
             self._save_xml(self._class_xml_paths[class_idx], self.students[class_idx][0])
+            _log.info("callCount 批量写回: 班级 %s，%d 人次",
+                       self.class_names[class_idx], len(ids))
 
     def update_call_count(self, class_idx: int, student_id: int) -> int:
         """更新单个学生的 callCount（兼容接口，委托批量方法）"""
@@ -781,6 +786,7 @@ class DataManager:
         self._indent_xml(root)
         tree = ET.ElementTree(root)
         self._atomic_write(tree, path)
+        _log.info("班级名册写回: %s（%d 名学生）", path.name, len(students))
 
     def _indent_xml(self, elem, level=0):
         """为 XML 元素添加缩进"""
@@ -856,6 +862,7 @@ class DataManager:
                 self.category_order.append(name)
 
     def _save_knowledge_pool(self, path: Path) -> None:
+        _log.info("knowledge_pool 写回: %s", path.name)
         root = ET.Element("pool")
         order = self.category_order if self.category_order else list(self.knowledge_pool.keys())
         for cat_name in order:
@@ -912,6 +919,7 @@ class DataManager:
                         ET.SubElement(qelem, "topic", attrs).text = kt.name
         self._indent_xml(root)
         self._atomic_write(ET.ElementTree(root), path)
+        _log.info("exam_meta 写回: %d 场考试", len(self.exam_meta))
 
     def get_exam_meta(self, date: str) -> ExamMeta:
         """获取某次考试的知识点元数据，不存在则返回空"""

@@ -9,6 +9,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 from core.data_manager import DataManager
+from core.logging_setup import get_logger
+
+_log = get_logger("main_window")
 from core.random_engine import RandomEngine
 from .overview_tab import OverviewTab
 from .random_combined_tab import RandomCombinedTab
@@ -186,6 +189,8 @@ class MainWindow(QMainWindow):
     def switch_class(self, class_id: int):
         """切换班级"""
         self.dm.current_class = class_id
+        _log.info("切换班级: %s", self.dm.class_names[class_id]
+                  if class_id < len(self.dm.class_names) else class_id)
 
         # 刷新当前页面（引擎历史已按班级隔离，无需重置；
         # 切班前停止当前页可能进行中的滚动动画）
