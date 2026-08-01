@@ -25,6 +25,10 @@ VIEW_LABELS = [
     "知识点趋势",
 ]
 
+# 工具栏 Tab 页签短标签（与 VIEW_LABELS 一一对应）
+VIEW_TAB_LABELS = ["客观知识点", "主观知识点", "主客观对比",
+                   "雷达图", "成绩历程", "知识点趋势"]
+
 SCORE_MODES = ["客观", "主观", "总体"]
 MODE_COLORS = ["#3498db", "#e67e22", "#1abc9c"]
 
@@ -103,11 +107,12 @@ class StudentEvalTab(QWidget):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("搜索学生...")
+        self.search_input.setMaximumWidth(150)
         self.search_input.setStyleSheet("""
             QLineEdit {
                 border: 2px solid #dfe6e9; border-radius: 8px;
                 padding: 4px 10px; font-size: 13px; background: white; color: #2c3e50;
-                min-width: 100px;
+                min-width: 90px;
             }
             QLineEdit:focus { border-color: #1abc9c; }
         """)
@@ -121,13 +126,31 @@ class StudentEvalTab(QWidget):
 
         toolbar.addSpacing(8)
 
-        toolbar.addWidget(QLabel("视图:"))
-        self.combo_mode = QComboBox()
-        self.combo_mode.addItems(VIEW_LABELS)
-        self.combo_mode.currentIndexChanged.connect(self._on_mode_changed)
-        self.combo_mode.setMinimumWidth(150)
-        self.combo_mode.setStyleSheet(self.combo_student.styleSheet())
-        toolbar.addWidget(self.combo_mode)
+        # ---- 视图切换 Tab 页签（替代原下拉框）----
+        self.view_tab_group = QButtonGroup(self)
+        self.view_tabs: list[QPushButton] = []
+        for i, label in enumerate(VIEW_TAB_LABELS):
+            btn = QPushButton(label)
+            btn.setCheckable(True)
+            btn.setChecked(i == 3)  # 默认雷达图
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setFixedHeight(30)
+            btn.setToolTip(VIEW_LABELS[i])
+            r_left = "8px" if i == 0 else "0px"
+            r_right = "8px" if i == len(VIEW_TAB_LABELS) - 1 else "0px"
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: white; border: 2px solid #1abc9c;
+                    border-radius: {r_left} {r_right} {r_right} {r_left};
+                    padding: 4px 10px; font-size: 12px; color: #1abc9c; font-weight: bold;
+                }}
+                QPushButton:hover {{ background: #ecf0f1; }}
+                QPushButton:checked {{ background: #1abc9c; color: white; }}
+            """)
+            btn.clicked.connect(lambda checked, idx=i: self._on_mode_changed(idx))
+            self.view_tab_group.addButton(btn, i)
+            toolbar.addWidget(btn)
+            self.view_tabs.append(btn)
 
         toolbar.addSpacing(8)
 
@@ -341,6 +364,12 @@ class StudentEvalTab(QWidget):
         self.fig = Figure(figsize=(10, 6.5), dpi=100)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setStyleSheet("background: white; border: 1px solid #ecf0f1; border-radius: 10px;")
+        # 悬浮数据提示：各绘图函数填充 _hover_points（点吸附）
+        # 与 _hover_bars（柱体矩形命中，整条柱都响应）
+        self._hover_points: list = []
+        self._hover_bars: list = []
+        self._hover_annot = None
+        self.canvas.mpl_connect("motion_notify_event", self._on_chart_hover)
 
         # 雷达图独立画布（不被其他视图的 fig.clear() 影响）
         self.radar_fig = Figure(figsize=(10, 6.5), dpi=100)
@@ -358,7 +387,13 @@ class StudentEvalTab(QWidget):
         layout.addWidget(self.status_label)
 
         # 初始化默认视图（在所有控件就绪后触发）
-        self.combo_mode.setCurrentIndex(3)
+        self._on_mode_changed(3)
+
+    def _set_view(self, idx: int):
+        """切换视图 Tab（内部及 select_student 使用）"""
+        if 0 <= idx < len(self.view_tabs):
+            self.view_tabs[idx].setChecked(True)
+        self._on_mode_changed(idx)
 
     def _make_stat_label(self, text: str) -> QLabel:
         lbl = QLabel(text)
@@ -405,18 +440,19 @@ class StudentEvalTab(QWidget):
         return result
 
     def _compute_category_performance(self, topic_scores: dict) -> dict:
-        """按一级分类聚合知识点表现"""
+        """按一级分类聚合知识点表现（按 满分×权重 加权，而非简单平均）"""
         cats = {}
         for name, data in topic_scores.items():
             cat = data["category"]
             if data["rate"] is not None:
                 if cat not in cats:
-                    cats[cat] = {"rates": [], "topics": [], "count": 0}
-                cats[cat]["rates"].append(data["rate"])
+                    cats[cat] = {"topics": [], "count": 0, "num": 0.0, "den": 0.0}
                 cats[cat]["topics"].append(name)
                 cats[cat]["count"] += 1
+                cats[cat]["num"] += data.get("num", 0.0)
+                cats[cat]["den"] += data.get("den", 0.0)
         for cat, d in cats.items():
-            d["rate"] = round(sum(d["rates"]) / len(d["rates"]), 3) if d["rates"] else 0.0
+            d["rate"] = round(d["num"] / d["den"], 3) if d["den"] > 0 else 0.0
         return cats
 
     # ------------------------------------------------------------------
@@ -485,7 +521,7 @@ class StudentEvalTab(QWidget):
                 self.combo_student.setCurrentIndex(i)  # 触发 _on_student_changed
                 break
         if view in VIEW_LABELS:
-            self.combo_mode.setCurrentIndex(VIEW_LABELS.index(view))
+            self._set_view(VIEW_LABELS.index(view))
         self.search_input.blockSignals(True)
         self.search_input.setText(name)
         self.search_input.blockSignals(False)
@@ -619,15 +655,36 @@ class StudentEvalTab(QWidget):
             return
 
         self.fig.clear()
+        # 重置悬浮缓存，避免跨视图残留
+        self._hover_points = []
+        self._hover_bars = []
+        self._hover_annot = None
 
-        # 趋势视图：从题目绑定收集知识点列表
+        # 趋势视图：从题目绑定收集知识点列表（仅当前班在筛选范围内
+        # 实际有逐题分数据的题目所绑定的知识点，避免他班/无数据知识点混入）
         if self._view_mode == 5:
             date_filter = self._get_filtered_dates()
+            exam_type = self.exam_type_group.checkedId()
+            if exam_type < 0:
+                exam_type = 2
+            # 当前班在筛选范围内实际有逐题分的 (date, qid) 集合
+            class_idx = self.dm.current_class
+            covered: set = set()
+            for s in self.dm.students[class_idx][0]:
+                for dt, qs in s.question_scores.items():
+                    if date_filter is not None and dt not in date_filter:
+                        continue
+                    for qid in qs:
+                        covered.add((dt, qid))
             all_topics = set()
             for date, meta in self.dm.exam_meta.items():
                 if date_filter is not None and date not in date_filter:
                     continue
+                if exam_type != 2 and self.dm.is_quiz(date) != (exam_type == 0):
+                    continue
                 for q in meta.questions:
+                    if (date, q.id) not in covered:
+                        continue  # 当前班此题无成绩数据（如他班考试）
                     for kt in q.topics:
                         all_topics.add(kt.name)
             all_topics = sorted(all_topics)
@@ -669,20 +726,62 @@ class StudentEvalTab(QWidget):
     # 统计摘要
     # ------------------------------------------------------------------
     def _compute_stats(self, obj_stu, full_stu, sub_stu=None) -> dict:
-        obj_map = {d: float(v) for d, v in (obj_stu.scores or [])} if obj_stu else {}
-        sub_map = {d: float(v) for d, v in (sub_stu.scores_sub or [])} if sub_stu else {}
+        """统计卡：跟随日期/类型筛选的得分率均值（跨尺度可比）
+
+        口径与成绩历程·得分率模式一致：客观=单选+多选逐题分，
+        主观=填空+解答逐题分，总体=全卷总分列；分母为 exam_meta 理论满分。
+        """
+        date_filter = self._get_filtered_dates()
+        exam_type = self.exam_type_group.checkedId() if hasattr(self, "exam_type_group") else 2
+        if exam_type < 0:
+            exam_type = 2
+
+        def _den(meta, scope):
+            if scope is None:
+                return sum(q.max_score for q in meta.questions)
+            return sum(q.max_score for q in meta.questions if q.qtype in scope)
+
+        def _num(qs, meta, scope):
+            return sum(qs.get(q.id, 0.0) for q in meta.questions if q.qtype in scope)
+
         full_map = {d: float(v) for d, v in (full_stu.scores_full or [])} if full_stu else {}
+        qs_src = full_stu.question_scores if full_stu else {}
+        scopes = {"avg_obj": ("choice", "multi_select"),
+                  "avg_sub": ("fill", "answer"),
+                  "avg_full": None}
+        rates: dict[str, list] = {k: [] for k in scopes}
+
+        for dt in self.dm.dates:
+            if date_filter is not None and dt not in date_filter:
+                continue
+            if exam_type != 2 and self.dm.is_quiz(dt) != (exam_type == 0):
+                continue
+            meta = self.dm.exam_meta.get(dt)
+            if not meta or not meta.questions:
+                continue
+            for key, scope in scopes.items():
+                den = _den(meta, scope)
+                if den <= 0:
+                    continue
+                if scope is None:
+                    v = full_map.get(dt)
+                    if v is not None:
+                        rates[key].append(v / den)
+                else:
+                    qs = qs_src.get(dt)
+                    if qs:
+                        rates[key].append(_num(qs, meta, scope) / den)
 
         return {
-            "avg_obj": round(sum(obj_map.values()) / len(obj_map), 1) if obj_map else None,
-            "avg_sub": round(sum(sub_map.values()) / len(sub_map), 1) if sub_map else None,
-            "avg_full": round(sum(full_map.values()) / len(full_map), 1) if full_map else None,
+            "avg_obj": round(statistics.mean(rates["avg_obj"]), 3) if rates["avg_obj"] else None,
+            "avg_sub": round(statistics.mean(rates["avg_sub"]), 3) if rates["avg_sub"] else None,
+            "avg_full": round(statistics.mean(rates["avg_full"]), 3) if rates["avg_full"] else None,
             "call_count": obj_stu.call_count if obj_stu else 0,
         }
 
     def _update_stats(self, stats: dict):
         def fmt(val, dash="--"):
-            return f"{val:.1f}" if val is not None else dash
+            return f"{val:.0%}" if val is not None else dash
 
         self.lbl_avg_obj.setVisible(True)
         self.lbl_avg_sub.setVisible(True)
@@ -764,10 +863,13 @@ class StudentEvalTab(QWidget):
             cat = topic_category.get(tname, "未分类")
             if m_sum > 0:
                 c_avg = round(statistics.mean(cls_rates), 3) if cls_rates else 0.0
+                # num/den 供上层做加权聚合（分类/总分口径），避免简单平均失真
                 result[tname] = {"rate": round(s_sum / m_sum, 3), "count": n_exams,
-                                 "category": cat, "class_avg": c_avg}
+                                 "category": cat, "class_avg": c_avg,
+                                 "num": round(s_sum, 3), "den": m_sum}
             else:
-                result[tname] = {"rate": None, "count": 0, "category": cat, "class_avg": 0.0}
+                result[tname] = {"rate": None, "count": 0, "category": cat,
+                                 "class_avg": 0.0, "num": 0.0, "den": 0.0}
         return result
 
     # ------------------------------------------------------------------
@@ -799,15 +901,19 @@ class StudentEvalTab(QWidget):
         rates = [x[1]["rate"] for x in items]
         counts = [x[1]["count"] for x in items]
         class_avgs = [x[1]["class_avg"] for x in items]
-        colors = [color_pos if r >= 0.5 else color_neg for r in rates]
+        colors = [color_pos if r >= 0.6 else color_neg for r in rates]
 
         ax = self.fig.add_subplot(111)
-        ax.set_xlim(-0.05, 1.05)
+
+        # 班均标记样式（放大加深，白边突出）
+        diamond_style = dict(marker="D", color="#2c3e50", markersize=7,
+                             markeredgecolor="white", markeredgewidth=1.2, zorder=5)
 
         n_topics = len(names)
         if n_topics > 30:
+            ax.set_xlim(-0.05, 1.05)  # barh：x 轴为得分率
             y_pos = list(range(n_topics))
-            ax.barh(y_pos, rates, color=colors, height=0.6)
+            bar_cont = ax.barh(y_pos, rates, color=colors, height=0.6)
             ax.set_yticks(y_pos)
             ax.set_yticklabels(names, fontsize=7)
             ax.invert_yaxis()
@@ -817,10 +923,12 @@ class StudentEvalTab(QWidget):
                     ax.text(r + 0.01, i, f" {r:.0%}", va="center", fontsize=6)
             for i, ca in enumerate(class_avgs):
                 if ca > 0:
-                    ax.plot(ca, i, "D", color="#7f8c8d", markersize=4, zorder=5)
+                    ax.plot(ca, i, linestyle="none", **diamond_style)
+            ref_line = ax.axvline
         elif n_topics > 20:
+            ax.set_xlim(-0.05, 1.05)  # barh：x 轴为得分率
             y_pos = list(range(n_topics))
-            ax.barh(y_pos, rates, color=colors, height=0.6)
+            bar_cont = ax.barh(y_pos, rates, color=colors, height=0.6)
             ax.set_yticks(y_pos)
             ax.set_yticklabels(names, fontsize=8)
             ax.invert_yaxis()
@@ -830,10 +938,12 @@ class StudentEvalTab(QWidget):
                     ax.text(r + 0.01, i, f" {r:.0%} (n={n})", va="center", fontsize=7)
             for i, ca in enumerate(class_avgs):
                 if ca > 0:
-                    ax.plot(ca, i, "D", color="#7f8c8d", markersize=5, zorder=5)
+                    ax.plot(ca, i, linestyle="none", **diamond_style)
+            ref_line = ax.axvline
         else:
+            ax.set_ylim(-0.05, 1.05)  # bar：y 轴为得分率，x 交给自适应
             x_pos = list(range(n_topics))
-            ax.bar(x_pos, rates, color=colors, width=0.6)
+            bar_cont = ax.bar(x_pos, rates, color=colors, width=0.6)
             ax.set_xticks(x_pos)
             ax.set_xticklabels(names, fontsize=9, rotation=35, ha="right")
             ax.set_ylabel("知识点得分率", fontsize=11)
@@ -843,13 +953,37 @@ class StudentEvalTab(QWidget):
                     ax.text(i, 0.01, f"n={n}", ha="center", fontsize=7, color="#95a5a6")
             for i, ca in enumerate(class_avgs):
                 if ca > 0:
-                    ax.plot(i, ca, "D", color="#7f8c8d", markersize=5, zorder=5)
+                    ax.plot(i, ca, linestyle="none", **diamond_style)
+            ref_line = ax.axhline
 
-        ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
+        # 及格线 0.6（与成绩历程等视图口径统一），横向条形图用竖线
+        ref_line(0.6, color="#e74c3c", linewidth=1.5, linestyle="--",
+                 alpha=0.7, label="及格线 60%")
+        # 图例：班均菱形 + 及格线
+        ax.plot([], [], linestyle="none", label="班级均值", **diamond_style)
+        ax.legend(fontsize=10, loc="lower right")
+
+        # 悬浮提示：柱体整条响应（得分率/次数/班均）+ 班均菱形点吸附
+        self._hover_bars = [
+            (bar_cont.patches[i],
+             f"{names[i]}\n得分率 {rates[i]:.0%}（出现 {counts[i]} 次）\n班级均值 {class_avgs[i]:.0%}")
+            for i in range(n_topics)
+        ]
+        if n_topics > 20:  # barh：菱形在 (班均, 行号)
+            self._hover_points = [
+                (class_avgs[i], y_pos[i], f"{names[i]}\n班级均值 {class_avgs[i]:.0%}")
+                for i in range(n_topics) if class_avgs[i] > 0
+            ]
+        else:  # bar：菱形在 (列号, 班均)
+            self._hover_points = [
+                (x_pos[i], class_avgs[i], f"{names[i]}\n班级均值 {class_avgs[i]:.0%}")
+                for i in range(n_topics) if class_avgs[i] > 0
+            ]
+
         date_info = self._date_filter_info()
         ax.set_title(f"{self._current_student}  ·  {label}知识点掌握度{date_info}",
                      fontsize=14, fontweight="bold")
-        weak = [f"{n}({r:.0%})" for n, r in items[-3:]] if len(items) >= 3 else []
+        weak = [f"{n}({d['rate']:.0%})" for n, d in items[-3:]] if len(items) >= 3 else []
         weak_str = f" | 薄弱: {', '.join(reversed(weak))}" if weak else ""
         self.status_label.setText(
             f"{label}：{len(items)}个知识点有数据，{len(null_items)}个无数据{date_info}{weak_str}"
@@ -1000,6 +1134,18 @@ class StudentEvalTab(QWidget):
 
         cat_obj, cat_sub = _get_radar_vals(self._current_student)
 
+        def _cat_val(co, cs, c):
+            """按当前分数模式取分类值；无数据返回 None（该顶点不画）"""
+            o, s = co.get(c), cs.get(c)
+            if self._score_mode == 0:
+                return o["rate"] if o else None
+            if self._score_mode == 1:
+                return s["rate"] if s else None
+            # 总体：按主客观分母（满分×权重）加权，而非 (o+s)/2 等权
+            num = (o["num"] if o else 0.0) + (s["num"] if s else 0.0)
+            den = (o["den"] if o else 0.0) + (s["den"] if s else 0.0)
+            return round(num / den, 3) if den > 0 else None
+
         use_fixed = self.btn_fixed_order.isChecked()
         if use_fixed:
             fixed_order = self.dm.category_order or list(self.dm.knowledge_pool.keys())
@@ -1014,6 +1160,9 @@ class StudentEvalTab(QWidget):
                                cat_sub.get(c, {}).get("rate", 0)),
                 reverse=True,
             )
+        # 无数据分类不画：仅保留当前学生在当前模式下有值的顶点
+        all_cats = [c for c in all_cats
+                    if _cat_val(cat_obj, cat_sub, c) is not None]
         if len(all_cats) < 3:
             self._show_empty(f"类别数量不足3个（当前{len(all_cats)}），请先在数据维护页绑定知识点到题目。")
             return
@@ -1022,31 +1171,26 @@ class StudentEvalTab(QWidget):
         angles = [n / N * 2 * math.pi for n in range(N)]
         angles += angles[:1]
 
-        # 构建 target 数据
+        # 构建 target 数据（对比学生缺数据的顶点用 NaN 断线，不画成 0）
+        nan = float("nan")
         new_lines = []
         if compare_name:
             cat_cmp_obj, cat_cmp_sub = _get_radar_vals(compare_name)
             def _pick_vals(co, cs):
                 vals = []
                 for c in all_cats:
-                    o = co.get(c, {}).get("rate", 0)
-                    s = cs.get(c, {}).get("rate", 0)
-                    if self._score_mode == 0: v = o
-                    elif self._score_mode == 1: v = s
-                    else: v = (o + s) / 2 if (o or s) else 0
-                    vals.append(v)
+                    v = _cat_val(co, cs, c)
+                    vals.append(v if v is not None else nan)
                 return vals + vals[:1]
             new_lines.append(_pick_vals(cat_obj, cat_sub))
             new_lines.append(_pick_vals(cat_cmp_obj, cat_cmp_sub))
         else:
-            obj_vals = [cat_obj.get(c, {}).get("rate", 0) for c in all_cats]
-            sub_vals = [cat_sub.get(c, {}).get("rate", 0) for c in all_cats]
-            obj_vals += obj_vals[:1]
-            sub_vals += sub_vals[:1]
             if self._score_mode in (0, 2):
-                new_lines.append(obj_vals)
+                vals = [(cat_obj[c]["rate"] if c in cat_obj else nan) for c in all_cats]
+                new_lines.append(vals + vals[:1])
             if self._score_mode in (1, 2):
-                new_lines.append(sub_vals)
+                vals = [(cat_sub[c]["rate"] if c in cat_sub else nan) for c in all_cats]
+                new_lines.append(vals + vals[:1])
 
         # 判断复用 vs 重建
         current_config = (self._score_mode, bool(compare_name))
@@ -1393,13 +1537,13 @@ class StudentEvalTab(QWidget):
                 continue
             stu_qs = stu_qs_all[date]
 
-            # 计算该学生在该知识点的加权得分率
+            # 计算该学生在该知识点的加权得分率（分子分母同步剔除未做的题）
             stu_score_sum = 0.0
             stu_max_sum = 0.0
             for qid, qtype, max_score, weight in q_infos:
                 if qid in stu_qs:
                     stu_score_sum += stu_qs[qid] * weight
-                stu_max_sum += max_score * weight
+                    stu_max_sum += max_score * weight
 
             if stu_max_sum == 0:
                 continue
@@ -1476,10 +1620,15 @@ class StudentEvalTab(QWidget):
         else:
             type_desc = "全部题型"
 
+        # 出现次数 <3 时趋势线无可读性，切换为逐题明细视图
+        if len(student_points) < 3:
+            self._draw_topic_trend_detail(topic_name, qt_map, trend_type, type_desc)
+            return
+
         # 低置信度标记
         low_confidence = total_n < 3
         line_style = "--" if low_confidence else "-"
-        confidence_note = "⚠️ 仅出现{}次，趋势仅供参考" if low_confidence else ""
+        confidence_note = "⚠ 仅出现{}次，趋势仅供参考" if low_confidence else ""
 
         # 提取绘图数据
         dates_plot = [p[0] for p in student_points]
@@ -1490,15 +1639,15 @@ class StudentEvalTab(QWidget):
         c_dates = [p[0] for p in class_avg_points]
         c_vals = [p[1] for p in class_avg_points]
 
-        # marker 尺寸映射到权重 (12~48px²)
+        # marker 尺寸映射到权重 (30~110px²)
         if weights:
             min_w, max_w = min(weights), max(weights)
             if max_w > min_w:
-                marker_sizes = [12 + (w - min_w) / (max_w - min_w) * 36 for w in weights]
+                marker_sizes = [30 + (w - min_w) / (max_w - min_w) * 80 for w in weights]
             else:
-                marker_sizes = [24] * len(weights)
+                marker_sizes = [50] * len(weights)
         else:
-            marker_sizes = [24] * len(weights)
+            marker_sizes = [50] * len(weights)
 
         # 3 点滚动均线
         n_pts = len(s_vals)
@@ -1513,8 +1662,18 @@ class StudentEvalTab(QWidget):
         ax = self.fig.add_subplot(111)
         x = list(range(len(dates_plot)))
 
+        # 悬浮提示：学生点（得分率/权重）与班均点
+        self._hover_points = [
+            (x[i], s_vals[i],
+             f"{dates_plot[i]}\n得分率 {s_vals[i]:.0%}\n权重 w={weights[i]:.2f}")
+            for i in range(n_pts)
+        ] + [
+            (x[i], c_vals[i], f"{c_dates[i]}\n班级均值 {c_vals[i]:.0%}")
+            for i in range(len(c_vals))
+        ]
+
         # 班级均线（灰色虚线）
-        ax.plot(x, c_vals, "s--", color="#bdc3c7", linewidth=1.2, markersize=5,
+        ax.plot(x, c_vals, "s--", color="#bdc3c7", linewidth=2.0, markersize=7,
                 label="班级均值", zorder=2)
 
         # 学生信号线（低置信度用虚线，颜色按趋势类型）
@@ -1522,8 +1681,8 @@ class StudentEvalTab(QWidget):
         line_color = trend_colors[trend_type]
         student_label = f"{self._current_student}"
 
-        ax.plot(x, s_vals, f"o{line_style}", color=line_color, linewidth=2,
-                markersize=8, markerfacecolor="white", markeredgewidth=1.5,
+        ax.plot(x, s_vals, f"o{line_style}", color=line_color, linewidth=3,
+                markersize=10, markerfacecolor="white", markeredgewidth=2,
                 label=student_label, zorder=3)
 
         # 逐个画散点（大小映射权重）
@@ -1548,33 +1707,34 @@ class StudentEvalTab(QWidget):
 
         # 滚动均线（橙色虚线）
         if n_pts >= 3:
-            ax.plot(x, rolling, ":", color="#e74c3c", linewidth=1.8, alpha=0.7,
+            ax.plot(x, rolling, ":", color="#e74c3c", linewidth=2.4, alpha=0.75,
                     label="3点滚动均线", zorder=5)
 
         # 标注权重（每个点旁边）
         for i in range(n_pts):
             ax.annotate(f"w={weights[i]:.2f}",
                         (x[i], s_vals[i]),
-                        textcoords="offset points", xytext=(0, 10),
-                        fontsize=7, color="#7f8c8d", ha="center",
-                        alpha=0.8)
+                        textcoords="offset points", xytext=(0, 12),
+                        fontsize=9, color="#7f8c8d", ha="center",
+                        alpha=0.85)
 
         ax.set_xticks(x)
-        ax.set_xticklabels(dates_plot, fontsize=8, rotation=35, ha="right")
+        ax.set_xticklabels(dates_plot, fontsize=11, rotation=35, ha="right")
 
         # Y 轴标签
-        ax.set_ylabel("知识点得分率", fontsize=11)
+        ax.set_ylabel("知识点得分率", fontsize=13)
 
-        # Y 轴范围：得分率 0~1
-        ax.set_ylim(-0.05, 1.05)
-        ax.axhline(y=0.5, color="#999", linewidth=0.8, linestyle="--", alpha=0.5)
+        # Y 轴范围：得分率 0~1（顶部留白给 w= 标注）
+        ax.set_ylim(-0.05, 1.12)
+        ax.axhline(y=0.5, color="#999", linewidth=1.2, linestyle="--", alpha=0.6)
 
-        ax.legend(fontsize=9, loc="upper left")
-        ax.grid(axis="y", alpha=0.3)
+        ax.legend(fontsize=11, loc="upper left")
+        ax.grid(axis="y", alpha=0.3, linewidth=1.0)
+        ax.tick_params(axis="y", labelsize=11)
 
         # 标题
         date_info = self._date_filter_info()
-        conf_str = " ⚠️低置信度" if low_confidence else ""
+        conf_str = " ※低置信度" if low_confidence else ""
         ax.set_title(
             f"{self._current_student}  ·  「{topic_name}」知识点趋势 ({type_desc}){conf_str}{date_info}",
             fontsize=14, fontweight="bold",
@@ -1591,6 +1751,97 @@ class StudentEvalTab(QWidget):
             parts.append(confidence_note.format(total_n))
         self.status_label.setText(" | ".join(parts))
 
+    def _draw_topic_trend_detail(self, topic_name: str, qt_map: dict,
+                                 trend_type: int, type_desc: str):
+        """样本少（<3 次）时的逐题明细视图：每道涉及题目一根柱，
+        标注 得分/满分、权重 w 和班级均值，替代稀疏趋势点。"""
+        allowed = ({"choice", "multi_select"} if trend_type == 0 else
+                   {"fill", "answer"} if trend_type == 1 else None)
+        class_idx = self.dm.current_class
+        qs_by_name = {s.name: s.question_scores for s in self.dm.students[class_idx][0]}
+        stu_qs_all = qs_by_name.get(self._current_student, {})
+
+        # 收集逐题明细：(标签, 得分率, 得分, 满分, 权重, 班均率, 是否客观)
+        items = []
+        for date in sorted(qt_map.keys()):
+            stu_qs = stu_qs_all.get(date, {})
+            for qid, qtype, max_score, weight in qt_map[date]:
+                if allowed is not None and qtype not in allowed:
+                    continue
+                if qid not in stu_qs or max_score <= 0:
+                    continue
+                score = stu_qs[qid]
+                cls_rates = [qs[date][qid] / max_score
+                             for qs in qs_by_name.values()
+                             if date in qs and qid in qs[date]]
+                items.append((
+                    f"{date[5:]}\n{qid}", score / max_score, score, max_score,
+                    weight,
+                    sum(cls_rates) / len(cls_rates) if cls_rates else None,
+                    qtype in ("choice", "multi_select"),
+                    date, qid,
+                ))
+
+        if not items:
+            self._show_empty(f"知识点「{topic_name}」在该题型筛选下无有效成绩数据")
+            return
+
+        # 悬浮提示：学生柱顶（得分/满分/权重）与班均方块；柱体整条响应
+        self._hover_points = []
+        stu_texts = []
+        for i, it in enumerate(items):
+            stu_texts.append(f"{it[7]} {it[8]}\n得分 {it[2]:g}/{it[3]:g}分"
+                             f"（{it[1]:.0%}）\n权重 w={it[4]:.2f}")
+            self._hover_points.append((i, it[1], stu_texts[-1]))
+            if it[5] is not None:
+                self._hover_points.append(
+                    (i, it[5], f"{it[7]} {it[8]}\n班级均值 {it[5]:.0%}"))
+
+        ax = self.fig.add_subplot(111)
+        x = list(range(len(items)))
+        colors = ["#3498db" if it[6] else "#e67e22" for it in items]
+        bar_cont = ax.bar(x, [it[1] for it in items], color=colors, width=0.55, zorder=3)
+        self._hover_bars = list(zip(bar_cont.patches, stu_texts))
+        # 学生得分标记点：0 分柱高度为 0 时也可见
+        for i, it in enumerate(items):
+            ax.plot(i, it[1], "o", color=colors[i], markersize=11,
+                    markeredgecolor="white", markeredgewidth=2, zorder=5)
+        for i, it in enumerate(items):
+            ax.text(i, it[1] + 0.03, f"{it[2]:g}/{it[3]:g}分",
+                    ha="center", fontsize=13, fontweight="bold")
+            if it[5] is not None:
+                ax.plot(i, it[5], "s", color="#7f8c8d", markersize=10, zorder=4)
+            # 柱内有空间则白字嵌底，否则灰字贴轴上方（0 分柱也可见）
+            if it[1] > 0.12:
+                ax.text(i, 0.03, f"w={it[4]:.2f}", ha="center", fontsize=10,
+                        color="white", fontweight="bold")
+            else:
+                ax.text(i, 0.015, f"w={it[4]:.2f}", ha="center", fontsize=10,
+                        color="#95a5a6")
+
+        ax.set_xticks(x)
+        ax.set_xticklabels([it[0] for it in items], fontsize=12)
+        ax.set_xlim(-0.7, len(items) - 0.3)  # 样本少时收紧留白
+        ax.set_ylim(0, 1.15)
+        ax.axhline(y=0.6, color="#999", linewidth=1.2, linestyle="--", alpha=0.6)
+        ax.set_ylabel("该题得分率", fontsize=13)
+        ax.plot([], [], "s", color="#7f8c8d", markersize=10, label="班级均值")
+        ax.legend(fontsize=11, loc="upper left")
+        ax.grid(axis="y", alpha=0.3, linewidth=1.0)
+        ax.tick_params(axis="y", labelsize=11)
+
+        date_info = self._date_filter_info()
+        ax.set_title(
+            f"{self._current_student}  ·  「{topic_name}」逐题明细 ({type_desc})"
+            f" ※样本少，逐题展示{date_info}",
+            fontsize=14, fontweight="bold",
+        )
+        avg = sum(it[1] for it in items) / len(items)
+        self.status_label.setText(
+            f"「{topic_name}」{type_desc} | 涉及 {len(items)} 题 | "
+            f"均得分率={avg:.0%} | 方块=班级均值 | w=知识点占该题权重"
+        )
+
     # ------------------------------------------------------------------
     # 辅助方法
     # ------------------------------------------------------------------
@@ -1601,6 +1852,63 @@ class StudentEvalTab(QWidget):
         if self._filter_start == self._filter_end:
             return f" [{self._filter_start}]"
         return f" [{self._filter_start} ~ {self._filter_end}]"
+
+    def _on_chart_hover(self, event):
+        """鼠标悬停：柱体矩形命中优先，其次最近数据点吸附，深色气泡提示"""
+        if not event.inaxes:
+            if self._hover_annot:
+                self._hover_annot.set_visible(False)
+                self.canvas.draw_idle()
+            return
+
+        ax = event.inaxes
+
+        # 1) 柱体矩形命中：鼠标在柱内任意位置都提示
+        for rect, text in self._hover_bars:
+            contains, _ = rect.contains(event)
+            if contains:
+                self._show_hover_annot(ax, (event.xdata, event.ydata), text)
+                return
+
+        # 2) 数据点吸附（菱形/圆点/方块等）
+        best_dist, best_text, best_xy = float("inf"), None, None
+        for x, y, text in self._hover_points:
+            if math.isnan(y):
+                continue
+            px, py = ax.transData.transform((x, y))
+            dist = ((px - event.x) ** 2 + (py - event.y) ** 2) ** 0.5
+            if dist < best_dist:
+                best_dist, best_text, best_xy = dist, text, (x, y)
+
+        if best_dist > 20 or best_xy is None:
+            if self._hover_annot:
+                self._hover_annot.set_visible(False)
+                self.canvas.draw_idle()
+            return
+        self._show_hover_annot(ax, best_xy, best_text)
+
+    def _show_hover_annot(self, ax, xy, text):
+        """显示/移动悬浮气泡"""
+        # 跨子图切换时重建 annot
+        if self._hover_annot and self._hover_annot.axes != ax:
+            self._hover_annot.remove()
+            self._hover_annot = None
+
+        if self._hover_annot is None:
+            self._hover_annot = ax.annotate(
+                "", xy=xy, xytext=(14, 14),
+                textcoords="offset points",
+                bbox=dict(boxstyle="round,pad=0.6", facecolor="#2c3e50",
+                          edgecolor="none", alpha=0.92),
+                color="white", fontsize=11,
+                arrowprops=dict(arrowstyle="->", color="#2c3e50", lw=1.2),
+            )
+        else:
+            self._hover_annot.xy = xy
+
+        self._hover_annot.set_text(text)
+        self._hover_annot.set_visible(True)
+        self.canvas.draw_idle()
 
     def _show_empty(self, msg: str):
         fig = self.radar_fig if self._view_mode == 3 else self.fig
