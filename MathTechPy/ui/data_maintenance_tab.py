@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QLineEdit, QListWidget, QListWidgetItem, QFrame, QMessageBox,
     QInputDialog, QScrollArea, QButtonGroup, QSlider, QMenu,
-    QGraphicsOpacityEffect, QWidgetAction, QDoubleSpinBox
+    QGraphicsOpacityEffect, QGraphicsDropShadowEffect, QWidgetAction, QDoubleSpinBox
 )
-from PyQt6.QtCore import Qt, QTimer, QMimeData, QPropertyAnimation, QPoint, QEasingCurve, QEvent
-from PyQt6.QtGui import QFont, QColor, QDrag, QDragEnterEvent, QDropEvent, QPainter, QPixmap
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QPoint, QEasingCurve, QEvent
+from PyQt6.QtGui import QFont, QColor, QCursor, QDragEnterEvent, QDropEvent, QPainter, QPixmap
 
 from core.data_manager import DataManager
 from core.models import KnowledgeTopic, Question
@@ -228,6 +228,9 @@ class CategoryGroup(QWidget):
         super().__init__(parent)
         self.cat_name = cat_name
         self._drag_start = None
+        self._drag_float = None      # 手动拖拽的浮动预览窗口
+        self._drag_hotspot = None    # 浮动窗相对光标的偏移
+        self._float_hover = None     # 当前高亮的目标分组
         self._on_menu = on_menu
         self.setAcceptDrops(True)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -292,7 +295,20 @@ class CategoryGroup(QWidget):
             self._drag_start = event.position().toPoint()
         super().mousePressEvent(event)
 
+    def _container(self):
+        p = self.parent()
+        while p and not isinstance(p, DropContainer):
+            p = p.parent()
+        return p if isinstance(p, DropContainer) else None
+
     def mouseMoveEvent(self, event):
+        container = self._container()
+        if container is None:
+            return
+        if container._live_group is self:
+            # 拖拽中：容器负责浮动与让位
+            container._live_drag_move()
+            return
         if self._drag_start is None:
             return
         if not (event.buttons() & Qt.MouseButton.LeftButton):
@@ -300,93 +316,18 @@ class CategoryGroup(QWidget):
         delta = event.position().toPoint() - self._drag_start
         if delta.manhattanLength() < 6:
             return
-
-        drag = QDrag(self)
-        mime = QMimeData()
-        mime.setData(MIME_CATEGORY, self.cat_name.encode("utf-8"))
-        mime.setText(self.cat_name)
-        drag.setMimeData(mime)
-
-        pixmap = self.header_frame.grab()
-        pad = 14
-        shadow_pm = QPixmap(pixmap.width() + 2 * pad, pixmap.height() + 2 * pad)
-        shadow_pm.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(shadow_pm)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        for i in range(10, 0, -1):
-            alpha = int(35 * (11 - i) / 10)
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor(0, 0, 0, alpha))
-            painter.drawRoundedRect(pad - i, pad - i + 3,
-                                    pixmap.width() + 2 * i, pixmap.height() + 2 * i,
-                                    8 + i, 8 + i)
-        painter.setOpacity(0.92)
-        painter.drawPixmap(pad, pad, pixmap)
-        painter.end()
-
-        scaled = shadow_pm.scaled(
-            int(shadow_pm.width() * 1.05),
-            int(shadow_pm.height() * 1.05),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        drag.setPixmap(scaled)
-        drag.setHotSpot(QPoint(scaled.width() // 2, int(pad * 1.05) + pixmap.height() // 2))
-
-        opacity = QGraphicsOpacityEffect(self.header_frame)
-        opacity.setOpacity(0.35)
-        self.header_frame.setGraphicsEffect(opacity)
-
+        # 进入实时拖拽：本分组浮动托起，其余分组滑动让位
         self._drag_start = None
-        drag.exec(Qt.DropAction.MoveAction)
+        container._begin_live_drag(self)
+        self.grabMouse()  # 拖拽期间持续接收 move/release
 
-        old_effect = self.header_frame.graphicsEffect()
-        if old_effect and isinstance(old_effect, QGraphicsOpacityEffect):
-            fade_back = QPropertyAnimation(old_effect, b"opacity")
-            fade_back.setDuration(200)
-            fade_back.setStartValue(0.35)
-            fade_back.setEndValue(1.0)
-            fade_back.setEasingCurve(QEasingCurve.Type.OutCubic)
-            fade_back.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
-
-            def _cleanup():
-                if self.header_frame.graphicsEffect() is old_effect:
-                    self.header_frame.setGraphicsEffect(None)
-
-            fade_back.finished.connect(_cleanup)
-        else:
-            self.header_frame.setGraphicsEffect(None)
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasFormat(MIME_CATEGORY):
-            src = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
-            if src != self.cat_name:
-                self.setStyleSheet(self.styleSheet() + self._DRAG_HINT_STYLE)
-                event.acceptProposedAction()
-
-    def dragLeaveEvent(self, event):
-        # 只移除拖拽高亮边框，保留原有样式
-        self.setStyleSheet(self.styleSheet().replace(self._DRAG_HINT_STYLE, ""))
-
-    def dropEvent(self, event):
-        if event.mimeData().hasFormat(MIME_CATEGORY):
-            src_name = bytes(event.mimeData().data(MIME_CATEGORY)).decode("utf-8")
-            # 通过 DropContainer 处理
-            container = self.parent()
-            while container and not isinstance(container, DropContainer):
-                container = container.parent()
-            if isinstance(container, DropContainer) and container._drop_callback:
-                # 找到在 container 中的目标索引
-                children = [container.layout().itemAt(i).widget()
-                            for i in range(container.layout().count())
-                            if container.layout().itemAt(i).widget()]
-                target_idx = len(children)
-                for i, w in enumerate(children):
-                    if w is self:
-                        target_idx = i
-                        break
-                container._drop_callback(src_name, target_idx)
-        event.acceptProposedAction()
+    def mouseReleaseEvent(self, event):
+        container = self._container()
+        if (container is not None and container._live_group is self
+                and event.button() == Qt.MouseButton.LeftButton):
+            container._end_live_drag(commit=True)
+            return
+        super().mouseReleaseEvent(event)
 
     def _toggle(self):
         self.body.setVisible(not self.body.isVisible())
@@ -425,15 +366,142 @@ class CategoryGroup(QWidget):
         self.expand_btn.setText(f"{arrow} {self.cat_name} {cnt_str}")
 
 class DropContainer(QWidget):
-    """可接收拖放的容器"""
+    """可接收拖放的容器（分类分组实时拖拽：浮动 + 让位滑动）"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)
         self._drop_callback = None
+        self._live_group = None      # 正在浮动的分组
+        self._live_children = []     # 拖拽开始时其余分组（原顺序）
+        self._live_gap = -1          # 当前空档索引
+        self._live_home = -1         # 原始位置（取消时还原用）
+        self._live_grab_dy = 0       # 光标到浮动分组顶部的偏移
+        self._live_anims = []
 
     def set_drop_callback(self, callback):
         self._drop_callback = callback
+
+    # ------------------------------------------------------------------
+    # 实时拖拽：被拖分组浮动，其余分组动画让位
+    # ------------------------------------------------------------------
+    def _begin_live_drag(self, group):
+        lay = self.layout()
+        spacing = lay.spacing()
+        top = lay.contentsMargins().top()
+        # 记录所有分组并全部脱离布局（转为手动定位）
+        children = [lay.itemAt(i).widget() for i in range(lay.count())
+                    if lay.itemAt(i).widget()]
+        self._live_children = [c for c in children if c is not group]
+        self._live_group = group
+        self._live_home = children.index(group)  # 原始位置（取消时还原用）
+        self._live_gap = self._live_home
+        self._live_grab_dy = self.mapFromGlobal(QCursor.pos()).y() - group.y()
+
+        # 钉住容器高度：全部子项脱离布局后 sizeHint 会塌为 0，
+        # 不定高会导致整列被裁剪消失
+        total_h = (sum(c.height() for c in children)
+                   + lay.spacing() * (len(children) - 1)
+                   + lay.contentsMargins().top() + lay.contentsMargins().bottom())
+        self.setMinimumHeight(total_h)
+
+        for c in children:
+            g = c.geometry()
+            lay.removeWidget(c)
+            c.setGeometry(g)  # 脱离布局后保持原位
+            c.show()
+
+        # 浮动托起：置顶 + 投影
+        group.raise_()
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setOffset(0, 5)
+        shadow.setColor(QColor(0, 0, 0, 70))
+        group.setGraphicsEffect(shadow)
+        self._reflow_others(animate=False, spacing=spacing, top=top)
+
+    def _live_drag_move(self):
+        group = self._live_group
+        if group is None:
+            return
+        lay = self.layout()
+        y = self.mapFromGlobal(QCursor.pos()).y() - self._live_grab_dy
+        y = max(0, min(y, self.height() - group.height()))
+        group.move(group.x(), y)
+
+        # 空档索引：浮动中心越过谁的中线，谁就放到空档另一侧
+        center = y + group.height() / 2
+        gap = 0
+        for c in self._live_children:
+            if center > c.geometry().center().y():
+                gap += 1
+        if gap != self._live_gap:
+            self._live_gap = gap
+            self._reflow_others(animate=True, spacing=lay.spacing(),
+                                top=lay.contentsMargins().top())
+
+    def _reflow_others(self, animate: bool, spacing: int, top: int):
+        """其余分组滑到空档让开后的目标位置"""
+        group = self._live_group
+        if group is None:
+            return
+        gap_h = group.height() + spacing
+        y = top
+        self._clear_live_anims()
+        for i, c in enumerate(self._live_children):
+            if i == self._live_gap:
+                y += gap_h
+            target = c.geometry()
+            target.moveTop(y)
+            y += c.height() + spacing
+            if animate:
+                # 保持强引用（不用 DeleteWhenStopped），由 _clear_live_anims 统一销毁
+                anim = QPropertyAnimation(c, b"geometry", self)
+                anim.setDuration(150)
+                anim.setStartValue(c.geometry())
+                anim.setEndValue(target)
+                anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+                anim.start()
+                self._live_anims.append(anim)
+            else:
+                c.setGeometry(target)
+
+    def _clear_live_anims(self):
+        """停止并销毁全部在途让位动画（列表中可能已有自然结束的）"""
+        for anim in self._live_anims:
+            anim.stop()
+            anim.deleteLater()
+        self._live_anims = []
+
+    def _end_live_drag(self, commit: bool):
+        group = self._live_group
+        if group is None:
+            return
+        self._live_group = None
+        self._clear_live_anims()
+
+        if group.graphicsEffect():
+            group.graphicsEffect().deleteLater()
+            group.setGraphicsEffect(None)
+        group.releaseMouse()
+
+        lay = self.layout()
+        if commit and self._drop_callback:
+            # 提交排序（由上层重建分组）
+            self._drop_callback(group.cat_name, self._live_gap)
+        else:
+            # 取消：按原始顺序全部放回布局
+            orig = list(self._live_children)
+            orig.insert(self._live_home, group)
+            for w in orig:
+                lay.removeWidget(w)
+            for w in orig:
+                lay.addWidget(w)
+        # 解除拖拽期间的高度钉住，恢复布局自然撑高
+        self.setMinimumHeight(0)
+        self._live_children = []
+        self._live_gap = -1
+        self._live_home = -1
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasFormat(MIME_CATEGORY):
@@ -1307,10 +1375,11 @@ class DataMaintenanceTab(QWidget):
             self._refresh_tags()
 
     def _build_cat_groups(self):
-        for i in reversed(range(self.cat_layout.count())):
-            w = self.cat_layout.itemAt(i).widget()
-            if w:
-                w.deleteLater()
+        # 先把旧分组从布局中取出再销毁（否则布局残留已销毁项，计数翻倍）
+        while self.cat_layout.count():
+            item = self.cat_layout.takeAt(0)
+            if item and item.widget():
+                item.widget().deleteLater()
         self.cat_groups = []
         order = self.dm.category_order or list(self.dm.knowledge_pool.keys())
         for cat in order:
